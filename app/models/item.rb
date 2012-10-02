@@ -118,3 +118,4 @@ class Item < ActiveRecord::Base
       set_next_reservation
     end
   end
+end
