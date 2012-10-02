@@ -13,6 +13,7 @@ class CheckinsController < ApplicationController
     # かごがない場合、自動的に作成する
     get_basket
     unless @basket
+      logger.error "current_user: #{current_user}"
       @basket = Basket.create!(:user => current_user)
       redirect_to user_basket_checkins_url(@basket.user, @basket)
       return
