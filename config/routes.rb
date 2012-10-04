@@ -1,2 +1,2 @@
-EnjuCirculation::Engine.routes.draw do
+EnjuTrunkCirculation::Engine.routes.draw do
 end
