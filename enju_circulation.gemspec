@@ -5,10 +5,10 @@ require "enju_circulation/version"
 
 # Describe your gem and declare its dependencies:
 Gem::Specification.new do |s|
-  s.name        = "enju_circulation"
-  s.version     = EnjuCirculation::VERSION
-  s.authors     = ["TODO: Your name"]
-  s.email       = ["TODO: Your email"]
+  s.name        = "enju_trunk_circulation"
+  s.version     = 1.0
+  s.authors     = ["Emiko TAMIYA"]
+  s.email       = ["tamiya.emiko@miraitsystems.jp"]
   s.homepage    = "TODO"
   s.summary     = "TODO: Summary of EnjuCirculation."
   s.description = "TODO: Description of EnjuCirculation."
