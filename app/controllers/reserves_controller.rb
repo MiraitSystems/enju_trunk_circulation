@@ -113,6 +113,7 @@ class ReservesController < ApplicationController
     end
 
     respond_to do |format|
+      format.html { render :template => 'opac/reserves/index', :layout => 'opac' }if params[:opac]
       format.html # index.html.erb
       format.json { render :json => @reserves }
       format.rss  { render :layout => false }
@@ -148,6 +149,7 @@ class ReservesController < ApplicationController
     @reserved_count = Reserve.waiting.where(:manifestation_id => @reserve.manifestation_id, :checked_out_at => nil).count
 
     respond_to do |format|
+      format.html { render :template => 'opac/reserves/show', :layout => 'opac'} if params[:opac]
       format.html # show.html.erb
       format.json { render :json => @reserve }
     end
