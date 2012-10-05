@@ -95,6 +95,7 @@ class CheckoutsController < ApplicationController
     end
 
     respond_to do |format|
+      format.html { render :template => 'opac/checkouts/show', :layout => 'opac' } if params[:opac]
       format.html # show.html.erb
       format.json { render :json => @checkout }
     end
@@ -113,6 +114,7 @@ class CheckoutsController < ApplicationController
     end
 
     @renew_due_date = @checkout.set_renew_due_date(@user)
+    render :template => 'opac/checkouts/edit', :layout => 'opac' if params[:opac]
   end
 
   # PUT /checkouts/1

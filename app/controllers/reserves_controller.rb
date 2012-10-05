@@ -251,6 +251,7 @@ class ReservesController < ApplicationController
           logger.error "Faild to send the reservation message: #{e}"
         end
         flash[:notice] = t('controller.successfully_created', :model => t('activerecord.models.reserve'))
+        format.html { redirect_to user_reserve_url(@reserve.user, @reserve, :opac => true) } if params[:opac]
         #format.html { redirect_to reserve_url(@reserve) }
         format.html { redirect_to user_reserve_url(@reserve.user, @reserve) }
         format.json { render :json => @reserve, :status => :created, :location => user_reserve_url(@reserve.user, @reserve) }
