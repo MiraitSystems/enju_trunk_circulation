@@ -63,6 +63,7 @@ class CheckoutsController < ApplicationController
     @checkouts = checkouts.page(params[:page])
 
     respond_to do |format|
+      format.html {render :template => 'opac/checkouts/index' , :layout => 'opac' }if params[:opac]
       format.html # index.html.erb
       format.json { render :json => @checkouts }
       format.rss  { render :layout => false }

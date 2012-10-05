@@ -197,6 +197,7 @@ class ReservesController < ApplicationController
           redirect_to @manifestation
           return
         end
+        render :template => 'opac/reserves/new', :layout => 'opac' if params[:opac]
       end
     end
   end
