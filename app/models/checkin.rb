@@ -1,4 +1,6 @@
 class Checkin < ActiveRecord::Base
+  attr_accessible :item_identifier, :librarian_id
+
   default_scope :order => 'id DESC'
   scope :on, lambda {|date| {:conditions => ['created_at >= ? AND created_at < ?', date.beginning_of_day, date.tomorrow.beginning_of_day]}}
 

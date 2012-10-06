@@ -1,8 +1,9 @@
 class CheckinsController < ApplicationController
   include NotificationSound
 
+  load_and_authorize_resource :except => :create
+
   before_filter :check_client_ip_address
-  load_and_authorize_resource
   before_filter :get_user
   helper_method :get_basket
   cache_sweeper :page_sweeper, :only => [:create, :update, :destroy]
@@ -69,8 +70,7 @@ class CheckinsController < ApplicationController
       @basket.save(:validate => false)
     end
     @checkin = @basket.checkins.new(params[:checkin])
-
-#    debugger
+    authorize! :create, @checkin
 
     messages = []
     flash[:message] = ''
