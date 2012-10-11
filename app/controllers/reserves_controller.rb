@@ -19,7 +19,8 @@ class ReservesController < ApplicationController
     else
       if @user
         if current_user == @user
-          redirect_to user_reserves_path(current_user); return
+           @reserve_user = current_user
+#          redirect_to user_reserves_path(current_user);return
         else
           access_denied; return
         end
