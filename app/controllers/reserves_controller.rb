@@ -37,7 +37,11 @@ class ReservesController < ApplicationController
       # disp1. user reserves
       if @user
         if current_user.has_role?('Librarian')
-          @reserves = @user.reserves.show_reserves.order('reserves.expired_at ASC').page(page)
+          if params[:opac]
+            @reserves = @user.reserves.user_show_reserves.order('reserves.expired_at ASC').page(page)
+          else
+            @reserves = @user.reserves.show_reserves.order('reserves.expired_at ASC').page(page)
+          end
         else
           @reserves = @user.reserves.user_show_reserves.order('reserves.expired_at ASC').page(page)
         end
@@ -114,6 +118,7 @@ class ReservesController < ApplicationController
     end
 
     respond_to do |format|
+      format.html { render :template => 'opac/reserves/index', :layout => 'opac' }if params[:opac]
       format.html # index.html.erb
       format.json { render :json => @reserves }
       format.rss  { render :layout => false }
@@ -149,6 +154,7 @@ class ReservesController < ApplicationController
     @reserved_count = Reserve.waiting.where(:manifestation_id => @reserve.manifestation_id, :checked_out_at => nil).count
 
     respond_to do |format|
+      format.html { render :template => 'opac/reserves/show', :layout => 'opac'} if params[:opac]
       format.html # show.html.erb
       format.json { render :json => @reserve }
     end
@@ -196,6 +202,7 @@ class ReservesController < ApplicationController
           redirect_to @manifestation
           return
         end
+        render :template => 'opac/reserves/new', :layout => 'opac' if params[:opac]
       end
     end
   end
@@ -210,10 +217,10 @@ class ReservesController < ApplicationController
     if @reserve.retained
       access_denied; return
     end
-
     user = @user if @user
     @libraries = Library.real
     @informations = Reserve.informations(@reserve.user)
+    render :template => 'opac/reserves/edit', :layout => 'opac' if params[:opac]
   end
 
   # POST /reserves
@@ -249,12 +256,17 @@ class ReservesController < ApplicationController
           logger.error "Faild to send the reservation message: #{e}"
         end
         flash[:notice] = t('controller.successfully_created', :model => t('activerecord.models.reserve'))
+        format.html { redirect_to user_reserve_url(@reserve.user, @reserve, :opac => true) } if params[:opac]
         #format.html { redirect_to reserve_url(@reserve) }
         format.html { redirect_to user_reserve_url(@reserve.user, @reserve) }
         format.json { render :json => @reserve, :status => :created, :location => user_reserve_url(@reserve.user, @reserve) }
       else
         @libraries = Library.real.order('position')
         @informations = Reserve.informations(user)
+        if params[:opac]
+          @manifestation = @reserve.manifestation
+          format.html { render :action => "new", :template => 'opac/reserves/new', :layout => 'opac' }
+        end
         format.html { render :action => "new" }
         format.json { render :json => @reserve.errors, :status => :unprocessable_entity }
       end
@@ -306,10 +318,12 @@ class ReservesController < ApplicationController
           rescue Exception => e
             logger.error "Faild to send a notification message (reservation was canceled): #{e}" 
           end
+          format.html { redirect_to user_reserves_path(user, :opac => true)} if params[:opac]
           format.html { redirect_to user_reserves_path(user)}
           format.json { head :no_content }
         else
           flash[:notice] = t('controller.successfully_updated', :model => t('activerecord.models.reserve'))
+          format.html { redirect_to user_reserve_url(@reserve.user, @reserve, :opac => true) } if params[:opac]
           format.html { redirect_to user_reserve_url(@reserve.user, @reserve) }
           format.json { head :no_content }
         end
@@ -317,6 +331,7 @@ class ReservesController < ApplicationController
         @reserve.errors[:base] << t('reserve.expired_at_of_this_user_is_over') unless @reserve.available_for_update?
         @libraries = Library.real.order('position')
         @informations = Reserve.informations(user)
+        format.html { render :action => "edit", :template => 'opac/reserves/edit', :layout => 'opac' } if params[:opac]
         format.html { render :action => "edit" }
         format.json { render :json => @reserve.errors, :status => :unprocessable_entity }
       end
