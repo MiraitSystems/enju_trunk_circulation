@@ -63,6 +63,7 @@ class CheckoutsController < ApplicationController
     @checkouts = checkouts.page(params[:page])
 
     respond_to do |format|
+      format.html {render :template => 'opac/checkouts/index' , :layout => 'opac' } if params[:opac]
       format.html # index.html.erb
       format.json { render :json => @checkouts }
       format.rss  { render :layout => false }
@@ -94,6 +95,7 @@ class CheckoutsController < ApplicationController
     end
 
     respond_to do |format|
+      format.html { render :template => 'opac/checkouts/show', :layout => 'opac' } if params[:opac]
       format.html # show.html.erb
       format.json { render :json => @checkout }
     end
@@ -112,6 +114,7 @@ class CheckoutsController < ApplicationController
     end
 
     @renew_due_date = @checkout.set_renew_due_date(@user)
+    render :template => 'opac/checkouts/edit', :layout => 'opac' if params[:opac]
   end
 
   # PUT /checkouts/1
@@ -143,9 +146,11 @@ class CheckoutsController < ApplicationController
     respond_to do |format|
       if @checkout.update_attributes(params[:checkout])
         flash[:notice] = t('controller.successfully_updated', :model => t('activerecord.models.checkout'))
+        format.html { redirect_to user_checkout_url(@checkout.user, @checkout, :opac => true) } if params[:opac]
         format.html { redirect_to user_checkout_url(@checkout.user, @checkout) }
         format.json { head :no_content }
       else
+        format.html { render :action => "edit", :template => "opac/checkouts/edit", :layout => 'opac' } if params[:opac]
         format.html { render :action => "edit" }
         format.json { render :json => @checkout.errors, :status => :unprocessable_entity }
       end
