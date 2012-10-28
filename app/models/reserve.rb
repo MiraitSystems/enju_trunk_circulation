@@ -6,7 +6,7 @@ class Reserve < ActiveRecord::Base
   attr_accessible :manifestation_id, :item_identifier, :user_number,
     :expired_at, :request_status_type, :canceled_at, :checked_out_at,
     :expiration_notice_to_patron, :expiration_notice_to_library,
-    :information_type_id, :receipt_library_id,
+    :information_type_id, :receipt_library_id, :position, 
     :as => :admin
 
   self.extend ApplicationHelper
