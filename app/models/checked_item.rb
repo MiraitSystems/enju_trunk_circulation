@@ -14,15 +14,15 @@ class CheckedItem < ActiveRecord::Base
 
   def available_for_checkout?
     unless self.item
-      logger.error "item not found"
+      logger.error "item not found (CheckedItem:1)"
       errors[:base] << 'checked_item.item_not_found'; return false
     end
     unless self.item.available_for_checkout?
-      logger.error "not available"
+      logger.error "not available (CheckedItem:2)"
       errors[:base] << 'checked_item.not_available_for_checkout'; return false
     end
     unless self.item_checkout_type
-      logger.error "group cannot checkout"
+      logger.error "group cannot checkout (CheckedItem:3)"
       errors[:base] << 'checked_item.this_group_cannot_checkout'; return false
     end
     # if self.item.rent?

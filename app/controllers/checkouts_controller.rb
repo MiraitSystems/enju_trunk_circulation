@@ -1,13 +1,14 @@
 class CheckoutsController < ApplicationController
   before_filter :store_location, :only => :index
   before_filter :get_user, :only => :index
-  before_filter :get_user_if_nil, :except => :index
+  before_filter :get_user_if_nil, :except => [:index, :batchexec]
+  #before_filter :check_admin_network, :only => :batchexec
   helper_method :get_item
   after_filter :convert_charset, :only => :index
+  before_filter :authenticate_user!, :except => [:batchexec]
 
   # GET /checkouts
   # GET /checkouts.json
-
   def index
     if params[:icalendar_token].present?
       icalendar_user = User.where(:checkout_icalendar_token => params[:icalendar_token]).first
@@ -166,5 +167,59 @@ class CheckoutsController < ApplicationController
       format.html { redirect_to user_checkouts_url(@checkout.user) }
       format.json { head :no_content }
     end
+  end
+
+  # PUT /batch_checkout
+  def batchexec
+    logger.info "batchexec start"
+    #Parameters: {"id"=>"3", "user_number"=>"nakamura", "item_identifier"=>"JX009", "created_at"=>"20121026144222"}
+    if params[:id].blank? || params[:user_number].blank? || params[:item_identifier].blank? || params[:created_at].blank?
+      logger.error "invalid parameter error."
+      access_denied; return
+    end
+
+    @status = batchexec_checkout(params)
+
+    logger.info "batchexec status=#{@status['code']}"
+    render :text => @status.values.join("\t"), :status => 200
+  end
+
+private
+  def batchexec_checkout(params)
+    status = {}
+
+    checked_item = {"item_identifier"=>params[:item_identifier], "ignore_restriction"=>"1"}
+    logger.debug "basket create."
+    basket = Basket.new
+    basket.user_number = params[:user_number]
+
+    logger.debug "user check."
+    user = User.where(:user_number => basket.user_number.strip).first rescue nil
+    basket.user = user
+    basket.save
+
+    logger.debug "checked item create"
+    checked_item = CheckedItem.new(checked_item)
+    checked_item.basket = basket
+
+    item_identifier = checked_item.item_identifier.to_s.strip
+
+    logger.debug "check item_identifier #{item_identifier}"
+    item = Item.where(:item_identifier => item_identifier).first 
+    unless item
+      logger.error "item no record"
+    end
+    checked_item.item = item if item
+
+    logger.debug "checked item save start"
+    if checked_item.save
+      logger.info "success checkout"
+      status = {'code' => 0}
+    else
+      logger.info "unsuccess checkout"
+      status = {'code' => 100}
+    end
+   
+    return status
   end
 end
