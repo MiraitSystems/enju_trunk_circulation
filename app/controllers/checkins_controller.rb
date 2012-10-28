@@ -1,10 +1,11 @@
 class CheckinsController < ApplicationController
   include NotificationSound
 
-  load_and_authorize_resource :except => :create
+  load_and_authorize_resource :except => [:create, :batchexec]
 
-  before_filter :check_client_ip_address
-  before_filter :get_user
+  before_filter :check_client_ip_address, :except => [:batchexec]
+  before_filter :get_user, :except => [:batchexec]
+  #before_filter :check_admin_network, :only => :batchexec
   helper_method :get_basket
   cache_sweeper :page_sweeper, :only => [:create, :update, :destroy]
 
@@ -168,5 +169,52 @@ class CheckinsController < ApplicationController
       format.html { redirect_to checkins_url }
       format.json { head :no_content }
     end
+  end
+
+  # PUT /batch_checkin
+  def batchexec
+    logger.info "batchexec start"
+    #Parameters: {"id"=>"3", "item_identifier"=>"JX009", "created_at"=>"20121026144222"}
+    if params[:id].blank? || params[:item_identifier].blank? || params[:created_at].blank?
+      logger.error "invalid parameter error."
+      access_denied; return
+    end
+
+    @status = batchexec_checkin(params)
+
+    logger.info "batchexec status=#{@status['code']}"
+    render :text => @status.values.join("\t"), :status => 200
+  end
+
+private
+  def batchexec_checkin(params)
+    admin_user = User.find(1)
+    params_checkin = {"item_identifier" => params[:item_identifier], "librarian_id" => admin_user.id}
+
+    basket = Basket.new(:user => admin_user)
+    basket.save(:validate => false)
+    checkin = basket.checkins.new(params_checkin)
+
+    item = Item.where(:item_identifier => checkin.item_identifier.to_s.strip).first 
+    unless item.blank?
+      checkouts = Checkout.where(:item_id => item.id, :checkin_id => nil).order('created_at DESC')
+      checked = false
+      overdue = false
+      checkouts.each do |checkout|
+        checked = true if checkout.item.item_identifier == item.item_identifier
+        overdue = true if checkout.item.item_identifier == item.item_identifier and checkout.overdue?
+      end
+    end
+
+    checkin.item = item
+    if checkin.save(:validate => false)
+      logger.info "success checkn"
+      status = {'code' => 0}
+    else
+      logger.info "unsuccess checkin"
+      status = {'code' => 100}
+    end
+
+    return status
   end
 end
