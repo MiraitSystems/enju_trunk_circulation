@@ -2,7 +2,6 @@ class CheckoutsController < ApplicationController
   before_filter :store_location, :only => :index
   before_filter :get_user, :only => :index
   before_filter :get_user_if_nil, :except => [:index, :batchexec]
-  #before_filter :check_admin_network, :only => :batchexec
   helper_method :get_item
   after_filter :convert_charset, :only => :index
   before_filter :authenticate_user!, :except => [:batchexec]
@@ -172,16 +171,24 @@ class CheckoutsController < ApplicationController
   # PUT /batch_checkout
   def batchexec
     logger.info "batchexec start"
+    status = nil
+    unless admin_networks?
+      logger.error "invalid access network"
+      status = {'code' => 900, 'note' => 'invalid access network'}
+    end
+
     #Parameters: {"id"=>"3", "user_number"=>"nakamura", "item_identifier"=>"JX009", "created_at"=>"20121026144222"}
     if params[:id].blank? || params[:user_number].blank? || params[:item_identifier].blank? || params[:created_at].blank?
       logger.error "invalid parameter error."
-      access_denied; return
+      status = {'code' => 800, 'note' => 'invalid parameter error'}
     end
 
-    @status = batchexec_checkout(params)
+    unless status
+      status = batchexec_checkout(params)
+    end
 
-    logger.info "batchexec status=#{@status['code']}"
-    render :text => @status.values.join("\t"), :status => 200
+    logger.info "batchexec status=#{status['code']}"
+    render :text => status.values.join("\t"), :status => 200
   end
 
 private
@@ -195,6 +202,11 @@ private
 
     logger.debug "user check."
     user = User.where(:user_number => basket.user_number.strip).first rescue nil
+    unless user
+      logger.debug "invalid user"
+      status = {'code' => 200, 'note' => 'invalid user_number'}
+      return status
+    end
     basket.user = user
     basket.save
 
@@ -208,6 +220,8 @@ private
     item = Item.where(:item_identifier => item_identifier).first 
     unless item
       logger.error "item no record"
+      status = {'code' => 300, 'note' => 'invalid item_identifier'}
+      return status
     end
     checked_item.item = item if item
 
@@ -216,8 +230,12 @@ private
       logger.info "success checkout"
       status = {'code' => 0}
     else
+      rmsg = ""
       logger.info "unsuccess checkout"
-      status = {'code' => 100}
+      checked_item.errors do |attr, msg|
+        rmsg = msg 
+      end
+      status = {'code' => 100, 'msg' => rmsg}
     end
    
     return status
