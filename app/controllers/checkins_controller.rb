@@ -173,21 +173,30 @@ class CheckinsController < ApplicationController
 
   # PUT /batch_checkin
   def batchexec
-    logger.info "batchexec start"
+    logger.info "batchexec(checkin) start"
+    status = nil
+    unless admin_networks?
+      logger.error "invalid access network"
+      status = {'code' => 900, 'note' => 'invalid access network'}
+    end
     #Parameters: {"id"=>"3", "item_identifier"=>"JX009", "created_at"=>"20121026144222"}
     if params[:id].blank? || params[:item_identifier].blank? || params[:created_at].blank?
       logger.error "invalid parameter error."
-      access_denied; return
+      status = {'code' => 800, 'note' => 'invalid parameter error'}
     end
 
-    @status = batchexec_checkin(params)
+    unless status
+      status = batchexec_checkin(params)
+    end
 
-    logger.info "batchexec status=#{@status['code']}"
-    render :text => @status.values.join("\t"), :status => 200
+    logger.info "batchexec status=#{status['code']}"
+    render :text => status.values.join("\t"), :status => 200
   end
 
 private
   def batchexec_checkin(params)
+    status = {}
+
     admin_user = User.find(1)
     params_checkin = {"item_identifier" => params[:item_identifier], "librarian_id" => admin_user.id}
 
@@ -196,14 +205,18 @@ private
     checkin = basket.checkins.new(params_checkin)
 
     item = Item.where(:item_identifier => checkin.item_identifier.to_s.strip).first 
-    unless item.blank?
-      checkouts = Checkout.where(:item_id => item.id, :checkin_id => nil).order('created_at DESC')
-      checked = false
-      overdue = false
-      checkouts.each do |checkout|
-        checked = true if checkout.item.item_identifier == item.item_identifier
-        overdue = true if checkout.item.item_identifier == item.item_identifier and checkout.overdue?
-      end
+    unless item
+      logger.error "item no record"
+      status = {'code' => 300, 'note' => 'invalid item_identifier'}
+      return status
+    end
+
+    checkouts = Checkout.where(:item_id => item.id, :checkin_id => nil).order('created_at DESC')
+    checked = false
+    overdue = false
+    checkouts.each do |checkout|
+      checked = true if checkout.item.item_identifier == item.item_identifier
+      overdue = true if checkout.item.item_identifier == item.item_identifier and checkout.overdue?
     end
 
     checkin.item = item
@@ -211,8 +224,12 @@ private
       logger.info "success checkn"
       status = {'code' => 0}
     else
+      rmsg = ""
       logger.info "unsuccess checkin"
-      status = {'code' => 100}
+      checked_item.errors do |attr, msg|
+        rmsg = msg 
+      end
+      status = {'code' => 100, 'msg' => rmsg}
     end
 
     return status
