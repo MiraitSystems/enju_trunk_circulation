@@ -1,0 +1,129 @@
+ja:
+  activerecord:
+    models:
+      basket: 貸出セッション
+      checked_item: 貸出資料
+      checkin: 返却
+      checkout: 貸出
+#      checkout_family: 家族の貸出
+      reserve: 予約
+#      retained_manifestation: 取置済み(未連絡)資料
+#      reserve_family: 家族の予約
+#      lending_policy: 貸出規則
+
+    attributes:
+      checked_item:
+        due_date: 期日
+        user_comment: 利用者の注記
+        edit_user_comment: 利用者の注記を編集する
+        update_note: 注記の更新
+      checkin:
+      checkout:
+        due_date: 期日
+        family_info: 家族情報
+        lock_version: ロックバージョン
+        renewal_count: 貸出の更新回数
+        output_checkoutlist: 貸出票の出力
+        over: 以上
+      reserve:
+        user: 利用者
+        checked_out_at: 貸出時刻
+        canceled_at: 取消時刻
+        expired_at: 有効期限（この日以降は不要）
+        expired_at2: 有効期限
+        within_expired_at: 期限内
+        over_expired_at: 期限切れ
+        deleted_at: 削除時刻
+        created_at: 予約日時
+        state: 状態
+        contact: 連絡先
+        zipcode: 〒
+        information_type: 連絡方法
+        receipt_library: 受取館
+        unnecessary: 連絡不要
+        email: メール
+        telephone: 電話
+        reserve_list: 予約確認票
+        position: 順位
+        done: 連絡完了
+        failed_update: 更新に失敗しました。
+
+  basket:
+    my_status: "現在の利用状況"
+    books: "冊"
+    number_of_checkout : "貸出冊数"
+    number_of_reserve: "予約冊数"
+    this_account_is_suspended: "このアカウントは停止されています。"
+    checkout_completed: "貸出が完了しました。"
+  checkout:
+    user_checkout: "%{login_name} さんの貸出資料"
+    library_group_checkout: "%{library_group_name} での貸出"
+    renewal: "貸出の更新"
+    renewal_count: "更新回数"
+    new_due_date: "新しい貸出期限日"
+    editing_due_date: "貸出期限日の編集"
+    this_item_cant_be_renewed: "この資料は更新できません。"
+    listing_overdue_item: "貸出期限切れの資料の一覧"
+    current_user: "現在の貸出利用者"
+    this_item_is_reserved: "この資料は予約されています。"
+    you_have_overdue_item: "貸出期限を過ぎている資料があります。"
+    excessed_renewal_limit: "貸出更新回数の上限を超えています。"
+    all_checkout: "全ての貸出"
+    my_checkout: "自分の貸出"
+    no_checkout: "貸出中の資料はありません。"
+    number_of_day_overdue: "延滞日数"
+    extend: "貸出期間の延長"
+  reserve:
+    user_reserve: "%{login_name} さんの予約資料"
+    library_group_reserve: "%{library_group_name} での予約資料"
+    my_reservation: "自分の予約"
+    all_reservation: "全ての予約"
+    this_manifestation_is_already_reserved: "この資料はすでに予約されています。"
+    excessed_reservation_limit: "予約できる資料数の上限を超えています。"
+    this_patron_cannot_reserve: "この利用者はこの資料を予約できません。"
+    reservation_was_canceled: "予約は取り消されました。"
+    this_item_is_not_reserved: "この資料は予約されていません。"
+    this_user_is_locked: "この利用者は利用禁止中です。"
+    expired_at_of_this_user_is_over: "予約の有効期限が利用者の有効期限を超えています。"
+    invalid_item: "無効な所蔵情報です。"
+    show: "予約の詳細"
+    invalid_date: "は無効な日付です。"
+    pending: "受付待ち"
+    requested: "受付済み"
+    in_process: "作業中"
+    retained: "取置済み"
+    called: "連絡済み"
+    canceled: "取消済み"
+    expired: "期限切れ"
+    completed: "貸出済み"
+    completed_reserve: "取り置き済みの予約"
+    in_process_reserve: "作業中の予約"
+    update: "予約の更新"
+  checked_item:
+    not_available_for_checkout: "この資料の貸出はできません。(状態不正)"
+    new_serial: "この資料の貸出はできません。(雑誌の最新号)"
+    not_for_loan: "この資料の貸出はできません。"
+    this_group_cannot_checkout: "この利用者種別でのこの資料の貸出はできません。"
+    item_not_found: "資料が見つかりません。"
+    already_checked_out: "この資料はすでに貸し出されています。"
+    reserved_item_included: "予約されている資料が含まれています！"
+    excessed_checkout_limit: "貸出数の上限を超えています。"
+    in_transcation: "貸出処理中です。"
+    previous_checkout: "現在貸出中の資料"
+    previous_checkout_family: "現在家族に貸出中の資料"
+    previous_reserve: "現在予約中の資料"
+    previous_reserve_family: "現在家族が予約中の資料"
+    checkout: "上記の資料を貸し出す"
+    ignore_restriction: "制限を無視する"
+    library_closed_today: "この資料の図書館は本日休館日です。"
+  checkin:
+    item_not_found: "資料が見つかりません。"
+    enter_item_identifier: "所蔵情報番号を入力してください。"
+    other_library_item: "この資料は他の図書館のものです！"
+    other_library: "この資料は%{model}のものです。"
+    already_checked_in: "この資料はすでに返却されています。"
+    not_checkin: "この資料は貸出されていません。"
+    checkin: "返却（取り消しはできません）"
+    successfully_checked_in: "この資料は正常に返却されました。"
+    not_available_for_checkin: "この資料の返却はできません。(状態不正)"
+    overdue_item: "この資料は貸出期限が過ぎています。"
