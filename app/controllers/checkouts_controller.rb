@@ -1,13 +1,13 @@
 class CheckoutsController < ApplicationController
   before_filter :store_location, :only => :index
   before_filter :get_user, :only => :index
-  before_filter :get_user_if_nil, :except => :index
+  before_filter :get_user_if_nil, :except => [:index, :batchexec]
   helper_method :get_item
   after_filter :convert_charset, :only => :index
+  before_filter :authenticate_user!, :except => [:batchexec]
 
   # GET /checkouts
   # GET /checkouts.json
-
   def index
     if params[:icalendar_token].present?
       icalendar_user = User.where(:checkout_icalendar_token => params[:icalendar_token]).first
@@ -63,6 +63,7 @@ class CheckoutsController < ApplicationController
     @checkouts = checkouts.page(params[:page])
 
     respond_to do |format|
+      format.html {render :template => 'opac/checkouts/index' , :layout => 'opac' } if params[:opac]
       format.html # index.html.erb
       format.json { render :json => @checkouts }
       format.rss  { render :layout => false }
@@ -94,6 +95,7 @@ class CheckoutsController < ApplicationController
     end
 
     respond_to do |format|
+      format.html { render :template => 'opac/checkouts/show', :layout => 'opac' } if params[:opac]
       format.html # show.html.erb
       format.json { render :json => @checkout }
     end
@@ -112,6 +114,7 @@ class CheckoutsController < ApplicationController
     end
 
     @renew_due_date = @checkout.set_renew_due_date(@user)
+    render :template => 'opac/checkouts/edit', :layout => 'opac' if params[:opac]
   end
 
   # PUT /checkouts/1
@@ -143,9 +146,11 @@ class CheckoutsController < ApplicationController
     respond_to do |format|
       if @checkout.update_attributes(params[:checkout])
         flash[:notice] = t('controller.successfully_updated', :model => t('activerecord.models.checkout'))
+        format.html { redirect_to user_checkout_url(@checkout.user, @checkout, :opac => true) } if params[:opac]
         format.html { redirect_to user_checkout_url(@checkout.user, @checkout) }
         format.json { head :no_content }
       else
+        format.html { render :action => "edit", :template => "opac/checkouts/edit", :layout => 'opac' } if params[:opac]
         format.html { render :action => "edit" }
         format.json { render :json => @checkout.errors, :status => :unprocessable_entity }
       end
@@ -166,4 +171,76 @@ class CheckoutsController < ApplicationController
   def extend
   end
 
+  # PUT /batch_checkout
+  def batchexec
+    logger.info "batchexec start"
+    status = nil
+    unless admin_networks?
+      logger.error "invalid access network"
+      status = {'code' => 900, 'note' => 'invalid access network'}
+    end
+
+    #Parameters: {"id"=>"3", "user_number"=>"nakamura", "item_identifier"=>"JX009", "created_at"=>"20121026144222"}
+    if params[:id].blank? || params[:user_number].blank? || params[:item_identifier].blank? || params[:created_at].blank?
+      logger.error "invalid parameter error."
+      status = {'code' => 800, 'note' => 'invalid parameter error'}
+    end
+
+    unless status
+      status = batchexec_checkout(params)
+    end
+
+    logger.info "batchexec status=#{status['code']}"
+    render :text => status.values.join("\t"), :status => 200
+  end
+
+private
+  def batchexec_checkout(params)
+    status = {}
+
+    checked_item = {"item_identifier"=>params[:item_identifier], "ignore_restriction"=>"1"}
+    logger.debug "basket create."
+    basket = Basket.new
+    basket.user_number = params[:user_number]
+
+    logger.debug "user check."
+    user = User.where(:user_number => basket.user_number.strip).first rescue nil
+    unless user
+      logger.debug "invalid user"
+      status = {'code' => 200, 'note' => 'invalid user_number'}
+      return status
+    end
+    basket.user = user
+    basket.save
+
+    logger.debug "checked item create"
+    checked_item = CheckedItem.new(checked_item)
+    checked_item.basket = basket
+
+    item_identifier = checked_item.item_identifier.to_s.strip
+
+    logger.debug "check item_identifier #{item_identifier}"
+    item = Item.where(:item_identifier => item_identifier).first 
+    unless item
+      logger.error "item no record"
+      status = {'code' => 300, 'note' => 'invalid item_identifier'}
+      return status
+    end
+    checked_item.item = item if item
+
+    logger.debug "checked item save start"
+    if checked_item.save
+      logger.info "success checkout"
+      status = {'code' => 0}
+    else
+      rmsg = ""
+      logger.info "unsuccess checkout"
+      checked_item.errors do |attr, msg|
+        rmsg = msg 
+      end
+      status = {'code' => 100, 'msg' => rmsg}
+    end
+   
+    return status
+  end
 end
