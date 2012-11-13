@@ -23,6 +23,9 @@ class Checkout < ActiveRecord::Base
   validate :is_not_checked?, :on => :create
   validates_date :due_date
 
+  attr_accessor :item_identifier
+  attr_accessible :user_id, :checkout_renewal_count
+
   paginates_per 10
 
   def day_of_overdue

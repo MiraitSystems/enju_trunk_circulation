@@ -1,7 +1,7 @@
 class CheckoutsController < ApplicationController
   before_filter :store_location, :only => :index
   before_filter :get_user, :only => :index
-  before_filter :get_user_if_nil, :except => [:index, :batchexec]
+  before_filter :get_user_if_nil, :except => [:index, :batchexec, :extend, :extend_checkout] # TODO
   helper_method :get_item
   after_filter :convert_charset, :only => :index
   before_filter :authenticate_user!, :except => [:batchexec]
@@ -121,38 +121,21 @@ class CheckoutsController < ApplicationController
   # PUT /checkouts/1.json
   def update
     @checkout = Checkout.find(params[:id])
-    if @checkout.reserved?
-      flash[:notice] = t('checkout.this_item_is_reserved')
-      redirect_to edit_user_checkout_url(@checkout.user, @checkout)
-      return
-    end
-    if @checkout.over_checkout_renewal_limit?
-      flash[:notice] = t('checkout.excessed_renewal_limit')
-      unless current_user.has_role?('Librarian')
-        redirect_to edit_user_checkout_url(@checkout.user, @checkout)
-        return
-      end
-    end
-    if @checkout.overdue?
-      flash[:notice] = t('checkout.you_have_overdue_item')
-      unless current_user.has_role?('Librarian')
-        redirect_to edit_user_checkout_url(@checkout.user, @checkout)
-        return
-      end
-    end
-    @checkout.reload
-    @checkout.checkout_renewal_count += 1
+    if check_renewal(@checkout)
+      @checkout.reload
+      @checkout.checkout_renewal_count += 1
 
-    respond_to do |format|
-      if @checkout.update_attributes(params[:checkout])
-        flash[:notice] = t('controller.successfully_updated', :model => t('activerecord.models.checkout'))
-        format.html { redirect_to user_checkout_url(@checkout.user, @checkout, :opac => true) } if params[:opac]
-        format.html { redirect_to user_checkout_url(@checkout.user, @checkout) }
-        format.json { head :no_content }
-      else
-        format.html { render :action => "edit", :template => "opac/checkouts/edit", :layout => 'opac' } if params[:opac]
-        format.html { render :action => "edit" }
-        format.json { render :json => @checkout.errors, :status => :unprocessable_entity }
+      respond_to do |format|
+        if @checkout.update_attributes(params[:checkout])
+          flash[:notice] = t('controller.successfully_updated', :model => t('activerecord.models.checkout'))
+          format.html { redirect_to user_checkout_url(@checkout.user, @checkout, :opac => true) } if params[:opac]
+          format.html { redirect_to user_checkout_url(@checkout.user, @checkout) }
+          format.json { head :no_content }
+        else
+          format.html { render :action => "edit", :template => "opac/checkouts/edit", :layout => 'opac' } if params[:opac]
+          format.html { render :action => "edit" }
+          format.json { render :json => @checkout.errors, :status => :unprocessable_entity }
+        end
       end
     end
   end
@@ -168,7 +151,34 @@ class CheckoutsController < ApplicationController
     end
   end
 
+
+  # for extend checkout term
   def extend
+    @checkout = Checkout.new
+  end
+
+  def extend_checkout
+    item = Item.find(:first, :conditions => {:item_identifier => params[:checkout][:item_identifier]})
+    @checkout = Checkout.not_returned.where(:item_id => item.id).first
+    if current_user.blank?
+      access_denied; return
+    end
+    unless current_user.has_role?('Librarian')
+      unless current_user == @checkout.user
+        access_denied; return
+      end
+    end
+  
+    if check_renewal(@checkout)
+      @renew_due_date = @checkout.set_renew_due_date(@checkout.user)
+      @checkout.checkout_renewal_count += 1
+      @checkout.update_attributes(:due_date => @renew_due_date)
+      @renewed = true
+
+      render :edit
+    end
+    rescue Exception => e
+      logger.error e
   end
 
   # PUT /batch_checkout
@@ -242,5 +252,28 @@ private
     end
    
     return status
+  end
+
+  def check_renewal(checkout)
+    if checkout.reserved?
+      flash[:notice] = t('checkout.this_item_is_reserved')
+      redirect_to edit_user_checkout_url(@checkout.user, @checkout)
+      return false
+    end
+    if checkout.over_checkout_renewal_limit?
+      flash[:notice] = t('checkout.excessed_renewal_limit')
+      unless current_user.has_role?('Librarian')
+        redirect_to edit_user_checkout_url(@checkout.user, @checkout)
+        return false
+      end
+    end
+    if checkout.overdue?
+      flash[:notice] = t('checkout.you_have_overdue_item')
+      unless current_user.has_role?('Librarian')
+        redirect_to edit_user_checkout_url(@checkout.user, @checkout)
+        return false
+      end
+    end
+    return true
   end
 end

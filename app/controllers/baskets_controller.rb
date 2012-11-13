@@ -1,6 +1,7 @@
 class BasketsController < ApplicationController
   include NotificationSound
   before_filter :check_client_ip_address
+  before_filter :extend_checkout, :only => [:create]
   load_and_authorize_resource
   helper_method :get_user_if_nil
   cache_sweeper :basket_sweeper, :only => [:create, :update, :destroy]
@@ -116,5 +117,11 @@ class BasketsController < ApplicationController
       format.html { redirect_to user_checkouts_url(@basket.user) }
       format.json { head :no_content }
     end
+  end
+
+private
+  def extend_checkout
+    param = params[:basket][:user_number] rescue nil
+    redirect_to extend_checkouts_path if param == "extend"
   end
 end

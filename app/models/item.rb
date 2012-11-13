@@ -6,9 +6,8 @@ class Item < ActiveRecord::Base
 
   def reserved?
     return true unless Reserve.waiting.where(:item_id => self.id).blank?
+    return true if self.next_reservation
     false
-#    return true if self.next_reservation
-#    false
   end
 
   def reserve
