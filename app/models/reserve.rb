@@ -619,7 +619,7 @@ class Reserve < ActiveRecord::Base
     else
       reserves = Reserve.user_show_reserves.where(:user_id => user.id).order('expired_at Desc')
     end
-    report = ThinReports::Report.new :layout => File.join(Rails.root, 'report', 'reservelist_user.tlf')
+    report = ThinReports::Report.new :layout => File.join(Rails.root, 'report', 'reservelist_user_reseat.tlf')
     report.layout.config.list(:list) do
       events.on :footer_insert do |e|
         e.section.item(:total).value(reserves.length)
