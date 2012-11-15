@@ -39,7 +39,7 @@
             <%- end -%>
           </td>
           <td><%= checked_item.item.note -%></td>
-          <td><%= c.text_field :due_date, :value => checked_item.due_date.strftime("%Y-%m-%d") -%></td>
+          <td><%= c.text_field :due_date, :size => 10, :value => checked_item.due_date.strftime("%Y-%m-%d") -%></td>
           <td><%= link_to t('page.destroy'), user_basket_checked_item_path(checked_item.basket.user, checked_item.basket, checked_item), :confirm => t('page.are_you_sure'), :method => :delete -%></td>
         </tr>
       <%- end -%>
