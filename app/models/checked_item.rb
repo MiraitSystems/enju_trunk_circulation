@@ -11,6 +11,7 @@ class CheckedItem < ActiveRecord::Base
   normalize_attributes :item_identifier
 
   attr_accessor :item_identifier, :ignore_restriction
+  attr_accessible :due_date
 
   def available_for_checkout?
     unless self.item
@@ -18,7 +19,7 @@ class CheckedItem < ActiveRecord::Base
       errors[:base] << 'checked_item.item_not_found'; return false
     end
     unless self.item.available_for_checkout?
-      logger.error "not available (CheckedItem:2)"
+      logger.error "item not available (CheckedItem:2)"
       errors[:base] << 'checked_item.not_available_for_checkout'; return false
     end
     unless self.item_checkout_type
@@ -47,7 +48,7 @@ class CheckedItem < ActiveRecord::Base
     end
     errors[:base] << 'checked_item.checked_item.not_available_for_checkout' if self.item.not_for_loan?
     errors[:base] << 'checked_item.in_transcation' if self.in_transaction?
- 
+
     return false unless errors[:base]
   end
 

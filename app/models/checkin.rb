@@ -14,9 +14,9 @@ class Checkin < ActiveRecord::Base
   validates_presence_of :item_identifier, :on => :create
 
   attr_accessor :item_identifier
+  attr_accessible :item_id
 
   def item_checkin(current_user, escape_flag = false)
-    #message = ''
     message = []
     Checkin.transaction do
       checkouts = Checkout.not_returned.where(:item_id => self.item_id).select([:id, :item_id, :lock_version])

@@ -50,6 +50,7 @@ class Item < ActiveRecord::Base
 
   def available_for_checkout?
     circulation_statuses = CirculationStatus.available_for_checkout.select(:id)
+    circulation_statuses << CirculationStatus.where(:name => 'On Loan').first if SystemConfiguration.get('checkout.auto_checkin')
     return true if circulation_statuses.include?(self.circulation_status) && self.item_identifier
     false
   end
@@ -68,7 +69,7 @@ class Item < ActiveRecord::Base
 
   def checkout!(user, librarian = nil)
     circulation_status_on_loan = CirculationStatus.where(:name => 'On Loan').first
-    if self.circulation_status == circulation_status_on_loan
+    if self.circulation_status == circulation_status_on_loan && SystemConfiguration.get('checkout.auto_checkin')
       @basket = Basket.new(:user => librarian)
       @basket.save(:validate => false)
       @checkin = @basket.checkins.new(:item_id => self.id, :librarian_id => librarian.id)

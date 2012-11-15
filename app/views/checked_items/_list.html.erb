@@ -11,39 +11,41 @@
   <p>
     <%= t('activerecord.attributes.item.item_identifier') -%>: <%= f.text_field :item_identifier -%>
     <%= t('checked_item.ignore_restriction') -%>: <%= f.check_box :ignore_restriction -%>
-    <%= submit_tag t('page.read'), :disable_with => t('page.wait') -%>
+    <%= f.submit t('page.read'), :disable_with => t('page.wait') -%>
   </p>
 <%- end -%>
 <%= javascript_tag("$('#checked_item_item_identifier').focus()") -%>
-<table class="index">
-  <tr>
-    <%- if SystemConfiguration.get("checked_items.disp_title") -%>
-      <th class="checked_item_title"><%= t('page.title') -%></th>
-    <%- end -%>
-    <th><%= t('activerecord.attributes.item.item_identifier') -%></th>
-    <th><%= t('activerecord.attributes.item.note') -%></th>
-    <th><%= t('activerecord.attributes.checkout.due_date') -%></th>
-    <th></th>
-  </tr>
-
-<%- @basket.checked_items.each do |checked_item| -%>
-  <tr class="line<%= cycle("0", "1") -%>">
-    <%- if SystemConfiguration.get("checked_items.disp_title") -%>
-      <td><%= render 'manifestations/show_index', :manifestation => checked_item.item.manifestation -%></td>
-    <%- end -%>
-    <td><%= link_to checked_item.item.item_identifier, checked_item.item -%>
-      <%- if checked_item.item.include_supplements -%>
-        <br><%= t('activerecord.attributes.item.include_supplements') -%>
-      <%- end -%>
-    </td>
-    <td><%= checked_item.item.note -%></td>
-    <td><%= l(checked_item.due_date, :format => :only_date) -%></td>
-    <td><%= link_to t('page.destroy'), user_basket_checked_item_path(checked_item.basket.user, checked_item.basket, checked_item), :confirm => t('page.are_you_sure'), :method => :delete -%></td>
-  </tr>
-<%- end -%>
-</table>
-
 <%= form_for(:basket, :url => {:controller => 'baskets', :action => 'update', :id => @basket.id}, :html => { :method => :put }) do |f| -%>
+  <table class="index">
+    <tr>
+      <%- if SystemConfiguration.get("checked_items.disp_title") -%>
+        <th class="checked_item_title"><%= t('page.title') -%></th>
+      <%- end -%>
+      <th><%= t('activerecord.attributes.item.item_identifier') -%></th>
+      <th><%= t('activerecord.attributes.item.note') -%></th>
+      <th><%= t('activerecord.attributes.checkout.due_date') -%></th>
+      <th></th>
+    </tr>
+
+    <%- @basket.checked_items.each do |checked_item| -%>
+      <%= fields_for "checked_items[]", checked_item do |c| -%>  
+        <tr class="line<%= cycle("0", "1") -%>">
+          <%- if SystemConfiguration.get("checked_items.disp_title") -%>
+            <td><%= render 'manifestations/show_index', :manifestation => checked_item.item.manifestation -%></td>
+          <%- end -%>
+          <td><%= link_to checked_item.item.item_identifier, checked_item.item -%>
+            <%- if checked_item.item.include_supplements -%>
+              <br><%= t('activerecord.attributes.item.include_supplements') -%>
+            <%- end -%>
+          </td>
+          <td><%= checked_item.item.note -%></td>
+          <td><%= c.text_field :due_date, :value => checked_item.due_date.strftime("%Y-%m-%d") -%></td>
+          <td><%= link_to t('page.destroy'), user_basket_checked_item_path(checked_item.basket.user, checked_item.basket, checked_item), :confirm => t('page.are_you_sure'), :method => :delete -%></td>
+        </tr>
+      <%- end -%>
+    <%- end -%>
+  </table>
+
   <div>
     <%= f.submit t('checked_item.checkout'), :disable_with => t('page.wait') -%>
   </div>

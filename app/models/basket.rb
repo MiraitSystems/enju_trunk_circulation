@@ -16,6 +16,7 @@ class Basket < ActiveRecord::Base
   validate :check_suspended
 
   attr_accessor :user_number
+  attr_accessible :item_id
 
   def check_suspended
     if self.user
@@ -26,25 +27,17 @@ class Basket < ActiveRecord::Base
   end
 
   def basket_checkout(librarian)
-    logger.error "checked_itemsize: #{self.checked_items.size}"
     return nil if self.checked_items.size == 0
-    logger.error "start basket checkout"
     begin
     Item.transaction do
       self.checked_items.each do |checked_item|
         checked_item.ignore_restriction = '1'
-        logger.error "checked_item: #{checked_item.id}"
         if checked_item.available_for_checkout?
-          logger.error "not available for checkout"
           checkout = self.user.checkouts.new(:librarian_id => librarian.id, :item_id => checked_item.item.id, :basket_id => self.id, :due_date => checked_item.due_date)
-          logger.error "checkout new"
           checked_item.item.checkout!(self.user, librarian)
-          logger.error "checkouted!"
           checkout.save!
         else
           #errors[:base] << I18n.t('activerecord.errors.messages.checked_item.not_available_for_checkout')
-          logger.error "checked_item.not_available_for_checkout"
-          logger.error errors[:base]
           errors[:base] << 'checked_item.not_available_for_checkout'
           return false          
         end
@@ -63,6 +56,12 @@ class Basket < ActiveRecord::Base
     logger.info "#{Time.zone.now} baskets expired!"
   end
 
+  def update_checked_items(params)
+    params.each_pair do |id, value|
+      checked_item = self.checked_items.find(id)
+      checked_item.update_attributes(:due_date => value[:due_date])
+    end
+  end
 end
 
 # == Schema Information

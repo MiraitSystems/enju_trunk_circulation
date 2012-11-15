@@ -80,8 +80,8 @@ class BasketsController < ApplicationController
   # PUT /baskets/1.json
   def update
     librarian = current_user
+    @basket.update_checked_items(params[:checked_items])
     unless @basket.basket_checkout(librarian)
-      logger.error "unless basket checkout"
       flash[:message] = @basket.errors[:base]
       @basket.errors[:base].each do |error|
         flash[:message], flash[:sound] = error_message_and_sound(error)
