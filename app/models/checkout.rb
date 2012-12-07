@@ -23,6 +23,9 @@ class Checkout < ActiveRecord::Base
   validate :is_not_checked?, :on => :create
   validates_date :due_date
 
+  attr_accessor :item_identifier
+  attr_accessible :user_id, :checkout_renewal_count
+
   paginates_per 10
 
   def day_of_overdue
@@ -81,6 +84,20 @@ class Checkout < ActiveRecord::Base
         renew_due_date = self.due_date
       end
     end
+  end
+
+  def new_loan(user)
+    Checkout.transaction do
+      new_basket = Basket.create(:user_id => self.user.id)
+      new_basket.checked_items.create(:item_id => self.item_id)
+      new_basket.basket_checkout(user) # checkout
+      new_checkout = Checkout.where(:basket_id => new_basket.id).first
+      new_checkout.checkout_renewal_count = self.checkout_renewal_count + 1
+      new_checkout.available_for_extend = user.has_role?('Librarian')
+      new_checkout.save
+      return new_checkout
+    end
+    return self
   end
 
   def self.manifestations_count(start_date, end_date, manifestation)

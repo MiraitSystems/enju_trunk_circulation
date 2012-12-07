@@ -1,18 +1,11 @@
-<script>
-  function push_user_submit(format) {
-    var o = document.getElementById('form');
-    o.action = "<%= user_checkouts_path(:user => @user, :format => 'pdf') %>";
-    o.submit();
-  }
-</script>
-
 <div id="content_detail" class="ui-corner-all">
 <h1 class="title"><%= t('page.listing', :model => t('activerecord.models.checkout')) -%></h1>
 <div id="content_list">
 <p id="notice"><%= notice %></p>
 <%- unless @checkouts.size == 0 -%>
-  <%= form_for(:checkouts, :url => user_checkouts_path(user), :html => {:method => 'get', :id => 'form'}) do -%>
-    <%= submit_tag t('activerecord.attributes.checkout.output_checkoutlist'), :onclick => "push_user_submit('pdf');" -%>
+  <%= form_for(:checkouts, :url => user_checkouts_path(user, :format => 'pdf'), :html => {:method => 'get', :id => 'form'}) do |f|-%>
+    <%= hidden_field_tag :basket_id, basket_id if basket_id %>
+    <%= submit_tag t('activerecord.attributes.checkout.output_checkoutlist') -%>
   <%- end -%>
 <%- end -%>
 <%= render 'list' -%>

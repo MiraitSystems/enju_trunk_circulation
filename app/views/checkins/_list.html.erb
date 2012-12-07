@@ -57,7 +57,7 @@ playSound('<%= root_path -%><%= flash[:sound] -%>');
   </tr>
 
 <%- @checkins.each_with_index do |checkin, i| -%>
-<%- if checkin.checkout.overdue? -%>
+<%- if checkin.checkout.try(:overdue?) -%>
   <tr class="line<%= cycle("2") -%>">
 <%- else -%>
   <tr class="line<%= cycle("0", "1") -%>">
@@ -74,7 +74,7 @@ playSound('<%= root_path -%><%= flash[:sound] -%>');
         <span style="color: red"><%= link_to t('activerecord.models.inter_library_loan'), item_inter_library_loans_path(checkin.item) -%></span>
       <%- end -%>
     </td>
-    <td><%= checkin.item.note -%></td>
+    <td><%= simple_format(checkin.item.note) -%></td>
     <td>
       <%- if checkin.checkout -%>
         <%= l(checkin.checkout.due_date, :format => :only_date) -%>

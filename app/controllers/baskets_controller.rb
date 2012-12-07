@@ -1,6 +1,7 @@
 class BasketsController < ApplicationController
   include NotificationSound
   before_filter :check_client_ip_address
+  before_filter :extend_checkout, :only => [:create]
   load_and_authorize_resource
   helper_method :get_user_if_nil
   cache_sweeper :basket_sweeper, :only => [:create, :update, :destroy]
@@ -79,8 +80,8 @@ class BasketsController < ApplicationController
   # PUT /baskets/1.json
   def update
     librarian = current_user
+    @basket.update_checked_items(params[:checked_items])
     unless @basket.basket_checkout(librarian)
-      logger.error "unless basket checkout"
       flash[:message] = @basket.errors[:base]
       @basket.errors[:base].each do |error|
         flash[:message], flash[:sound] = error_message_and_sound(error)
@@ -92,11 +93,11 @@ class BasketsController < ApplicationController
     #@checkout_count = @basket.user.checkouts.count
     respond_to do |format|
       #if @basket.update_attributes({})
-      logger.error "before basket save"
       if @basket.save(:validate => false)
         # 貸出完了時
+        @checkouts = @basket.checkouts
         flash[:notice] = t('basket.checkout_completed')
-        format.html { redirect_to(user_checkouts_url(@basket.user)) }
+        format.html { redirect_to(user_checkouts_url(@basket.user, :basket_id => @basket)) }
         format.json { head :no_content }
       else
         format.html { redirect_to(user_basket_checked_items_url(@basket.user, @basket)) }
@@ -116,5 +117,11 @@ class BasketsController < ApplicationController
       format.html { redirect_to user_checkouts_url(@basket.user) }
       format.json { head :no_content }
     end
+  end
+
+private
+  def extend_checkout
+    param = params[:basket][:user_number] rescue nil
+    redirect_to extend_checkouts_path if param == "extend"
   end
 end
