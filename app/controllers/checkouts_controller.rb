@@ -38,9 +38,11 @@ class CheckoutsController < ApplicationController
         end
       # logged in as Librarian
       else
-        if @user
+        if @user && @basket_id = params[:basket_id]
+          checkouts = @user.checkouts.not_returned.where(:basket_id => @basket_id).order('due_date ASC')
+        elsif @user
           # disp1. user checkouts
-          checkouts = @user.checkouts.not_returned.order('due_date ASC').page(params[:page])
+          checkouts = @user.checkouts.not_returned.order('due_date ASC')
         else
           @libraries = Library.find(:all).collect{|i| [ i.display_name, i.id ] }
           @selected_library = params[:library][:id] unless params[:library].blank?
@@ -170,15 +172,14 @@ class CheckoutsController < ApplicationController
     end
   
     if check_renewal(@checkout)
-      @renew_due_date = @checkout.set_renew_due_date(@checkout.user)
-      @checkout.checkout_renewal_count += 1
-      @checkout.update_attributes(:due_date => @renew_due_date)
+      @checkout = @checkout.new_loan(current_user)
       @renewed = true
 
       render :edit
     end
     rescue Exception => e
       logger.error e
+      
   end
 
   # PUT /batch_checkout
@@ -260,7 +261,7 @@ private
       redirect_to edit_user_checkout_url(@checkout.user, @checkout)
       return false
     end
-    if checkout.over_checkout_renewal_limit?
+    if checkout.available_for_extend #checkout.over_checkout_renewal_limit?
       flash[:notice] = t('checkout.excessed_renewal_limit')
       unless current_user.has_role?('Librarian')
         redirect_to edit_user_checkout_url(@checkout.user, @checkout)
