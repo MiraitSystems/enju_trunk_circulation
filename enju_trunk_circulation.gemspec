@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.email       = ["tamiya.emiko@miraitsystems.jp"]
   s.homepage    = "https://github.com/nakamura-akifumi/enju_trunk"
   s.summary     = "EnjuCirculation for EnjuTrunk"
-  s.description = "to do Checkout, Checkin, ILL, Reserve"
+  s.description = "to do Checkout, Checkin, Reserve"
 
   s.files = Dir["{app,config,db,lib}/**/*"] + ["MIT-LICENSE", "Rakefile", "README.rdoc"]
   s.test_files = Dir["test/**/*"]

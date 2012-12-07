@@ -93,11 +93,11 @@ class BasketsController < ApplicationController
     #@checkout_count = @basket.user.checkouts.count
     respond_to do |format|
       #if @basket.update_attributes({})
-      logger.error "before basket save"
       if @basket.save(:validate => false)
         # 貸出完了時
+        @checkouts = @basket.checkouts
         flash[:notice] = t('basket.checkout_completed')
-        format.html { redirect_to(user_checkouts_url(@basket.user)) }
+        format.html { redirect_to(user_checkouts_url(@basket.user, :basket_id => @basket)) }
         format.json { head :no_content }
       else
         format.html { redirect_to(user_basket_checked_items_url(@basket.user, @basket)) }

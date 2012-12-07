@@ -86,6 +86,20 @@ class Checkout < ActiveRecord::Base
     end
   end
 
+  def new_loan(user)
+    Checkout.transaction do
+      new_basket = Basket.create(:user_id => self.user.id)
+      new_basket.checked_items.create(:item_id => self.item_id)
+      new_basket.basket_checkout(user) # checkout
+      new_checkout = Checkout.where(:basket_id => new_basket.id).first
+      new_checkout.checkout_renewal_count = self.checkout_renewal_count + 1
+      new_checkout.available_for_extend = user.has_role?('Librarian')
+      new_checkout.save
+      return new_checkout
+    end
+    return self
+  end
+
   def self.manifestations_count(start_date, end_date, manifestation)
     self.completed(start_date, end_date).where(:item_id => manifestation.items.collect(&:id)).count
   end

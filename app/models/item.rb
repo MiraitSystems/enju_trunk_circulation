@@ -40,7 +40,6 @@ class Item < ActiveRecord::Base
   def checkout_reserved_item(user)
     reservation = Reserve.waiting.where(:user_id => user.id, :manifestation_id => self.manifestation.id).first rescue nil
     if reservation
-      logger.error "checkouts reservation: #{reservation.id}"
       reservation.item = self
       reservation.sm_complete!
       reservation.update_attributes(:checked_out_at => Time.zone.now)     
@@ -49,9 +48,9 @@ class Item < ActiveRecord::Base
   end
 
   def available_for_checkout?
-    circulation_statuses = CirculationStatus.available_for_checkout.select(:id)
-    circulation_statuses << CirculationStatus.where(:name => 'On Loan').first if SystemConfiguration.get('checkout.auto_checkin')
-    return true if circulation_statuses.include?(self.circulation_status) && self.item_identifier
+    circulation_statuses = CirculationStatus.available_for_checkout.all.map(&:id)
+    circulation_statuses << CirculationStatus.where(:name => 'On Loan').first.id if SystemConfiguration.get('checkout.auto_checkin')
+    return true if circulation_statuses.include?(self.circulation_status_id) && self.item_identifier
     false
   end
 
@@ -68,29 +67,35 @@ class Item < ActiveRecord::Base
   end
 
   def checkout!(user, librarian = nil)
-    circulation_status_on_loan = CirculationStatus.where(:name => 'On Loan').first
-    if self.circulation_status == circulation_status_on_loan && SystemConfiguration.get('checkout.auto_checkin')
+    if self.circulation_status.name == "On Loan" && SystemConfiguration.get('checkout.auto_checkin')
       @basket = Basket.new(:user => librarian)
       @basket.save(:validate => false)
       @checkin = @basket.checkins.new(:item_id => self.id, :librarian_id => librarian.id)
       @checkin.save(:validate => false)
       @checkin.item_checkin(user, true)
     end
-    self.circulation_status = circulation_status_on_loan
+    item = Item.find(self.id)
+    item.circulation_status = CirculationStatus.where(:name => 'On Loan').first
     reservation = checkout_reserved_item(user)
 #    if self.reserved_by_user?(user)
 #      reservation = self.reserve
 #      reservation.sm_complete!
 #      reservation.update_attributes(:checked_out_at => Time.zone.now)
 #    end
-
-    if save!
-      if self.reserve and self.reserve.user != user
-        self.reserve.revert_request rescue nil
+    begin 
+      if item.save
+        logger.error item.attributes
+      else
+        logger.error self.errors.full_messages
       end
-      reservation.position_update(reservation.manifestation) if reservation
-      true
+    rescue Exception => e
+      logger.error "###################### #{e}"
     end
+    if self.reserve and self.reserve.user != user
+      self.reserve.revert_request rescue nil
+    end
+    reservation.position_update(reservation.manifestation) if reservation
+    true
   end
 
   def checkin!
