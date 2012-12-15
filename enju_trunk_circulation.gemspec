@@ -6,7 +6,7 @@ require "enju_trunk_circulation/version"
 # Describe your gem and declare its dependencies:
 Gem::Specification.new do |s|
   s.name        = "enju_trunk_circulation"
-  s.version     = 1.0
+  s.version     = EnjuTrunkCirculation::VERSION
   s.authors     = ["Emiko TAMIYA"]
   s.email       = ["tamiya.emiko@miraitsystems.jp"]
   s.homepage    = "https://github.com/nakamura-akifumi/enju_trunk"
