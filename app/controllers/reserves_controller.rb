@@ -111,7 +111,7 @@ class ReservesController < ApplicationController
             with(:receipt_library_id, selected_library) 
             with(:information_type_id, selected_information_type)
             order_by(:expired_at, :asc)
-            paginate :page => page.to_i, :per_page => Reserve.per_page
+            paginate :page => page.to_i, :per_page => Reserve.default_per_pagepage
           end.results
         end
       end
