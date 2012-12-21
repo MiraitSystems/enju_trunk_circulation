@@ -1,0 +1,68 @@
+<script>
+<!--
+function retainItem(form) {
+  var result = $.ajax({
+    url: "<%= retain_item_reserves_path %>",
+    type: 'POST',
+    dataType: 'json',
+    data: $(form).serialize(),
+    success: function(obj){
+      if (obj.error){
+       $("#error").html(obj.error);
+      } else {
+        $("#error").html('');
+        $("#retain_list").append(obj.html);
+      }
+    }
+  });
+  $('#reserve_item_identifier').val('');
+  return false;
+}
+function retained(form){
+  var result = $.ajax({
+    url: $(form).attr('action'),
+    type: 'POST',
+    dataType: 'json',
+    success: function(obj){
+      if (obj.error) {
+        alert(obj.error);      
+      } else {
+        $("#error").html('');
+        $("#reserve_"+obj.reserve).html('');
+        $("#retain_list").append(obj.html);
+      }
+    }
+  });
+  $('#reserve_item_identifier').val('');
+  return false;
+}
+//-->
+</script>
+
+<%- if flash[:sound] -%>
+<script>
+playSound('<%= root_path -%><%= flash[:sound] -%>');
+</script>
+<%- end -%>
+<div id='error' style="color: red"></div>
+<%= form_for :reserve, :html => {:onsubmit => "return retainItem(this);"}, :remote => true do |f| -%>
+
+  <p><%= t('activerecord.attributes.item.item_identifier') -%>:
+    <%= f.text_field :item_identifier, :class => 'resource_item_identifier' -%>
+    <%= f.hidden_field :librarian_id, :value => current_user.id -%>
+    <%= submit_tag t('reserve.add'), :disable_with => t('page.wait') -%></p>
+<%- end -%>
+
+<div>
+<table class="index" id="retain_list">
+  <tr>
+    <th><%= t('activerecord.models.user') %></th>
+    <th><%= t('activerecord.attributes.manifestation.original_title') %></th>
+    <th><%= t('activerecord.attributes.reserve.information_type') %></th>
+    <th></th>
+  </tr>
+<% @reserves.each do |reserve| %>
+  <%= render :reserve => reserve %>
+<% end %>
+</table>
+</div>

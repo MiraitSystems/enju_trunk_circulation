@@ -82,10 +82,10 @@ class BasketsController < ApplicationController
     librarian = current_user
     @basket.update_checked_items(params[:checked_items])
     unless @basket.basket_checkout(librarian)
-      flash[:message] = @basket.errors[:base]
-      @basket.errors[:base].each do |error|
-        flash[:message], flash[:sound] = error_message_and_sound(error)
-      end
+      flash[:message] = @basket.errors.full_messages.join('')
+#      @basket.errors[:base].each do |error|
+#        flash[:message], flash[:sound] = error_message_and_sound(error)
+#      end
       redirect_to user_basket_checked_items_url(@basket.user, @basket)
       return
     end

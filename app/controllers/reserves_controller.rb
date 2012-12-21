@@ -377,6 +377,44 @@ class ReservesController < ApplicationController
     send_data data.generate, :filename => Setting.reserve_print.filename
   end
 
+  def retain
+    @reserves = []
+  end
+
+  def retain_item
+    item = Item.where(:item_identifier => params[:reserve][:item_identifier]).first rescue nil
+    @reserve = Reserve.not_retained.where(:manifestation_id => item.manifestation.id).try(:first) rescue nil
+    if item.try(:available_for_retain?) && @reserve
+      Reserve.transaction do
+        @reserve.item = item
+        @reserve.sm_retain!
+        @result = render_to_string :partial => 'reserves/reserve'
+      end
+      render :json => {:html => @result, :success => 1}
+    elsif item.nil?
+      render :json => {:error => t('item.not_found')}
+    elsif !item.available_for_retain?
+      render :json => {:error => t('reserve.cannot_retain_item')}
+    else
+      render :json => {:error => t('reserve.not_found')}
+    end
+    rescue Exception => e
+      logger.error e
+      render :json => {:error => t('reserve.retain_error')}
+  end
+
+  def informed
+    Reserve.transaction do
+      @reserve = Reserve.find(params[:id])
+      @reserve.retained = true
+      @reserve.save!(:validate => false)
+      @result = render_to_string :partial => 'reserves/reserve'
+    end
+    render :json => {:html => @result, :reserve => @reserve.id}
+    rescue Exception => e
+      render :json => {:error => e}
+  end
+
   private
   def position_update(manifestation)
     reserves = Reserve.where(:manifestation_id => manifestation).can_change_position.order(:position)

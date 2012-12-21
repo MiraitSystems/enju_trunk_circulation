@@ -22,6 +22,7 @@ class Checkout < ActiveRecord::Base
   validates_uniqueness_of :item_id, :scope => [:basket_id, :user_id]
   validate :is_not_checked?, :on => :create
   validates_date :due_date
+  validate :check_due_date
 
   attr_accessor :item_identifier
   attr_accessible :user_id, :checkout_renewal_count
@@ -84,6 +85,14 @@ class Checkout < ActiveRecord::Base
         renew_due_date = self.due_date
       end
     end
+  end
+
+  def check_due_date
+    if self.due_date <= Time.zone.now
+      errors[:base] = I18n.t('activerecord.errors.messages.checkout.invalid_date')
+      return false
+    end
+    return true
   end
 
   def new_loan(user)
