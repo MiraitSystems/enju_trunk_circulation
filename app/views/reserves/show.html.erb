@@ -59,6 +59,9 @@
   <%- if @reserve.retained -%>
     (<%= t('reserve.called')-%>)
   <%- end -%>
+  <%- if @reserve.state == 'retained' %>
+    (<%= link_to @reserve.item.item_identifier, @reserve.item if @reserve.item %>)
+  <%- end -%>
 </p>
 
 <p>

@@ -186,6 +186,27 @@ class Reserve < ActiveRecord::Base
     end
   end
 
+  def retain_item
+    if self.item_identifier
+      item = Item.where(:item_identifier => item_identifier).first
+      if item && item.available_for_retain? && (item.manifestation == self.manifestation)
+        self.item = item
+        self.sm_retain!
+        return true
+      elsif item.nil?
+        errors[:base] = I18n.t('reserve.not_found')  
+        return false
+      elsif item.manifestation != self.manifestation
+        errors[:base] = I18n.t('reserve.this_item_is_not_reserved')
+        return false
+      else
+        errors[:base] = I18n.t('reserve.cannot_retain_item')
+        return false
+      end
+    end 
+    return true
+  end
+
   def do_request
     self.update_attributes({:request_status_type => RequestStatusType.where(:name => 'In Process').first})
   end
