@@ -2,12 +2,11 @@
 class Reserve < ActiveRecord::Base
   attr_accessible :manifestation_id, :item_identifier, :user_number, 
     :expired_at, :information_type_id, :receipt_library_id,
-    :request_status_type
+    :request_status_type, :position
   attr_accessible :manifestation_id, :item_identifier, :user_number,
     :expired_at, :request_status_type, :canceled_at, :checked_out_at,
     :expiration_notice_to_patron, :expiration_notice_to_library,
-    :information_type_id, :receipt_library_id, :position, 
-    :as => :admin
+    :information_type_id, :receipt_library_id, :position, :as => :admin
 
   self.extend ApplicationHelper
   self.extend ReservesHelper
@@ -187,6 +186,27 @@ class Reserve < ActiveRecord::Base
     end
   end
 
+  def retain_item
+    if self.item_identifier
+      item = Item.where(:item_identifier => item_identifier).first
+      if item && item.available_for_retain? && (item.manifestation == self.manifestation)
+        self.item = item
+        self.sm_retain!
+        return true
+      elsif item.nil?
+        errors[:base] = I18n.t('reserve.not_found')  
+        return false
+      elsif item.manifestation != self.manifestation
+        errors[:base] = I18n.t('reserve.this_item_is_not_reserved')
+        return false
+      else
+        errors[:base] = I18n.t('reserve.cannot_retain_item')
+        return false
+      end
+    end 
+    return true
+  end
+
   def do_request
     self.update_attributes({:request_status_type => RequestStatusType.where(:name => 'In Process').first})
   end
@@ -229,7 +249,7 @@ class Reserve < ActiveRecord::Base
   def retain
     # TODO: 「取り置き中」の状態を正しく表す
     self.item.retain_item!
-    self.update_attribute(:request_status_type, RequestStatusType.where(:name => 'In Process').first)
+    self.assign_attributes({:request_status_type => RequestStatusType.where(:name => 'In Process').first}, :as => :admin)
     self.remove_from_list
   end
 
@@ -257,7 +277,7 @@ class Reserve < ActiveRecord::Base
       current_user = User.where(:username => 'admin').first
       self.item.retain(current_user) if self.item.manifestation.next_reservation
     end
-    self.update_attributes!({:request_status_type => RequestStatusType.where(:name => 'Cannot Fulfill Request').first, :canceled_at => Time.zone.now})
+    self.assign_attributes({:request_status_type => RequestStatusType.where(:name => 'Cannot Fulfill Request').first, :canceled_at => Time.zone.now}, :as => :admin)
     self.remove_from_list
   end
 

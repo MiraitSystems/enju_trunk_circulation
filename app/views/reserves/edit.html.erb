@@ -44,6 +44,10 @@
       <%= f.text_field :expired_at, :value => @reserve.expired_at.try(:strftime, "%Y-%m-%d"), :class => 'date_field', :placeholder => "#{t('page.example')}: 2011-04-12"-%>
     <%- end -%>
   </div>
+  <div class="field">
+    <%= f.label :item_identifier -%><br />
+    <%= f.text_field :item_identifier -%>
+  </div>
   <div class="actions">
     <%= f.submit %>
   </div>

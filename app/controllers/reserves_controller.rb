@@ -4,7 +4,6 @@ class ReservesController < ApplicationController
   authorize_resource :only => :index
   before_filter :store_location, :only => [:index, :new]
   load_and_authorize_resource :except => [:index, :show, :edit]
-#  load_and_authorize_resource :except => [:index, :show, :edit] :TODO
   before_filter :get_user #, :only => [:show, :edit, :create, :update, :destroy]
   before_filter :store_page, :only => :index
   helper_method :get_manifestation
@@ -220,6 +219,7 @@ class ReservesController < ApplicationController
     user = @user if @user
     @libraries = Library.real
     @informations = Reserve.informations(@reserve.user)
+    @reserve.item_identifier = @reserve.try(:item).try(:item_identifier)
     render :template => 'opac/reserves/edit', :layout => 'opac' if params[:opac]
   end
 
@@ -310,7 +310,8 @@ class ReservesController < ApplicationController
     end 
 
     respond_to do |format|
-      if @reserve.available_for_update? and @reserve.update_attributes(params[:reserve])
+    begin
+      if @reserve.available_for_update? and @reserve.update_attributes(params[:reserve]) and @reserve.retain_item
         if @reserve.state == 'canceled'
           flash[:notice] = t('reserve.reservation_was_canceled')
           begin
@@ -335,6 +336,14 @@ class ReservesController < ApplicationController
         format.html { render :action => "edit" }
         format.json { render :json => @reserve.errors, :status => :unprocessable_entity }
       end
+    rescue Exception => e
+      logger.error e
+      @libraries = Library.real.order('position')
+      @informations = Reserve.informations(user)
+      format.html { render :action => "edit", :template => 'opac/reserves/edit', :layout => 'opac' } if params[:opac]
+      format.html { render :action => "edit" }
+      format.json { render :json => @reserve.errors, :status => :unprocessable_entity }
+    end
     end
   end
 
@@ -375,6 +384,44 @@ class ReservesController < ApplicationController
     @reserve = Reserve.find(params[:reserve_id])
     data = Reserve.get_reserve(@reserve, current_user)
     send_data data.generate, :filename => Setting.reserve_print.filename
+  end
+
+  def retain
+    @reserves = []
+  end
+
+  def retain_item
+    item = Item.where(:item_identifier => params[:reserve][:item_identifier]).first rescue nil
+    @reserve = Reserve.not_retained.where(:manifestation_id => item.manifestation.id).try(:first) rescue nil
+    if item.try(:available_for_retain?) && @reserve
+      Reserve.transaction do
+        @reserve.item = item
+        @reserve.sm_retain!
+        @result = render_to_string :partial => 'reserves/reserve'
+      end
+      render :json => {:html => @result, :success => 1}
+    elsif item.nil?
+      render :json => {:error => t('item.not_found')}
+    elsif !item.available_for_retain?
+      render :json => {:error => t('reserve.cannot_retain_item')}
+    else
+      render :json => {:error => t('reserve.not_found')}
+    end
+    rescue Exception => e
+      logger.error e
+      render :json => {:error => t('reserve.retain_error')}
+  end
+
+  def informed
+    Reserve.transaction do
+      @reserve = Reserve.find(params[:id])
+      @reserve.retained = true
+      @reserve.save!(:validate => false)
+      @result = render_to_string :partial => 'reserves/reserve'
+    end
+    render :json => {:html => @result, :reserve => @reserve.id}
+    rescue Exception => e
+      render :json => {:error => e}
   end
 
   private
