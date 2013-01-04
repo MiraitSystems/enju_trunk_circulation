@@ -1,5 +1,7 @@
 # -*- encoding: utf-8 -*-
 class Item < ActiveRecord::Base
+  has_many :checkout_histories
+
   def next_reservation
     Reserve.waiting.where(:manifestation_id => self.manifestation.id).first
   end
@@ -67,12 +69,16 @@ class Item < ActiveRecord::Base
   end
 
   def checkout!(user, librarian = nil)
+    extend = nil
     if self.circulation_status.name == "On Loan" && SystemConfiguration.get('checkout.auto_checkin')
+      extend = Checkout.where(:item_id => self.id, :user_id => user.id).try(:not_returned).try(:first).try(:checkout_renewal_count)
       @basket = Basket.new(:user => librarian)
       @basket.save(:validate => false)
-      @checkin = @basket.checkins.new(:item_id => self.id, :librarian_id => librarian.id)
+      @checkin = @basket.checkins.new(:item_id => self.id, :librarian_id => librarian.id, :auto_checkin => true)
       @checkin.save(:validate => false)
+      logger.error "***** checkin saved"
       @checkin.item_checkin(user, true)
+      logger.error "***** item checkined"
     end
     item = Item.find(self.id)
     item.circulation_status = CirculationStatus.where(:name => 'On Loan').first
@@ -85,6 +91,7 @@ class Item < ActiveRecord::Base
     begin 
       if item.save
         logger.error item.attributes
+        return {:extend => extend}
       else
         logger.error self.errors.full_messages
       end

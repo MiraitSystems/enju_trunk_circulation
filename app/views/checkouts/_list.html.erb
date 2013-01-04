@@ -21,12 +21,13 @@
       <%= t('activerecord.attributes.item.item_identifier') -%>: <%= link_to checkout.item.item_identifier, item_path(checkout.item) -%>
     </td>
     <td><%= l(checkout.due_date, :format => :only_date) -%></td>
-    <td><%= checkout.checkout_renewal_count -%> / <%= checkout.item.checkout_status(checkout.user).checkout_renewal_limit-%></td>
+    <td><%= checkout.checkout_renewal_count -%></td>
     <td>
       <%= link_to t('page.show'), user_checkout_path(checkout.user, checkout) -%>
       <br />
       <%- if can? :update, checkout -%>
-        <%= link_to t('checkout.extend'), edit_user_checkout_path(checkout.user, checkout) -%>
+        <%# = link_to t('checkout.extend'), edit_user_checkout_path(checkout.user, checkout) -%>
+        <%= link_to t('checkout.extend'), extend_checkout_checkouts_path(:checkout => {:item_identifier => checkout.item.item_identifier}), :method => :post -%>
       <%- end -%>
     </td>
     <!--

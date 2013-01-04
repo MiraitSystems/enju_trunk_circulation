@@ -2,7 +2,7 @@
 class Reserve < ActiveRecord::Base
   attr_accessible :manifestation_id, :item_identifier, :user_number, 
     :expired_at, :information_type_id, :receipt_library_id,
-    :request_status_type
+    :request_status_type, :position, :checked_out_at
   attr_accessible :manifestation_id, :item_identifier, :user_number,
     :expired_at, :request_status_type, :canceled_at, :checked_out_at,
     :expiration_notice_to_patron, :expiration_notice_to_library,
@@ -53,6 +53,7 @@ class Reserve < ActiveRecord::Base
   before_validation :set_item_and_manifestation, :on => :create
   before_validation :set_expired_at
   before_validation :set_request_status, :on => :create
+  after_create :store_history
 
   attr_accessor :user_number, :item_identifier
 
@@ -1055,6 +1056,11 @@ class Reserve < ActiveRecord::Base
     end
     return data
   end
+
+  def store_history
+    CheckoutHistory.store_history("reserve", self)
+  end
+
 end
 
 # == Schema Information

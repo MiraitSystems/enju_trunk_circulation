@@ -1,5 +1,5 @@
 class Checkin < ActiveRecord::Base
-  attr_accessible :item_identifier, :librarian_id
+  attr_accessible :item_identifier, :librarian_id, :auto_checkin
 
   default_scope :order => 'id DESC'
   scope :on, lambda {|date| {:conditions => ['created_at >= ? AND created_at < ?', date.beginning_of_day, date.tomorrow.beginning_of_day]}}
@@ -16,6 +16,8 @@ class Checkin < ActiveRecord::Base
   attr_accessor :item_identifier
   attr_accessible :item_id
 
+  after_create :store_history
+
   def item_checkin(current_user, escape_flag = false)
     message = []
     Checkin.transaction do
@@ -31,7 +33,9 @@ class Checkin < ActiveRecord::Base
       checkouts.each do |checkout|
         # TODO: ILL時の処理
         checkout.checkin = self
+        logger.error "**** before checkout save: #{checkout.attributes}"
         checkout.save(:validate => false)
+        logger.error "*** checkout saved"
         #message << I18n.t('checkin.other_library_item') + '<br />' unless checkout.item.shelf.library == current_user.library
         unless escape_flag
           unless checkout.item.shelf.library == current_user.library
@@ -61,6 +65,10 @@ class Checkin < ActiveRecord::Base
     else
       nil
     end
+  end
+
+  def store_history
+    CheckoutHistory.store_history("checkin", self) unless self.auto_checkin
   end
 end
 
