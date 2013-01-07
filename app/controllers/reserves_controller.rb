@@ -320,13 +320,21 @@ class ReservesController < ApplicationController
           rescue Exception => e
             logger.error "Faild to send a notification message (reservation was canceled): #{e}" 
           end
-          format.html { redirect_to user_reserves_path(user, :opac => true)} if params[:opac]
-          format.html { redirect_to user_reserves_path(user)}
+          if current_user.has_role?('Librarian')
+            format.html { redirect_to reserves_path}
+          else
+            format.html { redirect_to user_reserves_path(user, :opac => true)} if params[:opac]
+            format.html { redirect_to user_reserves_path(user)}
+          end
           format.json { head :no_content }
         else
           flash[:notice] = t('controller.successfully_updated', :model => t('activerecord.models.reserve'))
-          format.html { redirect_to user_reserve_url(@reserve.user, @reserve, :opac => true) } if params[:opac]
-          format.html { redirect_to user_reserve_url(@reserve.user, @reserve) }
+          if current_user.has_role?('Librarian')
+            format.html { redirect_to reserve_url(@reserve) }
+          else
+            format.html { redirect_to user_reserve_url(@reserve.user, @reserve, :opac => true) } if params[:opac]
+            format.html { redirect_to user_reserve_url(@reserve.user, @reserve) }
+          end
           format.json { head :no_content }
         end
       else
@@ -363,7 +371,7 @@ class ReservesController < ApplicationController
 
     reserve = @reserve.dup
     @reserve.destroy
-    #flash[:notice] = t('reserve.reservation_was_canceled')
+    flash[:notice] = t('reserve.reservation_was_destroyed')
 
     if reserve.manifestation.is_reserved?
       reserve.position_update(reserve.manifestation)
