@@ -1,4 +1,5 @@
 class CheckoutsController < ApplicationController
+  include NotificationSound
   before_filter :store_location, :only => :index
   before_filter :get_user, :only => :index
   before_filter :get_user_if_nil, :except => [:index, :batchexec, :extend, :extend_checkout] # TODO
@@ -123,23 +124,26 @@ class CheckoutsController < ApplicationController
   # PUT /checkouts/1.json
   def update
     @checkout = Checkout.find(params[:id])
-    if check_renewal(@checkout)
-      @checkout.reload
-      @checkout.checkout_renewal_count += 1
+    if check_renewal(@checkout) || current_user.has_role?('Librarian')
+#      @checkout.reload
+      @checkout.checkout_renewal_count += 1 unless current_user.has_role?('Librarian')
 
       respond_to do |format|
         if @checkout.update_attributes(params[:checkout])
           flash[:notice] = t('controller.successfully_updated', :model => t('activerecord.models.checkout'))
           format.html { redirect_to user_checkout_url(@checkout.user, @checkout, :opac => true) } if params[:opac]
-          format.html { redirect_to user_checkout_url(@checkout.user, @checkout) }
-          format.json { head :no_content }
+          format.html { redirect_to user_checkout_path(@checkout.user, @checkout) }
+          format.json { render :json => @checkout }
         else
           format.html { render :action => "edit", :template => "opac/checkouts/edit", :layout => 'opac' } if params[:opac]
-          format.html { render :action => "edit" }
+          format.html { render :action => "edit" } unless params[:opac]
           format.json { render :json => @checkout.errors, :status => :unprocessable_entity }
         end
       end
     end
+    rescue Exception => e
+      logger.error e
+      render :edit
   end
 
   # DELETE /checkouts/1
@@ -166,7 +170,7 @@ class CheckoutsController < ApplicationController
       access_denied; return
     end
     unless current_user.has_role?('Librarian')
-      unless current_user == @checkout.user
+      unless current_user.id == @checkout.user.id
         access_denied; return
       end
     end
@@ -174,12 +178,18 @@ class CheckoutsController < ApplicationController
     if check_renewal(@checkout)
       @checkout = @checkout.new_loan(current_user)
       @renewed = true
-
+    end
+    if current_user.has_role?('Librarian')
       render :edit
+    else
+      flash[:notice] = t('checkout.extended')
+      render :show
     end
     rescue Exception => e
       logger.error e
-      
+      @checkout = Checkout.new
+      flash[:notice] = e
+      render :extend
   end
 
   # PUT /batch_checkout
@@ -256,25 +266,39 @@ private
   end
 
   def check_renewal(checkout)
+    flash[:message], flash[:sound] = '', '' 
+    messages = []
+    if !checkout.available_for_extend #checkout.over_checkout_renewal_limit?
+      unless current_user.has_role?('Librarian')
+        messages << 'checkout.over_renewal_limit'
+        set_messages(messages)
+        return false
+      end
+    end
     if checkout.reserved?
-      flash[:notice] = t('checkout.this_item_is_reserved')
-      redirect_to edit_user_checkout_url(@checkout.user, @checkout)
+      messages << 'checkout.this_item_is_reserved'
+      set_messages(messages)
       return false
     end
-    if checkout.available_for_extend #checkout.over_checkout_renewal_limit?
-      flash[:notice] = t('checkout.excessed_renewal_limit')
-      unless current_user.has_role?('Librarian')
-        redirect_to edit_user_checkout_url(@checkout.user, @checkout)
-        return false
-      end
-    end
     if checkout.overdue?
-      flash[:notice] = t('checkout.you_have_overdue_item')
+      messages <<  'checkout.you_have_overdue_item'
       unless current_user.has_role?('Librarian')
-        redirect_to edit_user_checkout_url(@checkout.user, @checkout)
+        set_messages(messages)
         return false
       end
     end
+    set_messages(messages)
     return true
+  end
+
+  def set_messages(messages)
+    @checkout.errors[:base].each do |error|
+      messages << error
+    end
+    messages.each do |message|
+      return_message, return_sound = error_message_and_sound(message)
+      flash[:message] << return_message + '<br />' if return_message
+      flash[:sound] = return_sound if return_sound
+    end
   end
 end

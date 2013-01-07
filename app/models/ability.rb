@@ -24,7 +24,10 @@ class Ability
       ]
     when 'User'
       can [:index, :create], Checkout
-      can [:show, :update, :destroy], Checkout do |checkout|
+      can :update, Checkout do |checkout|
+        checkout.available_for_extend && checkout.user.id == user.id
+      end
+      can :show, Checkout do |checkout|
         checkout.user == user
       end
       can [:index, :create], Reserve

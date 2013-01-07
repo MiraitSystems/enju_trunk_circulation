@@ -10,10 +10,6 @@
 <%- end -%>
 <%= render 'list' -%>
 
-<%- if @checkout_histories.size == 0 -%>
-  <p><%= t('checkout.no_checkout') -%></p>
-<%- end -%>
-
 <%= paginate(@checkout_histories) -%>
 </div>
 </div>
