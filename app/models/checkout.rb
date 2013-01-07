@@ -22,7 +22,7 @@ class Checkout < ActiveRecord::Base
   validates_uniqueness_of :item_id, :scope => [:basket_id, :user_id]
   validate :is_not_checked?, :on => :create
   validates_date :due_date
-  validate :check_due_date
+  after_create :store_history
 
   attr_accessor :item_identifier
   attr_accessible :user_id, :checkout_renewal_count
@@ -46,7 +46,7 @@ class Checkout < ActiveRecord::Base
   def checkout_renewable?
     return false if self.overdue?
     if self.item
-      return false if self.over_checkout_renewal_limit?
+#      return false if self.over_checkout_renewal_limit?
       return false if self.reserved?
     end
     true
@@ -79,7 +79,7 @@ class Checkout < ActiveRecord::Base
 
   def set_renew_due_date(user)
     if self.item
-      if self.checkout_renewal_count <= self.item.checkout_status(user).checkout_renewal_limit
+      if self.available_for_extend # self.checkout_renewal_count <= self.item.checkout_status(user).checkout_renewal_limit
         renew_due_date = self.due_date.advance(:days => self.item.checkout_status(user).checkout_period)
       else
         renew_due_date = self.due_date
@@ -401,6 +401,15 @@ class Checkout < ActiveRecord::Base
     end
     return data
   end
+ 
+  def store_history
+    if checkout_renewal_count == 0
+      CheckoutHistory.store_history("checkout", self)
+    else
+      CheckoutHistory.store_history("extend", self)
+    end
+  end
+
 end
 
 # == Schema Information

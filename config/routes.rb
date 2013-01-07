@@ -1,5 +1,7 @@
 EnjuTrunkCirculation::Engine.routes.draw do
 
+  get "checkout_histories/index"
+
   resources :users do
     resources :baskets do
       resources :checked_items

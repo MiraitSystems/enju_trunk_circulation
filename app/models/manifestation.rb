@@ -1,4 +1,6 @@
 class Manifestation < ActiveRecord::Base
+  has_many :checkout_histories
+
   def next_reservation
     self.reserves.not_retained.order('reserves.position ASC').first
   end

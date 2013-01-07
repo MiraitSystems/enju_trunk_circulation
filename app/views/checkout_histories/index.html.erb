@@ -1,0 +1,15 @@
+<div id="content_detail" class="ui-corner-all">
+<h1 class="title"><%= t('page.listing', :model => t('activerecord.models.checkout_history')) -%></h1>
+<div id="content_list">
+<p id="notice"><%= notice %></p>
+<%- if false # unless @checkout_histories.size == 0 -%>
+  <%= form_for(:checkouts, :url => user_checkouts_path(user, :format => 'pdf'), :html => {:method => 'get', :id => 'form'}) do |f|-%>
+    <%= hidden_field_tag :basket_id, basket_id if basket_id %>
+    <%= submit_tag t('activerecord.attributes.checkout.output_checkoutlist') -%>
+  <%- end -%>
+<%- end -%>
+<%= render 'list' -%>
+
+<%= paginate(@checkout_histories) -%>
+</div>
+</div>

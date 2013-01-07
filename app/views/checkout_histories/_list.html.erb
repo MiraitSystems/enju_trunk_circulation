@@ -1,0 +1,23 @@
+<table class="index">
+  <tr>
+    <th><%= t('activerecord.attributes.checkout_history.created_at') %></th>
+    <th><%= t('activerecord.attributes.checkout_history.operation') %></th>
+    <th><nobr><%= t('activerecord.attributes.checkout_history.librarian') %></nobr></th>
+    <th><nobr><%= t('activerecord.attributes.item.item_identifier') %></nobr></th>
+    <th><%= t('activerecord.attributes.manifestation.original_title') %></th>
+    <th><nobr><%= t('activerecord.attributes.user.username') %></nobr></th>
+  </tr>
+
+<%- if @checkout_histories -%>
+  <%- @checkout_histories.each_with_index do |history, i| %>
+  <tr class="line<%= cycle("0", "1") -%>">
+    <td><%= history.created_at.strftime("%H:%M") %></td>
+    <td><nobr><%= operation(history.operation, history) -%></nobr></td>
+    <td><%= link_to history.try(:librarian).try(:username), history.try(:librarian) if history.try(:librarian) -%></td>
+    <td><%= link_to history.try(:item).try(:item_identifier), history.try(:item) if history.try(:item) -%></td>
+    <td><%= link_to history.try(:manifestation).try(:original_title), history.try(:manifestation) if history.try(:manifestation) -%></td>
+    <td><%= link_to history.try(:user).try(:username), history.try(:user) if history.try(:user) %></td>
+  </tr>
+  <%- end -%>
+<%- end -%>
+</table>

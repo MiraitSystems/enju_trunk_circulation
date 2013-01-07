@@ -35,8 +35,9 @@ class Basket < ActiveRecord::Base
       self.checked_items.each do |checked_item|
         checked_item.ignore_restriction = '1'
         if checked_item.available_for_checkout?
-          checked_item.item.checkout!(self.user, librarian)
-          checkout = self.user.checkouts.new(:librarian_id => librarian.id, :item_id => checked_item.item.id, :basket_id => self.id, :due_date => checked_item.due_date)
+          option = checked_item.item.checkout!(self.user, librarian)
+          checkout = Checkout.new(:librarian_id => librarian.id, :item_id => checked_item.item.id, :basket_id => self.id, :user_id => self.user_id, :due_date => checked_item.due_date)
+          checkout.checkout_renewal_count = option[:extend] + 1 if option[:extend]
           checkout.save!
         else
           errors[:base] << I18n.t('activerecord.errors.messages.checked_item.not_available_for_checkout')
@@ -49,7 +50,7 @@ class Basket < ActiveRecord::Base
     end
     rescue Exception => e
       logger.error "Failed to checkout: #{e}"
-      errors[:base] = checkout.errors.full_messages.flatten
+      errors[:base] = checkout.try(:errors).try(:full_messages).try(:flatten)
       return false
     end
   end
