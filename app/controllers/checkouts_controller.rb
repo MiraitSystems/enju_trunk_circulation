@@ -250,18 +250,23 @@ private
     checked_item.item = item if item
 
     logger.debug "checked item save start"
-    if checked_item.save
-      logger.info "success checkout"
-      status = {'code' => 0}
-    else
-      rmsg = ""
-      logger.info "unsuccess checkout"
-      checked_item.errors do |attr, msg|
-        rmsg = msg 
+
+    #TODO get librarian
+    librarian = User.where(:username => 'admin').first
+    Basket.transaction do 
+      if checked_item.save && basket.basket_checkout(librarian)
+        logger.info "success checkout"
+        status = {'code' => 0}
+      else
+        rmsg = ""
+        logger.info "unsuccess checkout"
+        checked_item.errors do |attr, msg|
+          rmsg = msg 
+        end
+        status = {'code' => 100, 'msg' => rmsg}
       end
-      status = {'code' => 100, 'msg' => rmsg}
     end
-   
+ 
     return status
   end
 
