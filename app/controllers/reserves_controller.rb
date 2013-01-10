@@ -1,5 +1,8 @@
 # -*- encoding: utf-8 -*-
 class ReservesController < ApplicationController
+  add_breadcrumb "I18n.t('page.listing', :model => I18n.t('activerecord.models.reserve'))", 'reserves_path'
+  add_breadcrumb "I18n.t('page.new', :model => I18n.t('activerecord.models.reserve'))", 'new_reserve_path', :only => [:new, :create]
+  add_breadcrumb "I18n.t('page.editing', :model => I18n.t('activerecord.models.reserve'))", 'edit_reserve_path(params[:id])', :only => [:edit, :update]
   include ApplicationHelper
   authorize_resource :only => :index
   before_filter :store_location, :only => [:index, :new]

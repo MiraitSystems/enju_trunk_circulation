@@ -1,4 +1,7 @@
 class CheckoutsController < ApplicationController
+  add_breadcrumb "I18n.t('page.histories', :model => I18n.t('activerecord.models.checkout'))", 'checkouts_path'
+  add_breadcrumb "I18n.t('page.new', :model => I18n.t('activerecord.models.checkout'))", 'new_checkout_path', :only => [:new, :create]
+  add_breadcrumb "I18n.t('page.editing', :model => I18n.t('activerecord.models.checkout'))", 'edit_checkout_path(params[:id])', :only => [:edit, :update]
   include NotificationSound
   before_filter :store_location, :only => :index
   before_filter :get_user, :only => :index

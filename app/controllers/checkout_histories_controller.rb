@@ -1,4 +1,5 @@
 class CheckoutHistoriesController < ApplicationController
+  add_breadcrumb "I18n.t('activerecord.models.checkout_history')", 'checkout_histories_path'
   def index
     if current_user.has_role?('Librarian')
       @checkout_histories = CheckoutHistory.where(["DATE(created_at) = DATE(?)", Time.now]).page params[:page]

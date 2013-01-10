@@ -1,4 +1,5 @@
 class CheckinsController < ApplicationController
+  add_breadcrumb "I18n.t('activerecord.models.checkin')", 'checkins_path'
   include NotificationSound
 
   load_and_authorize_resource :except => [:create, :batchexec]

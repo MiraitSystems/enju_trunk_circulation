@@ -1,4 +1,7 @@
 class BasketsController < ApplicationController
+  add_breadcrumb "I18n.t('activerecord.models.basket')", 'baskets_path', :only => [:index]
+  add_breadcrumb "I18n.t('page.new', :model => I18n.t('activerecord.models.basket'))", 'new_basket_path', :only => [:new, :create]
+  add_breadcrumb "I18n.t('page.editing', :model => I18n.t('activerecord.models.basket'))", 'edit_basket_path(params[:id])', :only => [:edit, :update]
   include NotificationSound
   before_filter :check_client_ip_address
   before_filter :extend_checkout, :only => [:create]

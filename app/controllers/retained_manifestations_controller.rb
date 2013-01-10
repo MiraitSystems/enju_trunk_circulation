@@ -1,4 +1,5 @@
 class RetainedManifestationsController < ApplicationController
+  add_breadcrumb "I18n.t('page.listing', :model => I18n.t('activerecord.models.retained_manifestation'))", 'retained_manifestations_path'
   before_filter :check_librarian
   before_filter :get_real_libraries
   before_filter :get_reserve_information_types
