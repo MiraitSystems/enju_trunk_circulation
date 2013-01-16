@@ -198,7 +198,7 @@ private
   def batchexec_checkin(params)
     status = {}
 
-    admin_user = User.find(1)
+    admin_user = User.find(1) #TODO
     params_checkin = {"item_identifier" => params[:item_identifier], "librarian_id" => admin_user.id}
 
     basket = Basket.new(:user => admin_user)
@@ -222,6 +222,7 @@ private
 
     checkin.item = item
     if checkin.save(:validate => false)
+      checkin.item_checkin(admin_user, true)
       logger.info "success checkn"
       status = {'code' => 0}
     else
