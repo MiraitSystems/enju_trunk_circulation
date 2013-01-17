@@ -468,7 +468,7 @@ class Reserve < ActiveRecord::Base
         errors[:base] << I18n.t('reserve.this_patron_cannot_reserve')
       end
 
-      if self.user.locked_at
+      if self.user.user_status.state_id == 3
         errors[:base] << I18n.t('reserve.this_user_is_locked')
       end
 
