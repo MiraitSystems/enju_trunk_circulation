@@ -31,6 +31,13 @@
     <%= f.error_messages -%>
 
     <div class="field">
+<script>
+$(function(){
+  if (typeof $('#checkout_due_date').setCalendar == "function") {
+    $('#checkout_due_date').setCalendar({src:'/assets/calendar.png'});
+  }
+});
+</script>
       <%= f.label :due_date -%>
       <%= f.hidden_field :user_id -%>
       <%= f.hidden_field :item_id -%>

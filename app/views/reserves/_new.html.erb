@@ -1,5 +1,8 @@
 <script>
   $(document).ready(function() {
+    if (typeof $('#expired_at').setCalendar == "function") {
+      $('#expired_at').setCalendar({src:'/assets/calendar.png'});
+    }
     // onload
     if ($("#reserve_user_number").val().length != 0) {
       set_user_information();

@@ -1,5 +1,8 @@
 <script>
   $(document).ready(function() {
+    if (typeof $('#birth_date').setCalendar == "function") {
+      $('#birth_date').setCalendar({src:'/assets/calendar.png'});
+    }
     // checked
      var $tgt_parent = $("input.check-parent");
      var $tgt_child = $("input.check-child");
