@@ -78,6 +78,7 @@ class ReservesController < ApplicationController
         selected_state = @selected_state
         selected_library = @selected_library
         selected_information_type = @selected_information_type.flatten
+        @picking = true if selected_state.size == 1 && selected_state.include?('retained')
 
         flash[:reserve_notice] = "" 
         # check conditions
@@ -105,7 +106,15 @@ class ReservesController < ApplicationController
 
         # search
         if (query.blank? and @address.blank? and @date_of_birth.blank?) or error_condition
-          @reserves = Reserve.joins(:manifestation).where(:state => selected_state, :receipt_library_id => selected_library, :information_type_id => selected_information_type).order('expired_at ASC').includes(:manifestation).page(page)
+          @reserves = Reserve.joins(:manifestation).where(:state => selected_state, :receipt_library_id => selected_library, :information_type_id => selected_information_type).order('expired_at ASC').includes(:manifestation).page(page) unless params[:picking]
+          @reserves = Reserve.joins(:manifestation).where(:state => selected_state, :receipt_library_id => selected_library, :information_type_id => selected_information_type).order('expired_at ASC').includes(:manifestation) if params[:picking]
+        elsif params[:picking]
+          @reserves = Reserve.search do
+            fulltext query
+            with(:state, selected_state) 
+            with(:receipt_library_id, selected_library) 
+            with(:information_type_id, selected_information_type)
+          end.results
         else
           @reserves = Reserve.search do
             fulltext query
@@ -117,6 +126,12 @@ class ReservesController < ApplicationController
           end.results
         end
       end
+    end
+
+    if params[:picking]
+      send_data Reserve.get_reserve_list_picking_pdf(@reserves.includes(:item).order("items.shelf_id DESC")).generate,
+          :filename => Setting.reserve_list_picking_pdf.filename, :type => 'application/pdf'
+      return
     end
 
     respond_to do |format|

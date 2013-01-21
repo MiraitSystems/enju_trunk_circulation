@@ -818,6 +818,43 @@ class Reserve < ActiveRecord::Base
     end
   end
 
+  def self.get_reserve_list_picking_pdf(reserves)
+    report = ThinReports::Report.new :layout => File.join(Rails.root, 'report', 'reserve_picking.tlf')
+
+    # set page_num
+    report.events.on :page_create do |e|
+      e.page.item(:page).value(e.page.no)
+    end
+    report.events.on :generate do |e|
+      e.pages.each do |page|
+        page.item(:total).value(e.report.page_count)
+      end
+    end
+
+    report.start_new_page do |page|
+      page.item(:date).value(Time.now)
+
+      unless reserves.blank?
+        reserves.each do |r|
+          page.list(:list).add_row do |row|
+           row.item(:library).value(r.try(:item).try(:shelf).try(:library).try(:display_name))
+           row.item(:shelf).value(r.try(:item).try(:shelf).try(:display_name))
+           row.item(:state).value(I18n.t(i18n_state(r.state).strip_tags))
+           row.item(:call_number).value(r.try(:item).try(:call_number))
+           row.item(:item_identifier).value(r.try(:item).try(:item_identifier))
+           row.item(:title).value(r.try(:manifestation).try(:original_title))
+           user = r.user.patron.full_name
+           row.item(:user).value(user)
+           information_type = I18n.t(i18n_information_type(r.information_type_id).strip_tags)
+           information_type += ': ' + Reserve.get_information_type(r) if r.information_type_id != 0 and !Reserve.get_information_type(r).nil?
+           row.item(:information_method).value(information_type)
+          end
+        end
+      end
+      return report
+    end
+  end
+
   def self.get_reserve_list_all_tsv(query, states, library, type)
     data = String.new
     data << "\xEF\xBB\xBF".force_encoding("UTF-8") + "\n"

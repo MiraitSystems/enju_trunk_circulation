@@ -112,6 +112,7 @@ ja:
     not_found: "予約が見つかりません。"
     retain_error: "取り置き処理に失敗しました。"
     no_reserve: 予約中の資料はありません
+    picking_list: ピッキング用リスト
   checked_item:
     not_available_for_checkout: "この資料の貸出はできません。(状態不正)"
     new_serial: "この資料の貸出はできません。(雑誌の最新号)"
