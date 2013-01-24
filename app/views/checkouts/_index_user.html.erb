@@ -3,9 +3,27 @@
 <div id="content_list">
 <p id="notice"><%= notice %></p>
 <%- unless @checkouts.size == 0 -%>
-  <%= form_for(:checkouts, :url => user_checkouts_path(user, :format => 'pdf'), :html => {:method => 'get', :id => 'form'}) do |f|-%>
-    <%= hidden_field_tag :basket_id, basket_id if basket_id %>
-    <%= submit_tag t('activerecord.attributes.checkout.output_checkoutlist') -%>
+  <%- if is_checkouts_autoprint?(request.remote_ip) -%>
+    <object classid="clsid:CA8A9780-280D-11CF-A24D-444553540000" id="objPdf" width="0" height="0">
+      <param name="src" value="<%= user_checkouts_path(user, :format => 'pdf') -%>">
+    </object>
+<script>
+$(function(){
+  //$('#button_print_pdf').click(function(){
+  //  objPdf.printAll();
+  //  $('#notice').html('<strong><%= t('checkout.printout_in_progress') -%></strong>');
+  //});
+  objPdf.printAll();
+});
+</script>
+<!--
+    <button id="button_print_pdf"><%= t('activerecord.attributes.checkout.output_checkoutlist') -%></button>
+-->
+  <%- else -%>
+    <%= form_for(:checkouts, :url => user_checkouts_path(user, :format => 'pdf'), :html => {:method => 'get', :id => 'form'}) do |f|-%>
+      <%= hidden_field_tag :basket_id, basket_id if basket_id %>
+      <%= submit_tag t('activerecord.attributes.checkout.output_checkoutlist') -%>
+    <%- end -%>
   <%- end -%>
 <%- end -%>
 <%= render 'list' -%>
