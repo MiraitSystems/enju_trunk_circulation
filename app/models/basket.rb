@@ -20,8 +20,9 @@ class Basket < ActiveRecord::Base
   attr_accessible :item_id, :user_id
 
   def check_suspended
+    state_id = self.try(:user).try(:user_status).try(:state_id) || 10 #TODO when state_id is NILL
     if self.user
-      errors[:base] << I18n.t('basket.this_account_is_suspended') unless self.user.user_status.state_id < 3  # self.user.active_for_authentication?
+      errors[:base] << I18n.t('basket.this_account_is_suspended') unless state_id < 3  # self.user.active_for_authentication?
     else
       errors[:base] << I18n.t('user.not_found')
     end
