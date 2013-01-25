@@ -33,9 +33,10 @@ class Checkin < ActiveRecord::Base
       checkouts.each do |checkout|
         # TODO: ILL時の処理
         checkout.checkin = self
-        logger.error "**** before checkout save: #{checkout.attributes}"
         checkout.save(:validate => false)
-        logger.error "*** checkout saved"
+        # delete from reminder list
+        ReminderList.delete_all(:checkout_id => checkout.id)
+
         #message << I18n.t('checkin.other_library_item') + '<br />' unless checkout.item.shelf.library == current_user.library
         unless escape_flag
           unless checkout.item.shelf.library == current_user.library
