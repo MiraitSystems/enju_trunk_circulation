@@ -80,6 +80,7 @@ ja:
     my_checkout: "自分の貸出"
     number_of_day_overdue: "延滞日数"
     extend: "貸出期間の延長"
+    printout_in_progress: "貸出票の印刷を開始しました"
   reserve:
     user_reserve: "%{login_name} さんの予約資料"
     library_group_reserve: "%{library_group_name} での予約資料"
@@ -113,6 +114,7 @@ ja:
     retain_error: "取り置き処理に失敗しました。"
     no_reserve: 予約中の資料はありません
     picking_list: ピッキング用リスト
+    printout_in_progress: "予約確認票の印刷を開始しました"
   checked_item:
     not_available_for_checkout: "この資料の貸出はできません。(状態不正)"
     new_serial: "この資料の貸出はできません。(雑誌の最新号)"

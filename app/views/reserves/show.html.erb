@@ -59,9 +59,6 @@
   <%- if @reserve.retained -%>
     (<%= t('reserve.called')-%>)
   <%- end -%>
-  <%- if @reserve.state == 'retained' %>
-    (<%= link_to @reserve.item.item_identifier, @reserve.item if @reserve.item %>)
-  <%- end -%>
 </p>
 
 <p>
@@ -83,11 +80,28 @@
 <strong><%= t('activerecord.attributes.reserve.checked_out_at') -%>:</strong>
   <%= l(@reserve.checked_out_at) if @reserve.checked_out_at -%>
 </p>
-
 <%- if @reserve.can_checkout? -%>
-  <%= form_tag ({:action => 'output'}) do -%>
-    <%= hidden_field_tag :reserve_id, @reserve.id -%>
-    <%= submit_tag t('page.output', :model => t('activerecord.attributes.reserve.reserve_list')) -%>
+  <%- if is_reserve_autoprint?(request.remote_ip) -%>
+    <object classid="clsid:CA8A9780-280D-11CF-A24D-444553540000" id="objPdf" width="0" height="0">
+      <param name="src" value="<%= output_pdf_reserve_path(@reserve.id) -%>">
+    </object>
+<script>
+$(function(){
+  //$('#button_print_pdf').click(function(){
+  //  objPdf.printAll();
+  //  $('#notice').html('<strong><%= t('reserve.printout_in_progress') -%></strong>');
+  //});
+  objPdf.printAll();
+});
+</script>
+<!--
+    <button id="button_print_pdf"><%= t('activerecord.attributes.reserve.reserve_list') -%></button>
+-->
+  <%- else -%>
+    <%= form_tag ({:action => 'output'}) do -%>
+      <%= hidden_field_tag :reserve_id, @reserve.id -%>
+      <%= submit_tag t('page.output', :model => t('activerecord.attributes.reserve.reserve_list')) -%>
+    <%- end -%>
   <%- end -%>
 <%- end -%>
 </div>
