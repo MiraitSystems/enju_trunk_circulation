@@ -451,6 +451,12 @@ class ReservesController < ApplicationController
       render :json => {:error => e}
   end
 
+  def output_pdf
+    @reserve = Reserve.find(params[:id])
+    data = Reserve.get_reserve(@reserve, current_user)
+    send_data data.generate, :filename => Setting.reserve_print.filename
+  end
+
   private
   def position_update(manifestation)
     reserves = Reserve.where(:manifestation_id => manifestation).can_change_position.order(:position)
