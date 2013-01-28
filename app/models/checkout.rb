@@ -137,6 +137,9 @@ class Checkout < ActiveRecord::Base
         unless checkouts.empty?
           if SystemConfiguration.get("send_message.recall_overdue_item")
             queues << user.send_message(template, :manifestations => checkouts.collect(&:item).collect(&:manifestation))
+            checkouts.each do |checkout|
+              ReminderList.where(:checkout_id => checkout.id).update_all(:status => 1, :mail_sent_at => Time.zone.now) rescue nil
+            end
           end
         end
       end
