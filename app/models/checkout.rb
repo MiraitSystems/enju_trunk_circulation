@@ -33,7 +33,7 @@ class Checkout < ActiveRecord::Base
     due_date_datetype = due_date.strftime("%Y-%m-%d")
     overdue = (Date.today - due_date_datetype.to_date) 
     overdue = 0 if overdue < 0
-    return overdue
+    return overdue.to_i
   end
 
   def is_not_checked?
