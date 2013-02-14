@@ -22,10 +22,11 @@ class ReservesController < ApplicationController
       if @user
         if current_user == @user
            @reserve_user = current_user
-#          redirect_to user_reserves_path(current_user);return
         else
           access_denied; return
         end
+      else
+        access_denied; return
       end
     end
 
