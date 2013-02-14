@@ -25,7 +25,7 @@ class Checkout < ActiveRecord::Base
   after_create :store_history
 
   attr_accessor :item_identifier
-  attr_accessible :user_id, :checkout_renewal_count
+  attr_accessible :user_id, :checkout_renewal_count, :available_for_extend
 
   paginates_per 10
 
