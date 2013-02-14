@@ -188,14 +188,14 @@ class Reserve < ActiveRecord::Base
   end
 
   def retain_item
-    if self.item_identifier
+    unless self.item_identifier.blank?
       item = Item.where(:item_identifier => item_identifier).first
       if item && item.available_for_retain? && (item.manifestation == self.manifestation)
         self.item = item
         self.sm_retain!
         return true
       elsif item.nil?
-        errors[:base] = I18n.t('reserve.not_found')  
+        errors[:base] = I18n.t('item.not_found')  
         return false
       elsif item.manifestation != self.manifestation
         errors[:base] = I18n.t('reserve.this_item_is_not_reserved')
