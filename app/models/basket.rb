@@ -62,6 +62,7 @@ class Basket < ActiveRecord::Base
   end
 
   def update_checked_items(params)
+    return unless params.try(:keys)
     params.keys.each do |id|
       checked_item = self.checked_items.find(id)
       checked_item.update_attributes(params[id])
