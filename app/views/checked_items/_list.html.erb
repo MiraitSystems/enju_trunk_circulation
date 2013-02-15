@@ -9,7 +9,7 @@
 <%= form_for :checked_item, :html => {:method => :post}, :url => user_basket_checked_items_path(@basket.user, @basket, :mode => 'list'), :remote => true do |f| -%>
   <%= f.error_messages -%>
   <p>
-    <%= t('activerecord.attributes.item.item_identifier') -%>: <%= f.text_field :item_identifier -%>
+    <%= t('activerecord.attributes.item.item_identifier') -%>: <%= f.text_field :item_identifier, :style => 'ime-mode:disabled' -%>
     <%= t('checked_item.ignore_restriction') -%>: <%= f.check_box :ignore_restriction -%>
     <%= f.submit t('page.read'), :disable_with => t('page.wait') -%>
   </p>
