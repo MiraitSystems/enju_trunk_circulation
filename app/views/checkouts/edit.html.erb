@@ -15,7 +15,7 @@
 <%- if @checkout.checkout_renewable? || @renewed -%>
   <%= t('checkout.extended') if @renewed %>
   <%= form_for(@checkout, :url => user_checkout_path(@checkout.user, @checkout)) do |f| -%>
-    <%= t('checkout.new_due_date') -%>: <%= l(@checkout.due_date, :format => :only_date) -%>
+    <%= t('checkout.new_due_date') -%>: <%= l(@checkout.due_date, :format => :only_date) rescue @checkout.due_date -%>
     <%= f.hidden_field :due_date, :id => "hidden_due_date", :value => @renew_due_date -%>
     <br />
     <%= f.submit :disable_with => t('page.wait') unless @renewed %>

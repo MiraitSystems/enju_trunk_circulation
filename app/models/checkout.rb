@@ -21,7 +21,7 @@ class Checkout < ActiveRecord::Base
   validates_presence_of :item_id, :basket_id, :due_date
   validates_uniqueness_of :item_id, :scope => [:basket_id, :user_id]
   validate :is_not_checked?, :on => :create
-  validates_date :due_date
+  validates_date :due_date, :allow_blank => true
   after_create :store_history
 
   attr_accessor :item_identifier
