@@ -71,14 +71,16 @@ class Item < ActiveRecord::Base
   def checkout!(user, librarian = nil)
     extend = nil
     if self.circulation_status.name == "On Loan" && SystemConfiguration.get('checkout.auto_checkin')
-      extend = Checkout.where(:item_id => self.id, :user_id => user.id).try(:not_returned).try(:first).try(:checkout_renewal_count)
-      @basket = Basket.new(:user => librarian)
-      @basket.save(:validate => false)
-      @checkin = @basket.checkins.new(:item_id => self.id, :librarian_id => librarian.id, :auto_checkin => true)
-      @checkin.save(:validate => false)
-      logger.error "***** checkin saved"
-      @checkin.item_checkin(user, true)
-      logger.error "***** item checkined"
+      checkout = Checkout.where(:item_id => self.id).try(:not_returned).order("created_at DESC").try(:first)
+      logger.error "checkout: #{checkout.id}"
+      if checkout 
+        extend = checkout.try(:checkout_renewal_count) if checkout.user.id == user.id
+        @basket = Basket.new(:user => librarian)
+        @basket.save(:validate => false)
+        @checkin = @basket.checkins.new(:item_id => self.id, :librarian_id => librarian.id, :auto_checkin => true)
+        @checkin.save(:validate => false)
+        @checkin.item_checkin(user, true)
+      end
     end
     item = Item.find(self.id)
     item.circulation_status = CirculationStatus.where(:name => 'On Loan').first

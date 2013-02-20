@@ -22,6 +22,7 @@ class Checkout < ActiveRecord::Base
   validates_uniqueness_of :item_id, :scope => [:basket_id, :user_id]
   validate :is_not_checked?, :on => :create
   validates_date :due_date, :allow_blank => true
+  validate :check_due_date
   after_create :store_history
 
   attr_accessor :item_identifier
@@ -39,7 +40,7 @@ class Checkout < ActiveRecord::Base
   def is_not_checked?
     checkout = Checkout.not_returned.where(:item_id => self.item.id) rescue nil
     unless checkout.empty?
-      errors[:base] << I18n.t('activerecord.errors.messages.checkin.already_checked_out')
+      errors[:base] << I18n.t('activerecord.errors.messages.checkin.already_checked_out') unless SystemConfiguration.get('checkout.auto_checkin')
     end
   end
 

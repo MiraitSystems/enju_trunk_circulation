@@ -56,6 +56,13 @@ ja:
         created_at: 時刻
         librarian: 操作ユーザ
 
+    errors:
+      messages:
+        checkout:
+          invalid_date: "貸出期日の指定が不正です。"
+
+
+
   basket:
     my_status: "現在の利用状況"
     books: "冊"
