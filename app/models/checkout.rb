@@ -51,6 +51,8 @@ class Checkout < ActiveRecord::Base
       return false if self.reserved?
     end
     true
+    rescue Exception => e
+      false
   end
 
   def reserved?

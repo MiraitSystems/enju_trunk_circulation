@@ -128,7 +128,6 @@ class CheckoutsController < ApplicationController
   def update
     @checkout = Checkout.find(params[:id])
     if check_renewal(@checkout) || current_user.has_role?('Librarian')
-#      @checkout.reload
       @checkout.checkout_renewal_count += 1 unless current_user.has_role?('Librarian')
 
       respond_to do |format|
@@ -138,6 +137,7 @@ class CheckoutsController < ApplicationController
           format.html { redirect_to user_checkout_path(@checkout.user, @checkout) }
           format.json { render :json => @checkout }
         else
+          @checkout.reload
           format.html { render :action => "edit", :template => "opac/checkouts/edit", :layout => 'opac' } if params[:opac]
           format.html { render :action => "edit" } unless params[:opac]
           format.json { render :json => @checkout.errors, :status => :unprocessable_entity }
@@ -145,7 +145,8 @@ class CheckoutsController < ApplicationController
       end
     end
     rescue Exception => e
-      logger.error e
+      @checkout.reload
+      logger.error "Failed to update checkout: #{e}"
       render :edit
   end
 
