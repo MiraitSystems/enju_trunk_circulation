@@ -118,12 +118,12 @@ class Item < ActiveRecord::Base
     next_reservation = self.manifestation.next_reservation
     next_reservation_accept_library = Library.find(next_reservation.receipt_library_id)
     next_reservation.item = self
-    if self.shelf.library == next_reservation_accept_library 
+    if self.shelf.library.id == next_reservation_accept_library.id
       next_reservation.sm_retain!
       next_reservation.send_message('retained')
     else
       next_reservation.sm_process!
-      InterLibraryLoan.new.request_for_reserve(self, next_reservation_accept_library)
+      InterLibraryLoan.new.request_for_reserve(self, next_reservation_accept_library) if SystemConfiguration.get('use_inter_library_loan') && current_user.library != next_reservation_accept_library
     end
   end
 

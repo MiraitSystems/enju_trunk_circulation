@@ -105,7 +105,7 @@ class CheckedItem < ActiveRecord::Base
     retained_reserves = self.item.manifestation.reserves.hold
     if retained_reserves && retained_reserves.include?(reserve)
       begin
-       return true if self.item.reserve.user_id == self.basket.user.id
+        return true if self.item.reserve.user_id == self.basket.user.id
         exchange_reserve_item(self.item, reserve)
         return true
       rescue Exception => e

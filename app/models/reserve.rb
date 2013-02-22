@@ -283,6 +283,12 @@ class Reserve < ActiveRecord::Base
   end
 
   def checkout
+    other_retained_reserves = Reserve.hold.where(["item_id = ? AND id != ?", self.item_id, self.id])
+    other_retained_reserves.each do |r|
+      r.item_id = nil
+      r.sm_request!
+      r.insert_at(1)
+    end
     self.update_attributes!({:request_status_type => RequestStatusType.where(:name => 'Available For Pickup').first, :checked_out_at => Time.zone.now})
     self.remove_from_list
   end

@@ -5,7 +5,7 @@
 <%= form_for(@checkout, :url => {:controller => 'checkouts', :action => 'extend_checkout'}) do |f| -%>
   <%= f.error_messages -%>
   <div class="field">
-    <%= f.label t('activerecord.attributes.item.item_identifier') -%>
+    <strong><%= t('activerecord.attributes.item.item_identifier') -%></strong>
     <%= f.text_field :item_identifier, :class => 'resource_user_number' -%>
 
     <%= f.submit t('page.read') -%>
