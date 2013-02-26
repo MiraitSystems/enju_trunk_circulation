@@ -52,7 +52,7 @@ class Reserve < ActiveRecord::Base
   before_validation :set_item_and_manifestation, :on => :create
   before_validation :set_expired_at
   before_validation :set_request_status, :on => :create
-  after_create :store_history
+  after_create :store_history, :send_notice
 
   attr_accessor :user_number, :item_identifier
 
@@ -433,6 +433,14 @@ class Reserve < ActiveRecord::Base
     #  end
     else
       raise 'status not defined'
+    end
+  end
+
+  def send_notice
+    system_user = User.find(1)
+    receivers = SystemConfiguration.get('notice_receiver').gsub(' ','').split(',').map{|username| User.where(:username => username).first}
+    receivers.each do |receiver|
+      receiver.send_message('user_reserved_a_book', {:user => self.user, :manifestations => [self.manifestation]})
     end
   end
 
