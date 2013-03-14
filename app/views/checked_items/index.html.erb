@@ -19,14 +19,19 @@
     </div>
     <br />
 
+    <%- if SystemConfiguration.get("view.checkout.disp_checkouts") -%>
     <div id="checkouts_list">
       <%= render 'page/checkouts_list', :user => @basket.user -%>
     </div>
     <br />
+    <%- end -%>
 
+    <%- if SystemConfiguration.get("view.checkout.disp_reserves") -%>
     <div id="reserves_list">
       <%= render 'page/reserves_list', :user => @basket.user -%>
     </div>
+    <%- end -%>
+
     <%- unless @family_users.blank? -%>
       <br />
       <div id="checkouts_family_list">
