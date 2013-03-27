@@ -196,7 +196,7 @@ class Checkout < ActiveRecord::Base
       page.item(:lend_library).value(library.display_name)
       page.item(:lend_library_telephone_number_1).value(library.telephone_number_1)
       page.item(:lend_library_telephone_number_2).value(library.telephone_number_2)
-      page.item(:date).value(Time.now.strftime('%Y/%m/%d'))
+      page.item(:date).value(checkouts.first.created_at.strftime('%Y/%m/%d'))
 
       checkouts.each do |checkout|
         page.list(:list).add_row do |row|
