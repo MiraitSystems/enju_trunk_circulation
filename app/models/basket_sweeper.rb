@@ -5,7 +5,7 @@ class BasketSweeper < ActionController::Caching::Sweeper
   def after_save(record)
     record.checkouts.each do |checkout|
       expire_editable_fragment(checkout.item, ['detail'])
-      expire_editable_fragment(checkout.item.manifestation, ['holding', 'show_list'], ['html', 'mobile'])
+      expire_editable_fragment(checkout.item.manifestation, ['holding', 'show_list'], ['html', 'mobile']) if checkout.item.manifestation
     end
   end
 
