@@ -1,4 +1,7 @@
 class CheckoutsController < ApplicationController
+  require 'util'
+  include Util
+
   add_breadcrumb "I18n.t('page.histories', :model => I18n.t('activerecord.models.checkout'))", 'checkouts_path'
   add_breadcrumb "I18n.t('page.new', :model => I18n.t('activerecord.models.checkout'))", 'new_checkout_path', :only => [:new, :create]
   add_breadcrumb "I18n.t('page.editing', :model => I18n.t('activerecord.models.checkout'))", 'edit_checkout_path(params[:id])', :only => [:edit, :update]
@@ -205,6 +208,16 @@ class CheckoutsController < ApplicationController
       status = {'code' => 900, 'note' => 'invalid access network'}
     end
 
+    passwd = SystemConfiguration.get("offline_client_crypt_password")
+    cryptor = Cryptor.new(passwd)
+    begin
+      params[:user_number] = cryptor.decrypt(base64decode(params[:user_number]))
+      params[:item_identifier] = cryptor.decrypt(base64decode(params[:item_identifier]))
+      params[:created_at] = cryptor.decrypt(base64decode(params[:created_at]))
+    rescue
+      logger.error "mismatch decrypt password."
+      status = {'code' => 700, 'note' => 'mismatch decrypt password'}
+    end
     #Parameters: {"id"=>"3", "user_number"=>"nakamura", "item_identifier"=>"JX009", "created_at"=>"20121026144222"}
     if params[:id].blank? || params[:user_number].blank? || params[:item_identifier].blank? || params[:created_at].blank?
       logger.error "invalid parameter error."

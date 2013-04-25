@@ -1,4 +1,7 @@
 class CheckinsController < ApplicationController
+  require 'util'
+  include Util
+
   add_breadcrumb "I18n.t('activerecord.models.checkin')", 'checkins_path'
   include NotificationSound
 
@@ -179,6 +182,15 @@ class CheckinsController < ApplicationController
     unless admin_networks?
       logger.error "invalid access network"
       status = {'code' => 900, 'note' => 'invalid access network'}
+    end
+    passwd = SystemConfiguration.get("offline_client_crypt_password")
+    cryptor = Cryptor.new(passwd)
+    begin
+      params[:item_identifier] = cryptor.decrypt(base64decode(params[:item_identifier]))
+      params[:created_at] = cryptor.decrypt(base64decode(params[:created_at]))
+    rescue
+      logger.error "mismatch decrypt password."
+      status = {'code' => 700, 'note' => 'mismatch decrypt password'}
     end
     #Parameters: {"id"=>"3", "item_identifier"=>"JX009", "created_at"=>"20121026144222"}
     if params[:id].blank? || params[:item_identifier].blank? || params[:created_at].blank?
