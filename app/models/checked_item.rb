@@ -26,13 +26,14 @@ class CheckedItem < ActiveRecord::Base
       logger.error "group cannot checkout (CheckedItem:3)"
       errors[:base] << 'checked_item.this_group_cannot_checkout'; return false
     end
-    # if self.item.rent?
-    ##  errors[:base] << I18n.t('activerecord.errors.messages.checked_item.already_checked_out')
-    #   errors[:base] << 'checked_item.already_checked_out'; return
-    # end
     # ここまでは絶対に貸出ができない場合
 
     return true if self.ignore_restriction == "1"
+
+    if self.item.rent? && !SystemConfiguration.get('checkout.auto_checkin')
+      logger.error'checked_item.already_checked_out'
+      errors[:base] << 'checked_item.already_checked_out'; return false
+    end
 
     if self.item.manifestation.new_serial? and SystemConfiguration.get("checkouts.cannot_for_new_serial")
       errors[:base] << 'checked_item.new_serial'; return false      
