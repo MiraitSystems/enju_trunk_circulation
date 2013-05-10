@@ -70,6 +70,8 @@ ja:
     number_of_reserve: "予約冊数"
     this_account_is_suspended: "このアカウントは停止されています。"
     checkout_completed: "貸出が完了しました。"
+    checkout_failed: "貸出処理に失敗しました。"
+    no_checked_item: "貸出資料を読み込んでください。"
   checkout:
     user_checkout: "%{login_name} さんの貸出資料"
     library_group_checkout: "%{library_group_name} での貸出"

@@ -29,7 +29,10 @@ class Basket < ActiveRecord::Base
   end
 
   def basket_checkout(librarian)
-    return nil if self.checked_items.size == 0
+    if self.checked_items.size == 0
+      errors[:base] = I18n.t('basket.no_checked_item')
+      return nil
+    end
     begin
     checkout = nil
     Item.transaction do
