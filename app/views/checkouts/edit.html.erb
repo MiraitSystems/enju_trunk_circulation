@@ -44,7 +44,7 @@ $(function(){
       <%= f.text_field :due_date, :value => @checkout.due_date.try(:strftime, "%Y-%m-%d"), :class => 'date_field', :placeholder => "#{t('page.example')}: 2011-04-12"-%>
     </div>
     <div class="field">
-      <%= t('checkout.renewal_count') -%>: <%= f.text_field :checkout_renewal_count, :class => 'resource_integer' -%>
+      <%= t('checkout.renewal_count') -%>: <%= f.text_field :checkout_renewal_count, :value => @checkout.checkout_renewal_count+1, :class => 'resource_integer' -%>
     </div>
 
     <div class="actions">

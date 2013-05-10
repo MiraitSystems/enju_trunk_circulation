@@ -131,7 +131,7 @@ class CheckoutsController < ApplicationController
   def update
     @checkout = Checkout.find(params[:id])
     if check_renewal(@checkout) || current_user.has_role?('Librarian')
-      @checkout.checkout_renewal_count += 1 unless current_user.has_role?('Librarian')
+      @checkout.checkout_renewal_count += 1
 
       respond_to do |format|
         if @checkout.update_attributes(params[:checkout])
