@@ -47,7 +47,8 @@ class Checkout < ActiveRecord::Base
   def checkout_renewable?
     return false if self.overdue?
     if self.item
-      return false if self.over_checkout_renewal_limit? && !current_user.has_role?('Librarian')
+#      return false if self.over_checkout_renewal_limit? 
+      return false if !available_for_extend && !current_user.has_role?('Librarian')
       return false if self.reserved?
     end
     true

@@ -122,6 +122,11 @@ class CheckoutsController < ApplicationController
       end
     end
 
+    unless current_user.checkouts.overdue(Time.zone.now).blank?
+      flash[:message] = t('checkout.you_have_overdue_item')
+      @checkout.available_for_extend = false
+    end
+
     @renew_due_date = @checkout.set_renew_due_date(@user)
     render :template => 'opac/checkouts/edit', :layout => 'opac' if params[:opac]
   end
