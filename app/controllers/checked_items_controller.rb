@@ -10,6 +10,11 @@ class CheckedItemsController < ApplicationController
     unless @basket
       access_denied; return
     end
+
+    if params[:user_id]
+      @user = User.find_by_username(params[:user_id]) if params[:user_id]
+      @basket.user = @user
+    end
     unless @basket.user.patron
       redirect_to new_user_patron_url(@user); return
     end
