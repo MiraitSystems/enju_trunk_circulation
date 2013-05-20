@@ -83,7 +83,7 @@ class CheckedItemsController < ApplicationController
 
     messages = []
     flash[:message], flash[:sound] = '', ''
-    item_identifier = @checked_item.item_identifier.to_s.strip
+    item_identifier = @checked_item.item_identifier.present? ? @checked_item.item_identifier.to_s.strip : nil
     item = Item.where(:item_identifier => item_identifier).first if item_identifier
     @checked_item.item = item if item
 
