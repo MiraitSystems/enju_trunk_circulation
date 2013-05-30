@@ -437,11 +437,7 @@ class Reserve < ActiveRecord::Base
   end
 
   def send_notice
-    system_user = User.find(1)
-    receivers = SystemConfiguration.get('notice_receiver').gsub(' ','').split(',').map{|username| User.where(:username => username).first}
-    receivers.each do |receiver|
-      receiver.send_message('user_reserved_a_book', {:user => self.user, :manifestations => [self.manifestation]})
-    end
+    MessageRequest.send_notice_to_librarians('user_reserved_a_book', {:user => self.user, :manifestations => [self.manifestation]})
   end
 
   def self.expire
