@@ -25,7 +25,7 @@
     <td>
       <nobr><%= link_to t('page.show'), user_checkout_path(checkout.user, checkout) -%></nobr>
       <br />
-      <%- if (can? :update, checkout) && (current_user.has_role?('Librarian') || checkout.checkout_renewable?) -%> 
+      <%- if (can? :update, checkout) && (current_user.has_role?('Librarian') || checkout.checkout_renewable?(current_user)) -%> 
         <%# = link_to t('checkout.extend'), edit_user_checkout_path(checkout.user, checkout) -%>
         <%= link_to t('checkout.extend'), extend_checkout_checkouts_path(:checkout => {:item_identifier => checkout.item.item_identifier}), :method => :post -%>
       <%- end -%>

@@ -12,7 +12,7 @@
 
 <h3><%= t('checkout.renewal') -%></h3>
 <div style="color: red"><%= raw flash[:message] -%></div>
-<%- if @checkout.checkout_renewable? || @renewed -%>
+<%- if @checkout.checkout_renewable?(current_user) || @renewed -%>
   <%= t('checkout.extended') if @renewed %>
   <%= form_for(@checkout, :url => user_checkout_path(@checkout.user, @checkout)) do |f| -%>
     <%= t('checkout.new_due_date') -%>: <%= l(@checkout.due_date, :format => :only_date) rescue @checkout.due_date -%>
