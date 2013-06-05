@@ -186,6 +186,11 @@ class CheckoutsController < ApplicationController
         access_denied; return
       end
     end
+    unless @checkout
+      flash[:message] = t('checkout.no_checkout')
+      @checkout = Checkout.new
+      render :extend; return
+    end
   
     if check_renewal(@checkout)
       @checkout = @checkout.new_loan(current_user)
@@ -200,7 +205,7 @@ class CheckoutsController < ApplicationController
     rescue Exception => e
       logger.error e
       @checkout = Checkout.new
-      flash[:notice] = e
+      flash[:message] = e
       render :extend
   end
 
