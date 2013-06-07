@@ -634,8 +634,8 @@ class Reserve < ActiveRecord::Base
       page.item(:user_information).value(Reserve.get_information_type(reserve))
       # book info
       page.item(:title).value(reserve.manifestation.original_title)
-      page.item(:creater).value(patrons_list(reserve.manifestation.creators.readable_by(current_user), {:itemprop => 'author', :nolink => true}))
-      page.item(:publisher).value(patrons_list(reserve.manifestation.publishers.readable_by(current_user), {:itemprop => 'publisher', :nolink => true}))
+      page.item(:creater).value(patrons_list(reserve.manifestation.creators.readable_by(current_user), {:itemprop => 'author', :nolink => true}, 'output'))
+      page.item(:publisher).value(patrons_list(reserve.manifestation.publishers.readable_by(current_user), {:itemprop => 'publisher', :nolink => true}, 'output'))
       page.item(:price).value(reserve.manifestation.price)
       page.item(:page).value(reserve.manifestation.number_of_pages.to_s + 'p') if reserve.manifestation.number_of_pages
       page.item(:size).value(reserve.manifestation.height.to_s + 'cm') if reserve.manifestation.height
