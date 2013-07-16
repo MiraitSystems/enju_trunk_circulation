@@ -246,8 +246,9 @@ class ReservesController < ApplicationController
   # POST /reserves
   # POST /reserves.json
   def create
-    user = User.where(:user_number => params[:reserve][:user_number]).first if params[:reserve]
-
+    user_number = params[:reserve][:user_number].strip if params[:reserve][:user_number]
+    user = User.where(:user_number => user_number).first if user_number
+ 
     # 図書館員以外は自分の予約しか作成できない
     if current_user.blank?
       access_denied; return

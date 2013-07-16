@@ -152,7 +152,7 @@ class Reserve < ActiveRecord::Base
     #@reserve.user.library
     role_id = self.created_user.role.id rescue nil
     if role_id.nil?
-      return User.administrators.first.library.display_name
+      return User.administrators.first.library
     end
     if Role.librarian_role_ids.include?(role_id)
       return self.created_user.library
