@@ -19,15 +19,6 @@
   (<%= @reserve.user.user_number %>)
 </p>
 
-<p>
-  <strong><%= t('activerecord.attributes.user.reserved_library') -%>:</strong>
-  <%- if @reserve.reserved_library.blank? -%>
-  <%= @reserve.reserved_library_name -%>
-  <%- else -%>
-  <%= link_to @reserve.reserved_library_name, @reserve.reserved_library -%>
-  <%- end -%>
-</p>
-
 <%- if @reserve.user && @reserve.user.patron -%> 
 <p>
   <strong><%= t('activerecord.attributes.reserve.contact') -%>:</strong>
