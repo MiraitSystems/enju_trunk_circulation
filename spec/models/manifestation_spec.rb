@@ -3,18 +3,18 @@ require 'spec_helper'
 
 describe Manifestation, :solr => true do
   describe '#next_reservation' do
-    #TODO
+    it '' #TODO
   end
 
   describe '#next_reserve' do
-    #TODO
+    it '' #TODO
   end
 
   describe '#is_reserved_by' do
-    #TODO
+    it '' #TODO
   end
 
   describe '#is_reserved?' do
-    #TODO
+    it '' #TODO
   end
 end
