@@ -219,17 +219,22 @@ class CheckoutsController < ApplicationController
     end
 
     passwd = SystemConfiguration.get("offline_client_crypt_password")
-    cryptor = Cryptor.new(passwd)
-    begin
-      params[:user_number] = cryptor.decrypt(base64decode(params[:user_number]))
-      params[:item_identifier] = cryptor.decrypt(base64decode(params[:item_identifier]))
-      params[:created_at] = cryptor.decrypt(base64decode(params[:created_at]))
-    rescue
-      logger.error "mismatch decrypt password."
-      status = {'code' => 700, 'note' => 'mismatch decrypt password'}
+    if passwd.present?
+      logger.info "offline_client_crypt_password is present."
+      cryptor = Cryptor.new(passwd)
+      begin
+        params[:user_number] = cryptor.decrypt(base64decode(params[:user_number]))
+        params[:item_identifier] = cryptor.decrypt(base64decode(params[:item_identifier]))
+        params[:created_at] = cryptor.decrypt(base64decode(params[:created_at]))
+      rescue
+        logger.error "mismatch decrypt password."
+        status = {'code' => 700, 'note' => 'mismatch decrypt password'}
+      end
+    else
+      logger.info "offline_client_crypt_password is empty."
     end
-    #Parameters: {"id"=>"3", "user_number"=>"nakamura", "item_identifier"=>"JX009", "created_at"=>"20121026144222"}
-    if params[:id].blank? || params[:user_number].blank? || params[:item_identifier].blank? || params[:created_at].blank?
+    #Parameters: {"id"=>"3", "user_number"=>"nakamura", "item_identifier"=>"JX009", "created_at"=>"20121026144222", "created_by"=>"librarian1"}
+    if params[:id].blank? || params[:user_number].blank? || params[:item_identifier].blank? || params[:created_at].blank? || params[:created_by].present?
       logger.error "invalid parameter error."
       status = {'code' => 800, 'note' => 'invalid parameter error'}
     end
@@ -278,8 +283,13 @@ private
 
     logger.debug "checked item save start"
 
-    #TODO get librarian
-    librarian = User.where(:username => 'admin').first
+    librarian = User.where(:username => params[:created_by]).first
+    if librarian.blank?
+      logger.warn "librarian is invalid. created_by=#{params[:created_by]}"
+      librarian = User.where(:username => 'admin').first
+    else
+      #TODO librarian check
+    end
     Basket.transaction do 
       if checked_item.save && basket.basket_checkout(librarian)
         logger.info "success checkout"
