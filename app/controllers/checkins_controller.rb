@@ -179,31 +179,44 @@ class CheckinsController < ApplicationController
   def batchexec
     logger.info "batchexec(checkin) start"
     status = nil
+    crypt_flag = false
     unless admin_networks?
       logger.error "invalid access network"
       status = {'code' => 900, 'note' => 'invalid access network'}
-    end
-    passwd = SystemConfiguration.get("offline_client_crypt_password")
-    if passwd.present?    
-      cryptor = Cryptor.new(passwd)
-      begin
-        params[:item_identifier] = cryptor.decrypt(base64decode(params[:item_identifier]))
-        params[:created_at] = cryptor.decrypt(base64decode(params[:created_at]))
-      rescue
-        logger.error "mismatch decrypt password."
-        status = {'code' => 700, 'note' => 'mismatch decrypt password'}
-      end
     else
-      logger.info "offline_client_crypt_password is empty."
-    end
-    #Parameters: {"id"=>"3", "item_identifier"=>"JX009", "created_at"=>"20121026144222", "created_by"=>"admin"}
-    if params[:id].blank? || params[:item_identifier].blank? || params[:created_at].blank? || params[:created_by].blank?
-      logger.error "invalid parameter error."
-      status = {'code' => 800, 'note' => 'invalid parameter error'}
-    end
+      passwd = SystemConfiguration.get("offline_client_crypt_password")
+      if passwd.present?    
+        logger.info "offline_client_crypt_password is present."
+        crypt_flag = true
+        cryptor = Cryptor.new(passwd)
+        begin
+          params[:item_identifier] = cryptor.decrypt(base64decode(params[:item_identifier]))
+          params[:created_at] = cryptor.decrypt(base64decode(params[:created_at]))
+          params[:created_by] = cryptor.decrypt(base64decode(params[:created_by]))
+        rescue
+          logger.error "mismatch decrypt password."
+          status = {'code' => 700, 'note' => 'mismatch decrypt password'}
+        end
+      else
+        logger.info "offline_client_crypt_password is empty."
+      end
+      #Parameters: {"id"=>"3", "item_identifier"=>"JX009", "created_at"=>"20121026144222", "created_by"=>"admin"}
+      if params[:id].blank? || params[:item_identifier].blank? || params[:created_at].blank? || params[:created_by].blank?
+        logger.error "invalid parameter error."
+        status = {'code' => 800, 'note' => 'invalid parameter error'}
+      end
 
-    unless status
-      status = batchexec_checkin(params)
+      unless crypt_flag
+        begin
+          Time.parse params[:created_at]
+        rescue ArgumentError => e
+          status = {'code' => 801, 'note' => 'invalid parameter error.'}
+        end
+      end
+
+      unless status
+        status = batchexec_checkin(params)
+      end
     end
 
     logger.info "batchexec status=#{status['code']}"
@@ -241,6 +254,15 @@ private
     checkouts.each do |checkout|
       checked = true if checkout.item.item_identifier == item.item_identifier
       overdue = true if checkout.item.item_identifier == item.item_identifier and checkout.overdue?
+    end
+
+    logger.debug "checked time set"
+    begin
+      checkin.created_at = Time.parse params[:created_at]
+    rescue ArgumentError => e
+      logger.debug "invalid created_at"
+      status = {'code' => 310, 'note' => 'invalid created_at'}
+      return status
     end
 
     checkin.item = item
