@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130726021043) do
+ActiveRecord::Schema.define(:version => 20130810082442) do
 
   create_table "accept_types", :force => true do |t|
     t.string   "name"
@@ -682,6 +682,7 @@ ActiveRecord::Schema.define(:version => 20130726021043) do
     t.integer  "skip_flag",           :default => 0, :null => false
   end
 
+  add_index "inventory_check_data", ["inventory_manage_id", "readcode", "shelf_name"], :name => "inventory_check_data_index_1"
   add_index "inventory_check_data", ["skip_flag"], :name => "index_inventory_check_data_on_skip_flag"
 
   create_table "inventory_check_data_import_files", :force => true do |t|
@@ -711,24 +712,40 @@ ActiveRecord::Schema.define(:version => 20130726021043) do
     t.datetime "updated_at",                          :null => false
   end
 
+  create_table "inventory_check_data_skips", :force => true do |t|
+    t.integer  "inventory_manage_id"
+    t.string   "item_identifier"
+    t.integer  "inventory_check_result_id"
+    t.integer  "inventory_check_datum_id"
+    t.text     "note"
+    t.integer  "created_by"
+    t.datetime "created_at",                :null => false
+    t.datetime "updated_at",                :null => false
+  end
+
+  add_index "inventory_check_data_skips", ["inventory_manage_id", "inventory_check_datum_id"], :name => "inventory_check_data_skips_index3"
+  add_index "inventory_check_data_skips", ["inventory_manage_id", "inventory_check_result_id"], :name => "inventory_check_data_skips_index2"
+  add_index "inventory_check_data_skips", ["inventory_manage_id", "item_identifier"], :name => "inventory_check_data_skips_index1", :unique => true
+
   create_table "inventory_check_results", :force => true do |t|
     t.integer  "inventory_manage_id"
-    t.integer  "status_1",            :default => 0
-    t.integer  "status_2",            :default => 0
-    t.integer  "status_3",            :default => 0
-    t.integer  "status_4",            :default => 0
-    t.integer  "status_5",            :default => 0
-    t.integer  "status_6",            :default => 0
-    t.integer  "status_7",            :default => 0
-    t.integer  "status_8",            :default => 0
-    t.integer  "status_9",            :default => 0
-    t.datetime "created_at",                         :null => false
-    t.datetime "updated_at",                         :null => false
+    t.integer  "status_1",                 :default => 0
+    t.integer  "status_2",                 :default => 0
+    t.integer  "status_3",                 :default => 0
+    t.integer  "status_4",                 :default => 0
+    t.integer  "status_5",                 :default => 0
+    t.integer  "status_6",                 :default => 0
+    t.integer  "status_7",                 :default => 0
+    t.integer  "status_8",                 :default => 0
+    t.integer  "status_9",                 :default => 0
+    t.datetime "created_at",                              :null => false
+    t.datetime "updated_at",                              :null => false
     t.string   "item_identifier"
-    t.integer  "skip_flag",           :default => 0
+    t.integer  "skip_flag",                :default => 0
     t.string   "original_title"
     t.text     "note"
     t.text     "shelf_group_names"
+    t.integer  "inventory_check_datum_id"
   end
 
   add_index "inventory_check_results", ["item_identifier"], :name => "index_inventory_check_results_on_item_identifier"
@@ -765,6 +782,10 @@ ActiveRecord::Schema.define(:version => 20130726021043) do
     t.string   "bind_type",              :default => "0", :null => false
     t.datetime "check_started_at"
     t.datetime "check_finished_at"
+    t.string   "call_number_1_from"
+    t.string   "call_number_1_to"
+    t.string   "call_number_2_from"
+    t.string   "call_number_2_to"
   end
 
   create_table "inventory_shelf_barcode_import_files", :force => true do |t|
@@ -1327,6 +1348,30 @@ ActiveRecord::Schema.define(:version => 20130726021043) do
   add_index "messages", ["parent_id"], :name => "index_messages_on_parent_id"
   add_index "messages", ["receiver_id"], :name => "index_messages_on_receiver_id"
   add_index "messages", ["sender_id"], :name => "index_messages_on_sender_id"
+
+  create_table "nacsis_user_requests", :force => true do |t|
+    t.string   "subject_heading"
+    t.string   "publisher"
+    t.string   "pub_date"
+    t.string   "physical_description"
+    t.string   "series_title"
+    t.text     "note"
+    t.string   "isbn"
+    t.string   "pub_country"
+    t.string   "title_language"
+    t.string   "text_language"
+    t.string   "classmark"
+    t.text     "author_heading"
+    t.text     "subject"
+    t.string   "ncid"
+    t.integer  "user_id",                             :null => false
+    t.integer  "request_type",                        :null => false
+    t.integer  "state",                :default => 1, :null => false
+    t.text     "user_note"
+    t.text     "librarian_note"
+    t.datetime "created_at",                          :null => false
+    t.datetime "updated_at",                          :null => false
+  end
 
   create_table "ndl_stat_accepts", :force => true do |t|
     t.string   "item_type",        :null => false
