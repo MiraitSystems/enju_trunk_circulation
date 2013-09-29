@@ -148,6 +148,10 @@ class Reserve < ActiveRecord::Base
 
   paginates_per 10
 
+  def self.reserves_count(manifestation)
+    return waiting.where(:manifestation_id => manifestation.id, :checked_out_at => nil).size rescue 0
+  end
+
   def reserved_library
     #@reserve.user.library
     role_id = self.created_user.role.id rescue nil
