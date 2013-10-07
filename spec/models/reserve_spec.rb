@@ -91,6 +91,10 @@ describe Reserve do
     it '' # TODO: immediately
   end
 
+  describe '.reserves_count' do
+    it '' # TODO: immediately
+  end
+
   describe '#reserved_library' do
     it '' # TODO: immediately
   end
