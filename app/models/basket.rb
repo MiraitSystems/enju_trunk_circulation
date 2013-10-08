@@ -2,7 +2,7 @@ class Basket < ActiveRecord::Base
   attr_accessible :note, :user_number, :user, :basket_type
 
   default_scope :order => 'id DESC'
-  scope :will_expire, lambda {|date| {:conditions => ['created_at < ?', date]}}
+  scope :will_expire, lambda { |date| {:conditions => ['basket_type = ? AND created_at < ?', 0, date]} }
   belongs_to :user, :validate => true
   has_many :checked_items, :dependent => :destroy
   has_many :items, :through => :checked_items
