@@ -1,5 +1,5 @@
 class Checkin < ActiveRecord::Base
-  attr_accessible :item_identifier, :librarian_id, :auto_checkin
+  attr_accessible :item_identifier, :librarian_id, :auto_checkin, :checked_at
 
   default_scope :order => 'id DESC'
   scope :on, lambda {|date| {:conditions => ['created_at >= ? AND created_at < ?', date.beginning_of_day, date.tomorrow.beginning_of_day]}}
@@ -56,7 +56,7 @@ class Checkin < ActiveRecord::Base
           # TODO: もっと目立たせるために別画面を表示するべき？
           #message << I18n.t('item.this_item_is_reserved') + '<br />'
           message << 'item.this_item_is_reserved'
-          self.item.retain(current_user)
+          # self.item.retain(current_user)
         end
       end
 

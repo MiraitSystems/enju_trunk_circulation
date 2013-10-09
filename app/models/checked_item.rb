@@ -3,7 +3,7 @@ class CheckedItem < ActiveRecord::Base
   belongs_to :basket #, :validate => true
 
   validates_associated :item, :basket, :on => :update
-  validates_presence_of :item, :basket, :due_date, :on => :update
+  validates_presence_of :item, :basket, :due_date, :checked_at, :on => :update
   validates_uniqueness_of :item_id, :scope => :basket_id
   validate :available_for_checkout?, :on => :create
  
@@ -11,7 +11,7 @@ class CheckedItem < ActiveRecord::Base
   normalize_attributes :item_identifier
 
   attr_accessor :item_identifier, :ignore_restriction
-  attr_accessible :due_date, :item_id, :basket_id
+  attr_accessible :due_date, :item_id, :basket_id, :checked_at
 
   def available_for_checkout?
     unless self.item
@@ -64,7 +64,7 @@ class CheckedItem < ActiveRecord::Base
 
     if lending_rule.fixed_due_date.blank?
       #self.due_date = item_checkout_type.checkout_period.days.since Time.zone.today
-      self.due_date = lending_rule.loan_period.days.since Time.zone.now
+      self.due_date = lending_rule.loan_period.days.since self.checked_at
     else
       #self.due_date = item_checkout_type.fixed_due_date
       self.due_date = lending_rule.fixed_due_date

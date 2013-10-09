@@ -18,6 +18,7 @@ ja:
         edit_user_comment: 利用者の注記を編集する
         update_note: 注記の更新
       checkin:
+        checked_at: 返却日
       checkout:
         due_date: 期日
         family_info: 家族情報
@@ -25,6 +26,7 @@ ja:
         renewal_count: 貸出の更新回数
         output_checkoutlist: 貸出票の出力
         over: 以上
+        checked_at: 貸出日
       reserve:
         user: 利用者
         checked_out_at: 貸出時刻
