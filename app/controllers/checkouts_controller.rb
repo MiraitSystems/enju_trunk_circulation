@@ -213,29 +213,46 @@ class CheckoutsController < ApplicationController
   def batchexec
     logger.info "batchexec start"
     status = nil
+    crypt_flag = false
     unless admin_networks?
       logger.error "invalid access network"
       status = {'code' => 900, 'note' => 'invalid access network'}
-    end
+    else
+      passwd = SystemConfiguration.get("offline_client_crypt_password")
+      if passwd.present?
+        logger.info "offline_client_crypt_password is present."
+        crypt_flag = true
+        cryptor = Cryptor.new(passwd)
+        begin
+          params[:user_number] = cryptor.decrypt(base64decode(params[:user_number]))
+          params[:item_identifier] = cryptor.decrypt(base64decode(params[:item_identifier]))
+          params[:checked_at] = cryptor.decrypt(base64decode(params[:created_at]))
+          params[:created_by] = cryptor.decrypt(base64decode(params[:created_by]))
+        rescue
+          logger.error "mismatch decrypt password."
+          logger.error $@
+          status = {'code' => 700, 'note' => 'mismatch decrypt password'}
+        end
+      else
+        logger.info "offline_client_crypt_password is empty."
+      end
+      #Parameters: {"id"=>"3", "user_number"=>"nakamura", "item_identifier"=>"JX009", "created_at"=>"20121026144222", "created_by"=>"librarian1"}
+      if params[:id].blank? || params[:user_number].blank? || params[:item_identifier].blank? || params[:checked_at].blank? || params[:created_by].blank?
+        logger.error "invalid parameter error."
+        status = {'code' => 800, 'note' => 'invalid parameter error'}
+      end
 
-    passwd = SystemConfiguration.get("offline_client_crypt_password")
-    cryptor = Cryptor.new(passwd)
-    begin
-      params[:user_number] = cryptor.decrypt(base64decode(params[:user_number]))
-      params[:item_identifier] = cryptor.decrypt(base64decode(params[:item_identifier]))
-      params[:created_at] = cryptor.decrypt(base64decode(params[:created_at]))
-    rescue
-      logger.error "mismatch decrypt password."
-      status = {'code' => 700, 'note' => 'mismatch decrypt password'}
-    end
-    #Parameters: {"id"=>"3", "user_number"=>"nakamura", "item_identifier"=>"JX009", "created_at"=>"20121026144222"}
-    if params[:id].blank? || params[:user_number].blank? || params[:item_identifier].blank? || params[:created_at].blank?
-      logger.error "invalid parameter error."
-      status = {'code' => 800, 'note' => 'invalid parameter error'}
-    end
+      unless crypt_flag 
+        begin
+          Time.parse params[:checked_at]
+        rescue ArgumentError => e 
+          status = {'code' => 801, 'note' => 'invalid parameter error.'}
+        end
+      end
 
-    unless status
-      status = batchexec_checkout(params)
+      unless status
+        status = batchexec_checkout(params)
+      end
     end
 
     logger.info "batchexec status=#{status['code']}"
@@ -246,7 +263,7 @@ private
   def batchexec_checkout(params)
     status = {}
 
-    checked_item = {"item_identifier"=>params[:item_identifier], "ignore_restriction"=>"1"}
+    checked_item = {"item_identifier"=>params[:item_identifier], "ignore_restriction"=>"1", "checked_at"=>params[:checked_at]}
     logger.debug "basket create."
     basket = Basket.new
     basket.user_number = params[:user_number]
@@ -265,6 +282,15 @@ private
     checked_item = CheckedItem.new(checked_item)
     checked_item.basket = basket
 
+    logger.debug "checked time set"
+    begin
+      checked_item.created_at = Time.parse params[:created_at]
+    rescue ArgumentError => e
+      logger.debug "invalid created_at"
+      status = {'code' => 310, 'note' => 'invalid created_at'}
+      return status
+    end
+
     item_identifier = checked_item.item_identifier.to_s.strip
 
     logger.debug "check item_identifier #{item_identifier}"
@@ -278,8 +304,14 @@ private
 
     logger.debug "checked item save start"
 
-    #TODO get librarian
-    librarian = User.where(:username => 'admin').first
+    librarian = User.where(:username => params[:created_by]).first
+    if librarian.blank?
+      logger.warn "librarian is invalid. created_by=#{params[:created_by]}"
+      librarian = User.where(:username => 'admin').first
+    else
+      #TODO librarian check
+    end
+
     Basket.transaction do 
       if checked_item.save && basket.basket_checkout(librarian)
         logger.info "success checkout"

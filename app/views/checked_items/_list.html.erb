@@ -13,9 +13,11 @@
     <%= t('checked_item.ignore_restriction') -%>: <%= f.check_box :ignore_restriction -%>
     <%= f.submit t('page.read'), :disable_with => t('page.wait') -%>
   </p>
+  <%= t('activerecord.attributes.checkout.checked_at') -%>: <%= f.date_select :checked_at, :use_month_numbers => true -%>
 <%- end -%>
 <%= javascript_tag("$('#checked_item_item_identifier').focus()") -%>
 <%= form_for(:basket, :url => {:controller => 'baskets', :action => 'update', :id => @basket.id}, :html => { :method => :put }) do |f| -%>
+
   <table class="index">
     <tr>
       <%- if SystemConfiguration.get("checked_items.disp_title") -%>
@@ -23,10 +25,10 @@
       <%- end -%>
       <th class="checked_item_identifier"><%= t('activerecord.attributes.item.item_identifier') -%></th>
       <th><%= t('activerecord.attributes.item.note') -%></th>
+      <th><%= t('activerecord.attributes.checkout.checked_at') %></th>
       <th><%= t('activerecord.attributes.checkout.due_date') -%></th>
       <th></th>
     </tr>
-
     <%- @basket.checked_items.each do |checked_item| -%>
       <%= fields_for "checked_items[]", checked_item do |c| -%>  
         <tr class="line<%= cycle("0", "1") -%>">
@@ -39,6 +41,9 @@
             <%- end -%>
           </nobr></td>
           <td><%= simple_format(checked_item.item.note) -%></td>
+          <td><nobr>
+            <%= l(checked_item.checked_at, :format => :only_date ) -%>
+          </nobr></td>
           <td><nobr>
             <%= c.date_select :due_date, :use_month_numbers => true -%>
           </nobr></td>

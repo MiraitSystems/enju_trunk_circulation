@@ -18,7 +18,7 @@ class Checkout < ActiveRecord::Base
   validates_associated :user, :item, :librarian, :checkin #, :basket
   # TODO: 貸出履歴を保存しない場合は、ユーザ名を削除する
   #validates_presence_of :user, :item, :basket
-  validates_presence_of :item_id, :basket_id, :due_date
+  validates_presence_of :item_id, :basket_id, :due_date, :checked_at
   validates_uniqueness_of :item_id, :scope => [:basket_id, :user_id]
   validate :is_not_checked?, :on => :create
   validates_date :due_date, :allow_blank => true
@@ -26,7 +26,7 @@ class Checkout < ActiveRecord::Base
   after_create :store_history
 
   attr_accessor :item_identifier
-  attr_accessible :user_id, :checkout_renewal_count, :available_for_extend
+  attr_accessible :user_id, :checkout_renewal_count, :available_for_extend, :checked_at
 
   paginates_per 10
 
@@ -200,7 +200,7 @@ class Checkout < ActiveRecord::Base
       page.item(:lend_library).value(library.display_name)
       page.item(:lend_library_telephone_number_1).value(library.telephone_number_1)
       page.item(:lend_library_telephone_number_2).value(library.telephone_number_2)
-      page.item(:date).value(checkouts.first.created_at.strftime('%Y/%m/%d'))
+      page.item(:date).value(checkouts.first.checked_at.strftime('%Y/%m/%d'))
 
       checkouts.each do |checkout|
         page.list(:list).add_row do |row|

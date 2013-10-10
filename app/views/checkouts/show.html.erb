@@ -18,6 +18,10 @@
       <%= link_to @checkout.user_username, @checkout.user -%>
     </p>
   <%- end -%>
+  <p>
+    <strong><%= t('activerecord.attributes.checkout.checked_at') -%></strong><br />
+    <%= l(@checkout.checked_at, :format => :only_date) if @checkout.checked_at -%>
+  </p>
 </div>
 </div>
 
