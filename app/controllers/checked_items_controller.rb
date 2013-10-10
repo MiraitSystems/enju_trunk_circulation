@@ -13,7 +13,7 @@ class CheckedItemsController < ApplicationController
 
     if params[:user_id]
       user = User.find_by_username(params[:user_id])
-      unless @basket.user == user
+      unless @basket.user.id == user.id
         access_denied; return
       end
     end
