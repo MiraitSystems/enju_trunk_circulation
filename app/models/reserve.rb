@@ -18,7 +18,7 @@ class Reserve < ActiveRecord::Base
   scope :retained, where(:state => ['retained'], :retained => false)
   scope :in_process, where(:state => ['in_process'])
   scope :can_change_position, where("state = ? AND position IS NOT NULL", 'requested')
-  scope :not_retained, where("position IS NOT NULL")
+  scope :not_retained, where("position IS NOT NULL").order("position ASC")
   scope :not_waiting, where(:state => ['retained'])
   #scope :not_waiting, where(:state => ['retained','canceled','completed'])
   scope :will_expire_retained, lambda {|datetime| {:conditions => ['checked_out_at IS NULL AND canceled_at IS NULL AND expired_at <= ? AND state = ?', datetime, 'retained'], :order => 'expired_at'}}
