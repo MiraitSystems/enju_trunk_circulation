@@ -10,8 +10,10 @@ class CheckedItem < ActiveRecord::Base
   before_validation :set_due_date, :on => :create
   normalize_attributes :item_identifier
 
-  attr_accessor :item_identifier, :ignore_restriction
-  attr_accessible :due_date, :item_id, :basket_id, :checked_at
+  attr_accessor :item_identifier, :ignore_restriction, :loan_period
+  attr_accessible :due_date, :item_id, :basket_id, :checked_at, :loan_period
+
+  LOAN_PERIODS = lambda { { SystemConfiguration.get("checkout.ordinary_checkout_label").localize => 0, I18n.t('activerecord.attributes.checked_item.long_loan_period') => 1 } }
 
   def available_for_checkout?
     unless self.item
@@ -53,22 +55,46 @@ class CheckedItem < ActiveRecord::Base
   end
 
   def item_checkout_type
-    self.basket.user.user_group.user_group_has_checkout_types.available_for_item(item).first if item
+    if item
+      item_checkout_type = self.basket.user.user_group.user_group_has_checkout_types.available_for_item(item).first
+      if self.loan_period.to_i == 1
+        item_checkout_type.set_due_date_before_closing_day = SystemConfiguration.get("checkout.set_extending_due_date_before_closing_day")
+      end
+    end
+    return item_checkout_type
   end
 
   def set_due_date
     return nil unless self.item_checkout_type
+    return nil unless self.loan_period
 
-    lending_rule = self.item.lending_rule(self.basket.user)
-    return nil if lending_rule.nil?
-
-    if lending_rule.fixed_due_date.blank?
-      #self.due_date = item_checkout_type.checkout_period.days.since Time.zone.today
-      self.due_date = lending_rule.loan_period.days.since self.checked_at
+    if self.loan_period.to_i == 1
+      due_date_period = SystemConfiguration.get("checkout.extending_due_date_period").to_s
+      case due_date_period
+      when /^\d{8}$/
+        self.due_date = due_date_period
+      when /^\d+[dDmMyY]{1}$/
+        date_num = due_date_period.gsub(/\D/, '').to_i
+        self.due_date = case due_date_period
+         when /[dD]/ then date_num.days.since   self.checked_at
+         when /[mM]/ then date_num.months.since self.checked_at
+         when /[yY]/ then date_num.years.since  self.checked_at
+         end
+      else
+        errors[:base] << 'checked_item.not_set_long_loan_period' and return nil
+      end
     else
-      #self.due_date = item_checkout_type.fixed_due_date
-      self.due_date = lending_rule.fixed_due_date
+      lending_rule = self.item.lending_rule(self.basket.user)
+      return nil if lending_rule.nil?
+      if lending_rule.fixed_due_date.blank?
+        #self.due_date = item_checkout_type.checkout_period.days.since Time.zone.today
+        self.due_date = lending_rule.loan_period.days.since self.checked_at
+      else
+        #self.due_date = item_checkout_type.fixed_due_date
+        self.due_date = lending_rule.fixed_due_date
+      end
     end
+
     # 返却期限日が閉館日の場合
     # TODO date_truncはPostgreSQL独自の機能なので他のDBも少しは考慮に入れる
     events = Event.find(:all, :conditions => ["? BETWEEN date_trunc('day', start_at) AND date_trunc('day', end_at)", due_date.beginning_of_day])

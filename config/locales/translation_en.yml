@@ -1,0 +1,8 @@
+en:
+  activerecord:
+    attributes:
+      checked_item:
+        long_loan_period: Long Loan Period
+
+  checked_item:
+    not_set_long_loan_period: "Not set a long loan period"

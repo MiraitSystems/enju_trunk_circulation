@@ -17,6 +17,7 @@ ja:
         user_comment: 利用者の注記
         edit_user_comment: 利用者の注記を編集する
         update_note: 注記の更新
+        long_loan_period: 長期期間貸出
       checkin:
         checked_at: 返却日
       checkout:
@@ -144,6 +145,7 @@ ja:
     checkout: "上記の資料を貸し出す"
     ignore_restriction: "制限を無視する"
     library_closed_today: "この資料の図書館は本日休館日です。"
+    not_set_long_loan_period: "長期期間貸出期日を設定してください。"
   checkin:
     item_not_found: "資料が見つかりません。"
     enter_item_identifier: "所蔵情報番号を入力してください。"
