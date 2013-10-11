@@ -211,49 +211,60 @@ class CheckoutsController < ApplicationController
 
   # PUT /batch_checkout
   def batchexec
-    logger.info "batchexec start"
-    status = nil
-    crypt_flag = false
-    unless admin_networks?
-      logger.error "invalid access network"
-      status = {'code' => 900, 'note' => 'invalid access network'}
-    else
-      passwd = SystemConfiguration.get("offline_client_crypt_password")
-      if passwd.present?
-        logger.info "offline_client_crypt_password is present."
-        crypt_flag = true
-        cryptor = Cryptor.new(passwd)
-        begin
-          params[:user_number] = cryptor.decrypt(base64decode(params[:user_number]))
-          params[:item_identifier] = cryptor.decrypt(base64decode(params[:item_identifier]))
-          params[:checked_at] = cryptor.decrypt(base64decode(params[:created_at]))
-          params[:created_by] = cryptor.decrypt(base64decode(params[:created_by]))
-        rescue
-          logger.error "mismatch decrypt password."
-          logger.error $@
-          status = {'code' => 700, 'note' => 'mismatch decrypt password'}
-        end
-      else
-        logger.info "offline_client_crypt_password is empty."
-      end
-      #Parameters: {"id"=>"3", "user_number"=>"nakamura", "item_identifier"=>"JX009", "created_at"=>"20121026144222", "created_by"=>"librarian1"}
-      if params[:id].blank? || params[:user_number].blank? || params[:item_identifier].blank? || params[:checked_at].blank? || params[:created_by].blank?
-        logger.error "invalid parameter error."
-        status = {'code' => 800, 'note' => 'invalid parameter error'}
-      end
+		logger.info "batchexec start"
+		status = nil
+		crypt_flag = false
+		begin
+			unless admin_networks?
+				logger.error "invalid access network"
+				status = {'code' => 900, 'note' => 'invalid access network'}
+			else
+				passwd = SystemConfiguration.get("offline_client_crypt_password")
+				logger.debug "passwd=#{passwd} length=#{passwd.length}"
+				if passwd.present?
+					logger.info "offline_client_crypt_password is present."
+					crypt_flag = true
+					cryptor = Cryptor.new(passwd)
+					begin
+						params[:user_number] = cryptor.decrypt(base64decode(params[:user_number]))
+						params[:item_identifier] = cryptor.decrypt(base64decode(params[:item_identifier]))
+						params[:checked_at] = cryptor.decrypt(base64decode(params[:created_at]))
+						params[:created_by] = cryptor.decrypt(base64decode(params[:created_by]))
+					rescue
+						logger.error "mismatch decrypt password."
+						logger.error $@
+						status = {'code' => 700, 'note' => 'mismatch decrypt password'}
+					end
+				else
+					params[:checked_at] = params[:created_at]
+					logger.info "offline_client_crypt_password is empty."
+				end
+				#Parameters: {"id"=>"3", "user_number"=>"nakamura", "item_identifier"=>"JX009", "created_at"=>"20121026144222", "created_by"=>"librarian1"}
+				unless status	
+					if params[:id].blank? || params[:user_number].blank? || params[:item_identifier].blank? || params[:checked_at].blank? || params[:created_by].blank?
+						logger.error "invalid parameter error."
+						logger.error params
+						status = {'code' => 800, 'note' => 'invalid parameter error'}
+					else
+						unless crypt_flag 
+							begin
+								Time.parse params[:checked_at]
+							rescue ArgumentError => e 
+								status = {'code' => 801, 'note' => 'invalid parameter error.'}
+							end
+						end
 
-      unless crypt_flag 
-        begin
-          Time.parse params[:checked_at]
-        rescue ArgumentError => e 
-          status = {'code' => 801, 'note' => 'invalid parameter error.'}
-        end
-      end
-
-      unless status
-        status = batchexec_checkout(params)
-      end
-    end
+						unless status
+							status = batchexec_checkout(params)
+						end
+					end
+				end
+			end
+		rescue => e
+			logger.error "raise exception msg=#{$!}"
+			logger.error $@
+			status = {'code' => 950, 'note' => "unknown error. (#{$!})"}
+		end
 
     logger.info "batchexec status=#{status['code']}"
     render :text => status.values.join("\t"), :status => 200
