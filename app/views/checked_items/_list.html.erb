@@ -48,7 +48,7 @@
           <td><nobr>
             <%= c.date_select :due_date, :use_month_numbers => true -%>
           </nobr></td>
-          <td><%= link_to t('page.destroy'), user_basket_checked_item_path(checked_item.basket.user, checked_item.basket, checked_item), :confirm => t('page.are_you_sure'), :method => :delete -%></td>
+          <td><%= link_to t('page.destroy'), user_basket_checked_item_path(checked_item.basket.user, checked_item.basket, checked_item), :confirm => t('page.are_you_sure'), :method => :delete, :remote => true %></td>
         </tr>
       <%- end -%>
     <%- end -%>
