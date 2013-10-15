@@ -147,10 +147,7 @@ class CheckedItemsController < ApplicationController
     end
     @checked_item.destroy
 
-    respond_to do |format|
-      format.html { redirect_to(user_basket_checked_items_url(@checked_item.basket.user, @checked_item.basket)) }
-      format.json { head :no_content }
-    end
+    render :action => :index
   end
 
   private
