@@ -3,6 +3,156 @@ en:
     attributes:
       checked_item:
         long_loan_period: Long Loan Period
-
+        due_date: Due date
+        user_comment: User note
+        edit_user_comment: Edit user note
+        update_note: Update note
+      basket:
+        user: User
+        note: Note
+        lock_version: lock version
+      checkin:
+        checked_at: date of checkin
+      checkout:
+        due_date: Due date
+        family_info: Family information
+        lock_version: lock version
+        renewal_count: Renewal count
+        output_checkoutlist: Export checkout list
+        over: over
+        checked_at: date of checkout
+      reserve:
+        user: User
+        checked_out_at: checked out at
+        canceled_at: canceled at
+        expired_at: expired at（will be canceled at）
+        expired_at2: expired at
+        within_expired_at: not expired
+        over_expired_at: expired
+        deleted_at: deleted at
+        created_at: reserved at
+        state: status
+        contact: contact
+        zipcode: 〒
+        information_type: contact type
+        receipt_library: receive library
+        unnecessary: unnecessary notice
+        email: email
+        telephone: telephone
+        reserve_list: reserce list
+        position: position
+        done: Noticed
+        failed_update: failed to update
+        item_identifier: Retained item item identifier
+      retained_manifestation:
+        done: Noticed
+        failed_update: Failed to update.
+      checkout_history:
+        operation: Operation
+        created_at: Date&Time
+        librarian: Librarian
+    models:
+      checked_item: Checkout item
+      checkin: Checkin
+      checkout: Checkout
+      retained_manifestation: Retained(not noticed yet)
+    errors:
+      messages:
+        checkout:
+          invalid_date: Due date is invalid.
   checked_item:
-    not_set_long_loan_period: "Not set a long loan period"
+    not_set_long_loan_period: Not set a long loan period
+    not_available_for_checkout: The item is not available for checkout. (Circulation status is invalid.)
+    new_serial: The item is not available for checkout. (Latest issue)
+    not_for_loan: The item is not availavle from checkout.
+    this_group_cannot_checkout: This item is not available for this user group.
+    item_not_found: No item is found.
+    already_checked_out: This item is already checked out.
+    reserved_item_included: This item is reserved.
+    excessed_checkout_limit: This user has already max number of checkout.
+    in_transcation: This item is in process to checkout.
+    previous_checkout: Current checkout
+    previous_checkout_family: Current checkout for family
+    previous_reserve: Current reservation
+    previous_reserve_family: Current resercation for family
+    checkout: Checkout
+    ignore_restriction: ignore limitation
+    library_closed_today: The library of the item is closed today.
+  basket:
+    my_status: Current status
+    books: items
+    number_of_checkout: Checkout
+    number_of_reserve: Reservation
+    this_account_is_suspended: This account is suspended.
+    checkout_completed: Checkout is completed.
+    checkout_failed: Failed to checkout.
+    no_checked_item: Select item to checkout.
+  checkout:
+    user_checkout: ! "%{login_name} 's checkout"
+    library_group_checkout: ! "checkout in %{library_group_name}"
+    renewal: Renewal
+    renewal_count: Renewal count
+    new_due_date: New due date
+    editing_due_date: update due date
+    this_item_cant_be_renewed: This item cannot be renewed.
+    listing_overdue_item: List of overdue items
+    current_user: Current checkout user
+    this_item_is_reserved: This item is reserved.
+    you_have_overdue_item: You have overdue item.
+    excessed_renewal_limit: You have already max number of checkout.
+    all_checkout: All checkout
+    my_checkout: My checkout
+    number_of_day_overdue: Number of overdue
+    extend: extend checkout period
+    printout_in_progress: Started to export checkout list.
+    renew_checkout: Renew checkout
+  reserve:
+    user_reserve: ! "%{login_name}'s reservation"
+    library_group_reserve: ! "Reservation in %{library_group_name}"
+    my_reservation: My reservation
+    all_reservation: All reservation
+    this_manifestation_is_already_reserved: This manifestation is already reserved.
+    excessed_reservation_limit: You have already max number of reservations.
+    this_patron_cannot_reserve: This user cannot reserve.
+    reservation_was_canceled: The reservation is canceled.
+    this_item_is_not_reserved: This item is not reserved.
+    this_user_is_locked: This user if locked.
+    expired_at_of_this_user_is_over: Available period of the reservation is after expire date for this user.
+    invalid_item: Item identifier is invalid.
+    show: Reservation detail
+    invalid_date: id invalid.
+    pending: Pending
+    requested: Requested
+    in_process: In process
+    retained: Retained
+    called: Called
+    canceled: Canceled
+    expired: Expired
+    completed: Completed
+    completed_reserve: Retained reservations
+    in_process_reserve: Reservations in process
+    update: Update reservation
+    retain: Reatin reserved item
+    add: Add
+    cannot_retain_item: This item is not available for retain.
+    not_found: No reservation is found.
+    retain_error: Failed to retain.
+    no_reserve: No reservation is found.
+    picking_list: List for pickup
+    printout_in_progress: Started to export reserves list
+  checkin:
+    item_not_found: No item is found.
+    enter_item_identifier: Input item identifier.
+    other_library_item: This item is owned by other library.
+    other_library: This item belongs to  %{model}.
+    already_checked_in: This item have already checked in.
+    not_checkin: This item is not checked out.
+    checkin: Checkin(cannot cancel)
+    successfully_checked_in: This item is successfully checked in.
+    not_available_for_checkin: This item cannot be checked in. (Circulation status is invalid.)
+    overdue_item: Checkout of the item is overdue.
+  checkout_history:
+    checkout: Checkout
+    checkin: Checkin
+    reserve: Reservation
+    extend_checkout: Extend checkout
