@@ -31,7 +31,7 @@ class Ability
         checkout.user == user
       end
       can [:index, :create], Reserve
-      can [:show, :update, :destroy], Reserve do |reserve|
+      can [:show, :update, :destroy, :output], Reserve do |reserve|
         reserve.user == user && reserve.expired_at.end_of_day > Time.zone.now
       end
     else
