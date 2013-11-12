@@ -67,6 +67,7 @@ class CheckedItem < ActiveRecord::Base
   def set_due_date
     return nil unless self.item_checkout_type
     self.loan_period = "0" unless self.loan_period
+    self.checked_at = Time.zone.now unless self.checked_at
 
     if self.loan_period.to_i == 1
       due_date_period = SystemConfiguration.get("checkout.extending_due_date_period").to_s
