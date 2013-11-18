@@ -200,6 +200,7 @@ class Checkout < ActiveRecord::Base
     report.start_new_page do |page|
       page.item(:library).value(LibraryGroup.system_name(@locale))
       page.item(:user).value(user.user_number)
+      page.item(:full_name).value(user.patron.full_name)
       page.item(:lend_user).value(current_user.user_number)
       page.item(:lend_library).value(library.display_name)
       page.item(:lend_library_telephone_number_1).value(library.telephone_number_1)
@@ -210,7 +211,6 @@ class Checkout < ActiveRecord::Base
         page.list(:list).add_row do |row|
           row.item(:book).value(checkout.item.manifestation.original_title)
           row.item(:due_date).value(checkout.due_date)
-          row.item(:full_name).value(checkout.user.patron.full_name)
         end
       end
     end
