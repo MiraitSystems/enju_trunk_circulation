@@ -181,7 +181,11 @@ class Checkout < ActiveRecord::Base
 
   # output
   def self.output_checkouts(checkouts, user, current_user)
-    report = ThinReports::Report.new :layout => File.join(Rails.root, 'report', 'checkouts.tlf')
+    unless SystemConfiguration.get("checkouts_print.message") == true
+      report = ThinReports::Report.new :layout => File.join(Rails.root, 'report', 'checkouts_A4.tlf')
+    else 
+      report = ThinReports::Report.new :layout => File.join(Rails.root, 'report', 'checkouts.tlf')
+    end
 
     report.layout.config.list(:list) do
       use_stores :total => 0
