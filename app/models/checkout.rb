@@ -210,6 +210,7 @@ class Checkout < ActiveRecord::Base
         page.list(:list).add_row do |row|
           row.item(:book).value(checkout.item.manifestation.original_title)
           row.item(:due_date).value(checkout.due_date)
+          row.item(:full_name).value(checkout.user.patron.full_name)
         end
       end
     end
