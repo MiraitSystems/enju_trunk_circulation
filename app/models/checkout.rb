@@ -181,7 +181,7 @@ class Checkout < ActiveRecord::Base
 
   # output
   def self.output_checkouts(checkouts, user, current_user)
-    unless SystemConfiguration.get("checkouts_print.message") == true
+    unless SystemConfiguration.get("checkout.set_rental_certificate_size") == true
       report = ThinReports::Report.new :layout => File.join(Rails.root, 'report', 'checkouts_A4.tlf')
     else 
       report = ThinReports::Report.new :layout => File.join(Rails.root, 'report', 'checkouts.tlf')
