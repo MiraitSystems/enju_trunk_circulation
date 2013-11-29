@@ -25,6 +25,8 @@ class CheckedItemsController < ApplicationController
     family_id = FamilyUser.find(:first, :conditions => ['user_id=?', @basket.user.id]).family_id rescue nil
     @family_users = Family.find(family_id).users.select{ |user| user != @basket.user } if family_id
 
+    @selected_loan_period = session[:set_loan_period] if /[01]/ =~ session[:set_loan_period]
+
     respond_to do |format|
       format.html # index.html.erb
       format.json { render :json => @basket.checked_items }
@@ -87,6 +89,9 @@ class CheckedItemsController < ApplicationController
     item = Item.where(:item_identifier => item_identifier).first if item_identifier
     @checked_item.item = item if item
 
+    checked_item = params[:checked_item]
+    session[:set_loan_period] = checked_item['loan_period']
+
     respond_to do |format|
       if @checked_item.save
         flash[:warn] = t('checked_item.library_closed_today') if @checked_item.item.shelf.library.closed?(Time.zone.now)
@@ -95,7 +100,7 @@ class CheckedItemsController < ApplicationController
 
         set_messages(messages)
         if params[:mode] == 'list'
-          format.html { redirect_to(user_basket_checked_items_url(@basket.user, @basket, :mode => 'list')) }
+          format.html { redirect_to(user_basket_checked_items_url(@basket.user, @basket,  :mode => 'list')) }
           format.json { render :json => @checked_item, :status => :created, :location => @checked_item }
           format.js   { redirect_to(user_basket_checked_items_url(@basket.user, @basket, :format => :js)) }
         else
@@ -105,7 +110,7 @@ class CheckedItemsController < ApplicationController
       else
         set_messages(messages)
         if params[:mode] == 'list'
-          format.html { redirect_to(user_basket_checked_items_url(@basket.user, @basket, :mode => 'list')) }
+          format.html { redirect_to(user_basket_checked_items_url(@basket.user, @basket,  :mode => 'list')) }
           format.json { render :json => @checked_item, :status => :created, :location => @checked_item }
           format.js   { redirect_to(user_basket_checked_items_url(@basket.user, @basket, :format => :js)) }
         else
