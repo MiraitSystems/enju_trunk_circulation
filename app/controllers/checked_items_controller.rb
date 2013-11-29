@@ -100,7 +100,7 @@ class CheckedItemsController < ApplicationController
 
         set_messages(messages)
         if params[:mode] == 'list'
-          format.html { redirect_to(user_basket_checked_items_url(@basket.user, @basket,  :mode => 'list')) }
+          format.html { redirect_to(user_basket_checked_items_url(@basket.user, @basket, :mode => 'list')) }
           format.json { render :json => @checked_item, :status => :created, :location => @checked_item }
           format.js   { redirect_to(user_basket_checked_items_url(@basket.user, @basket, :format => :js)) }
         else
@@ -110,7 +110,7 @@ class CheckedItemsController < ApplicationController
       else
         set_messages(messages)
         if params[:mode] == 'list'
-          format.html { redirect_to(user_basket_checked_items_url(@basket.user, @basket,  :mode => 'list')) }
+          format.html { redirect_to(user_basket_checked_items_url(@basket.user, @basket, :mode => 'list')) }
           format.json { render :json => @checked_item, :status => :created, :location => @checked_item }
           format.js   { redirect_to(user_basket_checked_items_url(@basket.user, @basket, :format => :js)) }
         else
