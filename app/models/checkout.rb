@@ -200,7 +200,7 @@ class Checkout < ActiveRecord::Base
     report.start_new_page do |page|
       page.item(:library).value(LibraryGroup.system_name(@locale))
       page.item(:user).value(user.user_number)
-      page.item(:full_name).value(user.patron.full_name)
+      page.item(:full_name).value(user.patron.full_name) unless SystemConfiguration.get("checkout.set_rental_certificate_size")
       page.item(:lend_user).value(current_user.user_number)
       page.item(:lend_library).value(library.display_name)
       page.item(:lend_library_telephone_number_1).value(library.telephone_number_1)
