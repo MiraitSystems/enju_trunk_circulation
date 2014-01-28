@@ -134,28 +134,52 @@ class CheckoutsController < ApplicationController
   # PUT /checkouts/1
   # PUT /checkouts/1.json
   def update
+    logger.error "############ update_start ##############"
     @checkout = Checkout.find(params[:id])
+    logger.error "############ if_renewal before ##############"
     if check_renewal(@checkout) || current_user.has_role?('Librarian')
+      logger.error "############ if_renewal&has_role start ##############"
       @checkout.checkout_renewal_count += 1
+      # @checkout.available_for_extend = current_user.has_role?('Librarian')
+      renew_due_date = Time.now.advance(:days => @checkout.item.checkout_status(current_user).checkout_period)
+      @checkout.due_date = renew_due_date
+      logger.error "############ update_date = #{@checkout.due_date}  ##############"
+      logger.error "############ checkout_renewal_count_after = #{@checkout.checkout_renewal_count}  ##############"
+      # logger.error "############ available_for_extend = #{@checkout.available_for_extend}  ##############"
+      # logger.error "############ checkout.user.id = #{@checkout.user_id}  ##############"
 
       respond_to do |format|
-        if @checkout.update_attributes(params[:checkout])
+        if current_user.has_role?('Librarian')
+          # librarian権限
+          if @checkout.update_attributes!(params[:checkout])
+            logger.error "############ update_attributes_LIBRARIAN start ##############"
+            flash[:notice] = t('controller.successfully_updated', :model => t('activerecord.models.checkout'))
+            format.html { redirect_to user_checkout_url(@checkout.user, @checkout, :opac => true) } if params[:opac]
+            format.html { redirect_to edit_user_checkout_path(@checkout.user, @checkout)}
+            format.json { render :json => @checkout }
+          else
+            logger.error "############ if_else start ##############"
+            @checkout.reload
+            format.html { render :action => "edit", :template => "opac/checkouts/edit", :layout => 'opac' } if params[:opac]
+            format.html { render :action => "edit" } unless params[:opac]
+            format.json { render :json => @checkout.errors, :status => :unprocessable_entity }
+          end
+        else
+          # user権限
+          logger.error "############ update_attributes_USER start ##############"
+          @checkout.save
           flash[:notice] = t('controller.successfully_updated', :model => t('activerecord.models.checkout'))
           format.html { redirect_to user_checkout_url(@checkout.user, @checkout, :opac => true) } if params[:opac]
-          format.html { redirect_to user_checkout_path(@checkout.user, @checkout) }
-          format.json { render :json => @checkout }
-        else
-          @checkout.reload
-          format.html { render :action => "edit", :template => "opac/checkouts/edit", :layout => 'opac' } if params[:opac]
-          format.html { render :action => "edit" } unless params[:opac]
-          format.json { render :json => @checkout.errors, :status => :unprocessable_entity }
+          format.html { redirect_to user_checkouts_path(@checkout.user)}
+          format.json { render :json => @checkout } 
         end
       end
     end
-    rescue Exception => e
-      @checkout.reload
-      logger.error "Failed to update checkout: #{e}"
-      render :edit
+  rescue Exception => e
+    @checkout.reload
+    logger.error "############ rescue_error start ##############"
+    logger.error "Failed to update checkout: #{e}"
+    render :edit
   end
 
   # DELETE /checkouts/1
@@ -176,6 +200,7 @@ class CheckoutsController < ApplicationController
   end
 
   def extend_checkout
+    logger.error "############ extend_checkout_start ############"
     item = Item.find(:first, :conditions => {:item_identifier => params[:checkout][:item_identifier]})
     @checkout = Checkout.not_returned.where(:item_id => item.id).first
     if current_user.blank?
@@ -343,9 +368,12 @@ private
   def check_renewal(checkout)
     flash[:message], flash[:sound] = '', '' 
     messages = []
+    logger.error "############ check_op end ##############"
     if !checkout.available_for_extend #checkout.over_checkout_renewal_limit?
       unless current_user.has_role?('Librarian')
+      logger.error "############ check_if1 start ##############"
         messages << 'checkout.over_renewal_limit'
+        logger.error "############ make_massage ##############"
         set_messages(messages)
         return false
       end
@@ -362,6 +390,7 @@ private
         return false
       end
     end
+    logger.error "############ check_renewal true_end ##############"
     set_messages(messages)
     return true
   end
