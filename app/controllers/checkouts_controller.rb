@@ -137,46 +137,38 @@ class CheckoutsController < ApplicationController
     @checkout = Checkout.find(params[:id])
     if check_renewal(@checkout) || current_user.has_role?('Librarian')
       @checkout.checkout_renewal_count += 1
-      # renew_due_date = Time.now.advance(:days => @checkout.item.checkout_status(current_user).checkout_period)
-      logger.error "########## renew_due_date_before = #{@checkout.due_date} #########"
       @checkout.due_date = @checkout.set_renew_due_date(current_user)
-      logger.error "########## renew_due_date_after = #{@checkout.due_date} #########"
       @checkout.available_for_extend = current_user.has_role?('Librarian')
 
       respond_to do |format|
         if current_user.has_role?('Librarian')
-          logger.error "########## librarian #########"
           @checkout.update_attributes!(params[:checkout])
         else
-          logger.error "########## user #########"
           @checkout.save!
         end
         flash[:notice] = t('controller.successfully_updated', :model => t('activerecord.models.checkout'))
         if current_user.has_role?('Librarian')
-          # librarian権限
           format.html { redirect_to user_checkout_url(@checkout.user, @checkout, :opac => true) } if params[:opac]
           format.html { redirect_to edit_user_checkout_path(@checkout.user, @checkout)}
           format.json { render :json => @checkout }
         else
-          # user権限
-          format.html { redirect_to user_checkout_url(@checkout.user, @checkout, :opac => true) } if params[:opac]
-          format.html { redirect_to user_checkouts_path(@checkout.user)}
+          format.html { redirect_to user_checkouts_url(@checkout.user, @checkout, :opac => true), :method => :get } if params[:opac]
+          format.html { redirect_to user_checkouts_path(@checkout.user), :method => :get }
           format.json { render :json => @checkout }
         end
       end
     end
   rescue Exception => e
-    logger.error "########## error start ##########"
+    flash[:notice] = e.message
     @checkout.reload
-    logger.error "Failed to update checkout: #{e}"
     respond_to do |format|
       if current_user.has_role?('Librarian')
         format.html { render :action => "edit", :template => "opac/checkouts/edit", :layout => 'opac' } if params[:opac]
         format.html { render :action => "edit" } unless params[:opac]
         format.json { render :json => @checkout.errors, :status => :unprocessable_entity }
       else
-        format.html { redirect_to :back, :template => "opac/checkouts/index", :layout => 'opac' } if params[:opac]
-        format.html { redirect_to :back } unless params[:opac]
+        format.html { redirect_to user_checkouts_path(@checkout.user), :template => "opac/checkouts/index", :layout => 'opac' } if params[:opac]
+        format.html { redirect_to user_checkouts_path(@checkout.user) } unless params[:opac]
         format.json { render :json => @checkout.errors, :status => :unprocessable_entity }
       end
     end

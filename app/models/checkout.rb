@@ -86,48 +86,30 @@ class Checkout < ActiveRecord::Base
   end
 
   def set_renew_due_date(user)
-    logger.error "############# set_renew_due_date start ############" 
     if self.item
-      logger.error "############# self.item ############" 
       if self.available_for_extend # self.checkout_renewal_count <= self.item.checkout_status(user).checkout_renewal_limit
-        renew_due_date = Time.now.advance(:days => self.item.checkout_status(user).checkout_period)
-        logger.error "############# renew_due_date = #{renew_due_date} ############" 
-
+        renew_due_date = self.due_date.advance(:days => self.item.checkout_status(user).checkout_period)
         # 返却期限日が閉館日の場合
-        # TODO date_truncはPostgreSQL独自の機能なので他のDBも少しは考慮に入れる
-        events = Event.find(:all, :conditions => ["? BETWEEN date_trunc('day', start_at) AND date_trunc('day', end_at)", renew_due_date.beginning_of_day])
-        logger.error "############# events = #{events} ############" 
-
-        checkin_before = false
-        events.each do |e|
-          checkin_before = true if e.event_category.move_checkin_date == 2
-        end
-        logger.error "############# library.events ############" 
-        while Library.find(1).closed?(renew_due_date)
-        # while item.shelf.library.closed?(renew_due_date)
-          logger.error "############# due_date : change to close ############" 
-          logger.error "############# checked_item = #{checked_item.id} ############" 
-          if checked_item.item_checkout_type.set_due_date_before_closing_day
-            logger.error "############# item_checkout_type ############" 
-            self.renew_due_date = due_date.yesterday.end_of_day
-          elsif checkin_before
-            logger.error "############# closing_day_before ############" 
-            self.renew_due_date = due_date.yesterday.end_of_day
+        while self.item.shelf.library.closed?(renew_due_date)
+          checkin_before = false 
+          self.item.shelf.library.events.closing_days.each do |e|
+            if e.start_at.beginning_of_day <= renew_due_date.beginning_of_day && e.end_at.end_of_day >= renew_due_date.beginning_of_day
+              checkin_before = true if e.event_category.move_checkin_date == 2
+            end
+          end
+          if checkin_before
+            renew_due_date = renew_due_date.yesterday.end_of_day
+          elsif self.item.checkout_status(user).set_due_date_before_closing_day
+            renew_due_date = renew_due_date.yesterday.end_of_day
           else
-            logger.error "############# closing_day_after ############" 
-            self.renew_due_date = due_date.tomorrow.end_of_day
+            renew_due_date = renew_due_date.tomorrow.end_of_day
           end
         end
-          logger.error "############# while end ############" 
-        # TODO
-
       else
-        logger.error "############# due_date : no change ############" 
         renew_due_date = self.due_date
       end
-        return renew_due_date
+      return renew_due_date
     end
-    logger.error "########### NOT_set_renew_due_date ##########"
   end
 
   def check_due_date
