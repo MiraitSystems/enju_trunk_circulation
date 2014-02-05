@@ -19,11 +19,11 @@
     <%- end -%>
     <%- if reserve.manifestation.contributors.readable_by(current_user).exists? -%>
       <%= t('patron.contributor') -%>: 
-      <%= patrons_list(reserve.manifestation.contributors.readable_by(current_user), {:itemprop => 'editor'}, manifestation.id, 'realize') -%>
+      <%= patrons_list(reserve.manifestation.contributors.readable_by(current_user), {:itemprop => 'editor'}, reserve.manifestation.id, 'realize') -%>
     <%- end -%>
     <%- if reserve.manifestation.publishers.readable_by(current_user).exists? -%>
       <%= t('patron.publisher') -%>: 
-      <%= patrons_list(reserve.manifestation.publishers.readable_by(current_user), {:itemprop => 'publisher'}, manifestation.id, 'produce') -%>
+      <%= patrons_list(reserve.manifestation.publishers.readable_by(current_user), {:itemprop => 'publisher'}, reserve.manifestation.id, 'produce') -%>
       <%- if reserve.manifestation.pub_date.present? -%>
         (<%= reserve.manifestation.pub_date -%>)
       <%- end -%>
