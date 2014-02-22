@@ -1,5 +1,5 @@
 # -*- encoding: utf-8 -*-
-class Patron < ActiveRecord::Base
+class Agent < ActiveRecord::Base
   attr_accessible :last_name, :middle_name, :first_name,
     :last_name_transcription, :middle_name_transcription,
     :first_name_transcription, :corporate_name, :corporate_name_transcription,
@@ -7,9 +7,9 @@ class Patron < ActiveRecord::Base
     :zip_code_2, :address_1, :address_2, :address_1_note, :address_2_note,
     :telephone_number_1, :telephone_number_2, :fax_number_1, :fax_number_2,
     :other_designation, :place, :street, :locality, :region, :language_id,
-    :country_id, :patron_type_id, :note, :required_role_id, :email, :url,
+    :country_id, :agent_type_id, :note, :required_role_id, :email, :url,
     :full_name_alternative_transcription, :title, :birth_date, :death_date,
-    :patron_identifier,
+    :agent_identifier,
     :telephone_number_1_type_id, :extelephone_number_1,
     :extelephone_number_1_type_id, :fax_number_1_type_id,
     :telephone_number_2_type_id, :extelephone_number_2,
@@ -23,26 +23,26 @@ class Patron < ActiveRecord::Base
   has_many :expressions, :through => :realizes
   has_many :produces, :dependent => :destroy
   has_many :manifestations, :through => :produces
-  has_many :children, :foreign_key => 'parent_id', :class_name => 'PatronRelationship', :dependent => :destroy
-  has_many :parents, :foreign_key => 'child_id', :class_name => 'PatronRelationship', :dependent => :destroy
-  has_many :derived_patrons, :through => :children, :source => :child
-  has_many :original_patrons, :through => :parents, :source => :parent
+  has_many :children, :foreign_key => 'parent_id', :class_name => 'AgentRelationship', :dependent => :destroy
+  has_many :parents, :foreign_key => 'child_id', :class_name => 'AgentRelationship', :dependent => :destroy
+  has_many :derived_agents, :through => :children, :source => :child
+  has_many :original_agents, :through => :parents, :source => :parent
   has_many :picture_files, :as => :picture_attachable, :dependent => :destroy
   has_many :donates
   has_many :donated_items, :through => :donates, :source => :item
   has_many :owns, :dependent => :destroy
   has_many :items, :through => :owns
-  has_many :patron_merges, :dependent => :destroy
-  has_many :patron_merge_lists, :through => :patron_merges
+  has_many :agent_merges, :dependent => :destroy
+  has_many :agent_merge_lists, :through => :agent_merges
   belongs_to :user
-  belongs_to :patron_type
+  belongs_to :agent_type
   belongs_to :required_role, :class_name => 'Role', :foreign_key => 'required_role_id', :validate => true
   belongs_to :language
   belongs_to :country
-  has_one :patron_import_result
+  has_one :agent_import_result
 
-  validates_presence_of :language, :patron_type, :country
-  validates_associated :language, :patron_type, :country
+  validates_presence_of :language, :agent_type, :country
+  validates_associated :language, :agent_type, :country
   validates :full_name, :presence => true, :length => {:maximum => 255}
   validates :user_id, :uniqueness => true, :allow_nil => true
   validates :birth_date, :format => {:with => /^\d+(-\d{0,2}){0,2}$/}, :allow_blank => true
@@ -90,10 +90,10 @@ class Patron < ActiveRecord::Base
     integer :work_ids, :multiple => true
     integer :expression_ids, :multiple => true
     integer :manifestation_ids, :multiple => true
-    integer :patron_merge_list_ids, :multiple => true
-    integer :original_patron_ids, :multiple => true
+    integer :agent_merge_list_ids, :multiple => true
+    integer :original_agent_ids, :multiple => true
     integer :required_role_id
-    integer :patron_type_id
+    integer :agent_type_id
     integer :user_id
     integer :exclude_state
   end
@@ -260,76 +260,76 @@ class Patron < ActiveRecord::Base
     owns.where(:item_id => item.id)
   end
 
-  def self.import_patrons(patron_lists)
+  def self.import_agents(agent_lists)
     list = []
-    patron_lists.uniq.compact.each do |patron_list|
-      next if patron_list[:full_name].blank?
-      patron = Patron.where(:full_name => patron_list[:full_name]).first
-      unless patron
-        patron = Patron.new(
-          :full_name => patron_list[:full_name].exstrip_with_full_size_space,
+    agent_lists.uniq.compact.each do |agent_list|
+      next if agent_list[:full_name].blank?
+      agent = Agent.where(:full_name => agent_list[:full_name]).first
+      unless agent
+        agent = Agent.new(
+          :full_name => agent_list[:full_name].exstrip_with_full_size_space,
           :language_id => 1
         )
-        if patron_list[:full_name_transcription].present?
-          patron.full_name_transcription = patron_list[:full_name_transcription].exstrip_with_full_size_space
+        if agent_list[:full_name_transcription].present?
+          agent.full_name_transcription = agent_list[:full_name_transcription].exstrip_with_full_size_space
         end
-        exclude_patrons = SystemConfiguration.get("exclude_patrons").split(',').inject([]){ |list, word| list << word.gsub(/^[　\s]*(.*?)[　\s]*$/, '\1') }
-        patron.exclude_state = 1 if exclude_patrons.include?(patron_list[:full_name].exstrip_with_full_size_space)
-        patron.required_role = Role.where(:name => 'Guest').first
-        patron.save
+        exclude_agents = SystemConfiguration.get("exclude_agents").split(',').inject([]){ |list, word| list << word.gsub(/^[　\s]*(.*?)[　\s]*$/, '\1') }
+        agent.exclude_state = 1 if exclude_agents.include?(agent_list[:full_name].exstrip_with_full_size_space)
+        agent.required_role = Role.where(:name => 'Guest').first
+        agent.save
       end
-      list << patron
+      list << agent
     end
     list
   end
 
-  def self.add_patrons(patron_names, patron_transcriptions = nil)
-    return [] if patron_names.blank?
-    names = patron_names.gsub('；', ';').split(/;/)
+  def self.add_agents(agent_names, agent_transcriptions = nil)
+    return [] if agent_names.blank?
+    names = agent_names.gsub('；', ';').split(/;/)
     transcriptions = []
-    if patron_transcriptions.present?
-      transcriptions = patron_transcriptions.gsub('；', ';').split(/;/) 
+    if agent_transcriptions.present?
+      transcriptions = agent_transcriptions.gsub('；', ';').split(/;/) 
       transcriptions = transcriptions.uniq.compact
     end
     list = []
     names.uniq.compact.each_with_index do |name, i|
       name = name.exstrip_with_full_size_space
       next if name.empty?
-      patron = Patron.find(:first, :conditions => ["full_name=?", name])
+      agent = Agent.find(:first, :conditions => ["full_name=?", name])
       full_name_transcription = transcriptions[i].exstrip_with_full_size_space rescue nil
-      if patron.nil?
-        patron = Patron.new
-        patron.full_name = name
-        patron.full_name_transcription = full_name_transcription
-        exclude_patrons = SystemConfiguration.get("exclude_patrons").split(',').inject([]){ |list, word| list << word.gsub(/^[　\s]*(.*?)[　\s]*$/, '\1') }
-        patron.exclude_state = 1 if exclude_patrons.include?(name)
-        patron.save
+      if agent.nil?
+        agent = Agent.new
+        agent.full_name = name
+        agent.full_name_transcription = full_name_transcription
+        exclude_agents = SystemConfiguration.get("exclude_agents").split(',').inject([]){ |list, word| list << word.gsub(/^[　\s]*(.*?)[　\s]*$/, '\1') }
+        agent.exclude_state = 1 if exclude_agents.include?(name)
+        agent.save
       else
         if full_name_transcription
-          patron.full_name_transcription = full_name_transcription
-          patron.save
+          agent.full_name_transcription = full_name_transcription
+          agent.save
         end
       end
-      list << patron
+      list << agent
     end
     list
   end
 
-  def patrons
-    self.original_patrons + self.derived_patrons
+  def agents
+    self.original_agents + self.derived_agents
   end
 
   def self.create_with_user(params, user)
-    patron = Patron.new(params)
-    #patron.full_name = user.username if patron.full_name.blank?
-    patron.email = user.email
-    patron.required_role = Role.find(:first, :conditions => ['name=?', "Librarian"]) rescue nil
-    patron.language = Language.find(:first, :conditions => ['iso_639_1=?', user.locale]) rescue nil
-    patron
+    agent = Agent.new(params)
+    #agent.full_name = user.username if agent.full_name.blank?
+    agent.email = user.email
+    agent.required_role = Role.find(:first, :conditions => ['name=?', "Librarian"]) rescue nil
+    agent.language = Language.find(:first, :conditions => ['iso_639_1=?', user.locale]) rescue nil
+    agent
   end
 
   def change_note
-    data = Patron.find(self.id).note rescue nil
+    data = Agent.find(self.id).note rescue nil
     unless data == self.note
       self.note_update_at = Time.zone.now
       if User.current_user.nil?
@@ -337,7 +337,7 @@ class Patron < ActiveRecord::Base
         self.note_update_by = "SYSTEM"
         self.note_update_library = "SYSTEM"
       else
-        self.note_update_by = User.current_user.patron.full_name
+        self.note_update_by = User.current_user.agent.full_name
         self.note_update_library = Library.find(User.current_user.library_id).display_name
       end
     end
@@ -345,16 +345,16 @@ class Patron < ActiveRecord::Base
 
   private
   def check_duplicate_user
-    return if SystemConfiguration.get("patron.check_duplicate_user").nil? || SystemConfiguration.get("patron.check_duplicate_user") == false
+    return if SystemConfiguration.get("agent.check_duplicate_user").nil? || SystemConfiguration.get("agent.check_duplicate_user") == false
     return if self.full_name_transcription.blank? or self.birth_date.blank? or self.telephone_number_1.blank?
     chash = {}
     chash[:full_name_transcription] = self.full_name_transcription.strip
     chash[:birth_date] = self.birth_date
     chash[:telephone_number_1] = self.telephone_number_1
-    patrons = Patron.find(:all, :conditions => chash)
-    patrons.delete_if { |p| p.id == self.id } 
+    agents = Agent.find(:all, :conditions => chash)
+    agents.delete_if { |p| p.id == self.id } 
     if self.new_record? 
-      errors.add(:base, I18n.t('patron.duplicate_user')) if patrons.size > 0
+      errors.add(:base, I18n.t('agent.duplicate_user')) if agents.size > 0
     end
     #logger.info errors.inspect
   end
@@ -362,7 +362,7 @@ end
 
 # == Schema Information
 #
-# Table name: patrons
+# Table name: agents
 #
 #  id                                  :integer         not null, primary key
 #  user_id                             :integer
@@ -399,7 +399,7 @@ end
 #  date_of_death                       :datetime
 #  language_id                         :integer         default(1), not null
 #  country_id                          :integer         default(1), not null
-#  patron_type_id                      :integer         default(1), not null
+#  agent_type_id                      :integer         default(1), not null
 #  lock_version                        :integer         default(0), not null
 #  note                                :text
 #  creates_count                       :integer         default(0), not null

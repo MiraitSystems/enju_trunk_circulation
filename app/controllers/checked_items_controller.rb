@@ -18,8 +18,8 @@ class CheckedItemsController < ApplicationController
       end
     end
 
-    unless @basket.user.patron
-      redirect_to new_user_patron_url(@user); return
+    unless @basket.user.agent
+      redirect_to new_user_agent_url(@user); return
     end
 
     family_id = FamilyUser.find(:first, :conditions => ['user_id=?', @basket.user.id]).family_id rescue nil

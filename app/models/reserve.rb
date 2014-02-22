@@ -5,7 +5,7 @@ class Reserve < ActiveRecord::Base
     :request_status_type, :position, :checked_out_at
   attr_accessible :manifestation_id, :item_identifier, :user_number,
     :expired_at, :request_status_type, :canceled_at, :checked_out_at,
-    :expiration_notice_to_patron, :expiration_notice_to_library,
+    :expiration_notice_to_agent, :expiration_notice_to_library,
     :information_type_id, :receipt_library_id, :position, :as => :admin
 
   self.extend ApplicationHelper
@@ -25,11 +25,11 @@ class Reserve < ActiveRecord::Base
   scope :will_expire_requested, lambda {|datetime| {:conditions => ['checked_out_at IS NULL AND canceled_at IS NULL AND expired_at <= ? AND state = ?', datetime, 'requested'], :order => 'expired_at'}}
   scope :will_expire_pending, lambda {|datetime| {:conditions => ['checked_out_at IS NULL AND canceled_at IS NULL AND expired_at <= ? AND state = ?', datetime, 'pending'], :order => 'expired_at'}}
   scope :created, lambda {|start_date, end_date| {:conditions => ['created_at >= ? AND created_at < ?', start_date, end_date]}}
-  scope :not_sent_expiration_notice_to_patron, where(:state => 'expired', :expiration_notice_to_patron => false)
+  scope :not_sent_expiration_notice_to_agent, where(:state => 'expired', :expiration_notice_to_agent => false)
   scope :not_sent_expiration_notice_to_library, where(:state => 'expired', :expiration_notice_to_library => false)
-  scope :sent_expiration_notice_to_patron, where(:state => 'expired', :expiration_notice_to_patron => true)
+  scope :sent_expiration_notice_to_agent, where(:state => 'expired', :expiration_notice_to_agent => true)
   scope :sent_expiration_notice_to_library, where(:state => 'expired', :expiration_notice_to_library => true)
-  scope :not_sent_cancel_notice_to_patron, where(:state => 'canceled', :expiration_notice_to_patron => false)
+  scope :not_sent_cancel_notice_to_agent, where(:state => 'canceled', :expiration_notice_to_agent => false)
   scope :not_sent_cancel_notice_to_library, where(:state => 'canceled', :expiration_notice_to_library => false)
   scope :show_reserves, joins(:manifestation).where(:state => ['requested', 'retained', 'in_process', 'completed', 'expired', 'canceled']) 
   scope :user_show_reserves, joins(:manifestation).where(:state => ['requested', 'retained', 'in_process'])  
@@ -113,25 +113,25 @@ class Reserve < ActiveRecord::Base
     end
     text :full_name do
       full_name = []
-      full_name << self.user.patron.full_name if self.user.patron 
-      full_name << self.user.patron.full_name_transcription if self.user.patron
+      full_name << self.user.agent.full_name if self.user.agent 
+      full_name << self.user.agent.full_name_transcription if self.user.agent
     end
     text :telephone_number do
       telephone_numbers = []
-      telephone_numbers << self.user.patron.telephone_number_1.gsub("-", "") if self.user.patron && self.user.patron.telephone_number_1
-      telephone_numbers << self.user.patron.telephone_number_2.gsub("-", "") if self.user.patron && self.user.patron.telephone_number_2
-      telephone_numbers << self.user.patron.extelephone_number_1.gsub("-", "") if self.user.patron && self.user.patron.extelephone_number_1
-      telephone_numbers << self.user.patron.extelephone_number_2.gsub("-", "") if self.user.patron && self.user.patron.extelephone_number_2
-      telephone_numbers << self.user.patron.fax_number_1.gsub("-", "") if self.user.patron && self.user.patron.fax_number_1
-      telephone_numbers << self.user.patron.fax_number_2.gsub("-", "") if self.user.patron && self.user.patron.fax_number_2
+      telephone_numbers << self.user.agent.telephone_number_1.gsub("-", "") if self.user.agent && self.user.agent.telephone_number_1
+      telephone_numbers << self.user.agent.telephone_number_2.gsub("-", "") if self.user.agent && self.user.agent.telephone_number_2
+      telephone_numbers << self.user.agent.extelephone_number_1.gsub("-", "") if self.user.agent && self.user.agent.extelephone_number_1
+      telephone_numbers << self.user.agent.extelephone_number_2.gsub("-", "") if self.user.agent && self.user.agent.extelephone_number_2
+      telephone_numbers << self.user.agent.fax_number_1.gsub("-", "") if self.user.agent && self.user.agent.fax_number_1
+      telephone_numbers << self.user.agent.fax_number_2.gsub("-", "") if self.user.agent && self.user.agent.fax_number_2
     end
     text :address do
       addresses = []
-      addresses << self.user.patron.address_1 if self.user.patron
-      addresses << self.user.patron.address_2 if self.user.patron
+      addresses << self.user.agent.address_1 if self.user.agent
+      addresses << self.user.agent.address_2 if self.user.agent
     end
     time :date_of_birth do
-      self.user.patron.date_of_birth if self.user.patron
+      self.user.agent.date_of_birth if self.user.agent
     end
     string :state
     integer :user_id
@@ -323,9 +323,9 @@ class Reserve < ActiveRecord::Base
     Reserve.transaction do
       case status
       when 'accepted'
-        if SystemConfiguration.get("send_message.reservation_accepted_for_patron")
-          message_template_to_patron = MessageTemplate.localized_template('reservation_accepted_for_patron', self.user.locale)
-          request = MessageRequest.create!(:sender => system_user, :receiver => self.user, :message_template => message_template_to_patron)
+        if SystemConfiguration.get("send_message.reservation_accepted_for_agent")
+          message_template_to_agent = MessageTemplate.localized_template('reservation_accepted_for_agent', self.user.locale)
+          request = MessageRequest.create!(:sender => system_user, :receiver => self.user, :message_template => message_template_to_agent)
           request.save_message_body(:manifestations => Array[self.manifestation], :user => self.user)
           request.sm_send_message!
         end
@@ -336,9 +336,9 @@ class Reserve < ActiveRecord::Base
           request.sm_send_message!
         end
       when 'canceled'
-        if SystemConfiguration.get("send_message.reservation_canceled_for_patron")
-          message_template_to_patron = MessageTemplate.localized_template('reservation_canceled_for_patron', self.user.locale)
-          request = MessageRequest.create!(:sender => system_user, :receiver => self.user, :message_template => message_template_to_patron)
+        if SystemConfiguration.get("send_message.reservation_canceled_for_agent")
+          message_template_to_agent = MessageTemplate.localized_template('reservation_canceled_for_agent', self.user.locale)
+          request = MessageRequest.create!(:sender => system_user, :receiver => self.user, :message_template => message_template_to_agent)
           request.save_message_body(:manifestations => Array[self.manifestation], :user => self.user)
           request.sm_send_message!
         end
@@ -349,11 +349,11 @@ class Reserve < ActiveRecord::Base
           request.sm_send_message!
         end
       when 'expired'
-        message_template_to_patron = MessageTemplate.localized_template('reservation_expired_for_patron', self.user.locale)
-        request = MessageRequest.new(:sender => system_user, :receiver => self.user, :message_template => message_template_to_patron)
+        message_template_to_agent = MessageTemplate.localized_template('reservation_expired_for_agent', self.user.locale)
+        request = MessageRequest.new(:sender => system_user, :receiver => self.user, :message_template => message_template_to_agent)
         request.save_message_body(:manifestations => Array[self.manifestation], :user => self.user)
         request.send_later(:sm_send_message!)
-        self.update_attribute(:expiration_notice_to_patron, true)
+        self.update_attribute(:expiration_notice_to_agent, true)
 =begin
         if SystemConfiguration.get("send_message.reservation_expired_for_library")
           message_template_to_library = MessageTemplate.localized_template('reservation_expired_for_library', self.user.locale)
@@ -364,18 +364,18 @@ class Reserve < ActiveRecord::Base
             self.update_attribute(:expiration_notice_to_library, true)
           end
         end
-        if SystemConfiguration.get("send_message.reservation_expired_for_patron")
-          message_template_to_patron = MessageTemplate.localized_template('reservation_expired_for_patron', self.user.locale)
-          request = MessageRequest.create!(:sender => system_user, :receiver => self.user, :message_template => message_template_to_patron)
+        if SystemConfiguration.get("send_message.reservation_expired_for_agent")
+          message_template_to_agent = MessageTemplate.localized_template('reservation_expired_for_agent', self.user.locale)
+          request = MessageRequest.create!(:sender => system_user, :receiver => self.user, :message_template => message_template_to_agent)
           request.save_message_body(:manifestations => Array[self.manifestation], :user => self.user)
           request.sm_send_message!
-          self.update_attribute(:expiration_notice_to_patron, true)
+          self.update_attribute(:expiration_notice_to_agent, true)
         end
 =end
       when 'retained'
-        if SystemConfiguration.get("send_message.item_received_for_patron")
-          message_template_for_patron = MessageTemplate.localized_template('item_received_for_patron', self.user.locale)
-          request = MessageRequest.create!(:sender => system_user, :receiver => user, :message_template => message_template_for_patron)
+        if SystemConfiguration.get("send_message.item_received_for_agent")
+          message_template_for_agent = MessageTemplate.localized_template('item_received_for_agent', self.user.locale)
+          request = MessageRequest.create!(:sender => system_user, :receiver => user, :message_template => message_template_for_agent)
           request.save_message_body(:manifestations => Array[self.manifestation], :user => self.user)
           request.sm_send_message!
         end
@@ -386,16 +386,16 @@ class Reserve < ActiveRecord::Base
           request.sm_send_message!
         end
 =begin
-        message_template_to_patron = MessageTemplate.localized_template('retained_manifestations', self.user.locale)
-        request = MessageRequest.new(:sender => system_user, :receiver => self.user, :message_template => message_template_to_patron)
+        message_template_to_agent = MessageTemplate.localized_template('retained_manifestations', self.user.locale)
+        request = MessageRequest.new(:sender => system_user, :receiver => self.user, :message_template => message_template_to_agent)
         request.save_message_body(:manifestations => Array[self.manifestation], :user => self.user)
         request.send_later(:sm_send_message!)
-        self.update_attribute(:expiration_notice_to_patron, true)
+        self.update_attribute(:expiration_notice_to_agent, true)
 =end
       when 'reverted'
-        if SystemConfiguration.get("send_message.reserve_reverted_for_patron")
-          message_template_for_patron = MessageTemplate.localized_template('reserve_reverted_for_patron', self.user.locale)
-          request = MessageRequest.create!(:sender => system_user, :receiver => user, :message_template => message_template_for_patron)
+        if SystemConfiguration.get("send_message.reserve_reverted_for_agent")
+          message_template_for_agent = MessageTemplate.localized_template('reserve_reverted_for_agent', self.user.locale)
+          request = MessageRequest.create!(:sender => system_user, :receiver => user, :message_template => message_template_for_agent)
           request.save_message_body(:manifestations => Array[self.manifestation], :user => self.user)
           request.sm_send_message!
         end
@@ -454,9 +454,9 @@ class Reserve < ActiveRecord::Base
       # 予約の連絡をすませたかどうかを識別できるようにしなければならない
       # reserve.send_message('expired')
       User.find_each do |user|
-        unless user.reserves.not_sent_expiration_notice_to_patron.empty?
-          if SystemConfiguration.get("send_message.reservation_expired_for_patron")
-            user.send_message('reservation_expired_for_patron', :manifestations => user.reserves.not_sent_expiration_notice_to_patron.collect(&:manifestation))
+        unless user.reserves.not_sent_expiration_notice_to_agent.empty?
+          if SystemConfiguration.get("send_message.reservation_expired_for_agent")
+            user.send_message('reservation_expired_for_agent', :manifestations => user.reserves.not_sent_expiration_notice_to_agent.collect(&:manifestation))
           end
         end
       end
@@ -479,7 +479,7 @@ class Reserve < ActiveRecord::Base
 
       expired_period = self.manifestation.try(:reservation_expired_period, self.user)
       if expired_period.nil?
-        errors[:base] << I18n.t('reserve.this_patron_cannot_reserve')
+        errors[:base] << I18n.t('reserve.this_agent_cannot_reserve')
       end
 
       if self.user.user_status.state_id == 3
@@ -514,12 +514,12 @@ class Reserve < ActiveRecord::Base
 
   def retained_mail_title
     #MessageTemplate.localized_template('retained_manifestations', self.user.locale).title rescue nil
-    MessageTemplate.localized_template('item_received_for_patron', self.user.locale).title rescue nil
+    MessageTemplate.localized_template('item_received_for_agent', self.user.locale).title rescue nil
   end
 
   def retained_mail_message
     #message = MessageTemplate.localized_template('retained_manifestations', self.user.locale)
-    message = MessageTemplate.localized_template('item_received_for_patron', self.user.locale)
+    message = MessageTemplate.localized_template('item_received_for_agent', self.user.locale)
     options = {:manifestations => Array[self.manifestation], 
                :user => self.user,
                :receipt_library => Library.find(self.receipt_library_id),
@@ -550,12 +550,12 @@ class Reserve < ActiveRecord::Base
     @Type = Struct.new(:id, :display_name, :information)
     unless user.blank?
       @informations << @Type.new(1, I18n.t('activerecord.attributes.user.email'), user.email) unless user.email.blank?
-      @informations << @Type.new(2, I18n.t('activerecord.attributes.patron.telephone_number_1'), user.patron.telephone_number_1) unless user.patron.telephone_number_1.blank?
-      @informations << @Type.new(3, I18n.t('activerecord.attributes.patron.extelephone_number_1'), user.patron.extelephone_number_1) unless user.patron.extelephone_number_1.blank?
-      @informations << @Type.new(4, I18n.t('activerecord.attributes.patron.fax_number_1'), user.patron.fax_number_1) unless user.patron.fax_number_1.blank?
-      @informations << @Type.new(5, I18n.t('activerecord.attributes.patron.telephone_number_2'), user.patron.telephone_number_2) unless user.patron.telephone_number_2.blank?
-      @informations << @Type.new(6, I18n.t('activerecord.attributes.patron.extelephone_number_2'), user.patron.extelephone_number_2) unless user.patron.extelephone_number_2.blank?
-      @informations << @Type.new(7, I18n.t('activerecord.attributes.patron.fax_number_2'), user.patron.fax_number_2) unless user.patron.fax_number_2.blank?
+      @informations << @Type.new(2, I18n.t('activerecord.attributes.agent.telephone_number_1'), user.agent.telephone_number_1) unless user.agent.telephone_number_1.blank?
+      @informations << @Type.new(3, I18n.t('activerecord.attributes.agent.extelephone_number_1'), user.agent.extelephone_number_1) unless user.agent.extelephone_number_1.blank?
+      @informations << @Type.new(4, I18n.t('activerecord.attributes.agent.fax_number_1'), user.agent.fax_number_1) unless user.agent.fax_number_1.blank?
+      @informations << @Type.new(5, I18n.t('activerecord.attributes.agent.telephone_number_2'), user.agent.telephone_number_2) unless user.agent.telephone_number_2.blank?
+      @informations << @Type.new(6, I18n.t('activerecord.attributes.agent.extelephone_number_2'), user.agent.extelephone_number_2) unless user.agent.extelephone_number_2.blank?
+      @informations << @Type.new(7, I18n.t('activerecord.attributes.agent.fax_number_2'), user.agent.fax_number_2) unless user.agent.fax_number_2.blank?
     end
     @informations << @Type.new(0, I18n.t('activerecord.attributes.reserve.unnecessary'), '')
     return @informations
@@ -568,17 +568,17 @@ class Reserve < ActiveRecord::Base
     when 1
       information_type = user.email unless user.email.blank?
     when 2
-      information_type = user.patron.telephone_number_1 unless user.patron.telephone_number_1.blank? 
+      information_type = user.agent.telephone_number_1 unless user.agent.telephone_number_1.blank? 
     when 3
-      information_type = user.patron.extelephone_number_1 unless user.patron.extelephone_number_1.blank?
+      information_type = user.agent.extelephone_number_1 unless user.agent.extelephone_number_1.blank?
     when 4
-      information_type = user.patron.fax_number_1 unless user.patron.fax_number_1.blank?
+      information_type = user.agent.fax_number_1 unless user.agent.fax_number_1.blank?
     when 5
-      information_type = user.patron.telephone_number_2 unless user.patron.telephone_number_2.blank?
+      information_type = user.agent.telephone_number_2 unless user.agent.telephone_number_2.blank?
     when 6
-      information_type = user.patron.extelephone_number_2 unless user.patron.extelephone_number_2.blank?
+      information_type = user.agent.extelephone_number_2 unless user.agent.extelephone_number_2.blank?
     when 7
-      information_type = user.patron.fax_number_2 unless user.patron.fax_number_2.blank?
+      information_type = user.agent.fax_number_2 unless user.agent.fax_number_2.blank?
     end
     return information_type
   end
@@ -621,10 +621,10 @@ class Reserve < ActiveRecord::Base
     report.start_new_page do |page|
       # library info
       user = reserve.user.user_number
-      if SystemConfiguration.get("reserve_print.old") == true and  reserve.user.patron.date_of_birth
-        age = (Time.now.strftime("%Y%m%d").to_f - reserve.user.patron.date_of_birth.strftime("%Y%m%d").to_f) / 10000
+      if SystemConfiguration.get("reserve_print.old") == true and  reserve.user.agent.date_of_birth
+        age = (Time.now.strftime("%Y%m%d").to_f - reserve.user.agent.date_of_birth.strftime("%Y%m%d").to_f) / 10000
         age = age.to_i
-        user = user + '(' + age.to_s + I18n.t('activerecord.attributes.patron.old')  +')'
+        user = user + '(' + age.to_s + I18n.t('activerecord.attributes.agent.old')  +')'
       end
       page.item(:library).value(LibraryGroup.system_name(@locale))
       page.item(:date).value(Time.now)
@@ -638,11 +638,11 @@ class Reserve < ActiveRecord::Base
       page.item(:user_information).value(Reserve.get_information_type(reserve))
       # book info
       page.item(:title).value(reserve.manifestation.original_title)
-      page.item(:creater).value(patrons_list(
+      page.item(:creater).value(agents_list(
         reserve.manifestation.creators.readable_by(current_user),
         { :itemprop => 'author', :nolink => true }, reserve.manifestation.id, 'create', 'output'))
       page.item(:publisher).value(
-        patrons_list(reserve.manifestation.publishers.readable_by(current_user),
+        agents_list(reserve.manifestation.publishers.readable_by(current_user),
         { :itemprop => 'publisher', :nolink => true}, reserve.manifestation.id, 'produce', 'output'))
       page.item(:price).value(reserve.manifestation.price)
       page.item(:page).value(reserve.manifestation.number_of_pages.to_s + 'p') if reserve.manifestation.number_of_pages
@@ -667,23 +667,23 @@ class Reserve < ActiveRecord::Base
     end
     report.start_new_page do |page|
       page.item(:library).value(LibraryGroup.system_name(@locale))
-      set_user = user.patron.full_name
-      if SystemConfiguration.get("reserve_print.old") == true and user.patron.date_of_birth
-        age = (Time.now.strftime("%Y%m%d").to_f - user.patron.date_of_birth.strftime("%Y%m%d").to_f) / 10000
+      set_user = user.agent.full_name
+      if SystemConfiguration.get("reserve_print.old") == true and user.agent.date_of_birth
+        age = (Time.now.strftime("%Y%m%d").to_f - user.agent.date_of_birth.strftime("%Y%m%d").to_f) / 10000
         age = age.to_i
-        set_user =set_user + '(' + age.to_s + I18n.t('activerecord.attributes.patron.old')  +')'
+        set_user =set_user + '(' + age.to_s + I18n.t('activerecord.attributes.agent.old')  +')'
       end
       page.item(:user).value(set_user)
       user_library = Library.find(user.library_id)
       page.item(:user_library).value(user_library.display_name)
       page.item(:user_library_telephone_number_1).value(user_library.telephone_number_1)
       page.item(:user_library_telephone_number_2).value(user_library.telephone_number_2)
-      page.item(:user_telephone_number_1_1).value(user.patron.telephone_number_1)
-      page.item(:user_telephone_number_1_2).value(user.patron.extelephone_number_1)
-      page.item(:user_telephone_number_1_3).value(user.patron.fax_number_1)
-      page.item(:user_telephone_number_2_1).value(user.patron.telephone_number_2)
-      page.item(:user_telephone_number_2_2).value(user.patron.extelephone_number_2)
-      page.item(:user_telephone_number_2_3).value(user.patron.fax_number_2)
+      page.item(:user_telephone_number_1_1).value(user.agent.telephone_number_1)
+      page.item(:user_telephone_number_1_2).value(user.agent.extelephone_number_1)
+      page.item(:user_telephone_number_1_3).value(user.agent.fax_number_1)
+      page.item(:user_telephone_number_2_1).value(user.agent.telephone_number_2)
+      page.item(:user_telephone_number_2_2).value(user.agent.extelephone_number_2)
+      page.item(:user_telephone_number_2_3).value(user.agent.fax_number_2)
       page.item(:user_email).value(user.email)
 
       reserves.each do |reserve|
@@ -738,11 +738,11 @@ class Reserve < ActiveRecord::Base
           when :expired_at
             row << reserve.expired_at.strftime("%Y/%m/%d")
           when :user
-            user = reserve.user.patron.full_name
-            if SystemConfiguration.get("reserve_print.old") == true and  reserve.user.patron.date_of_birth
-              age = (Time.now.strftime("%Y%m%d").to_f - reserve.user.patron.date_of_birth.strftime("%Y%m%d").to_f) / 10000
+            user = reserve.user.agent.full_name
+            if SystemConfiguration.get("reserve_print.old") == true and  reserve.user.agent.date_of_birth
+              age = (Time.now.strftime("%Y%m%d").to_f - reserve.user.agent.date_of_birth.strftime("%Y%m%d").to_f) / 10000
               age = age.to_i
-              user = user + '(' + age.to_s + I18n.t('activerecord.attributes.patron.old')  +')'
+              user = user + '(' + age.to_s + I18n.t('activerecord.attributes.agent.old')  +')'
             end
             row << user
           when :information_type
@@ -806,11 +806,11 @@ class Reserve < ActiveRecord::Base
                row.item(:receipt_library).value(Library.find(r.receipt_library_id).display_name)
                row.item(:title).value(r.manifestation.original_title)
                row.item(:expired_at).value(r.expired_at.strftime("%Y/%m/%d"))
-               user = r.user.patron.full_name
-               if SystemConfiguration.get("reserve_print.old") == true and  r.user.patron.date_of_birth
-                 age = (Time.now.strftime("%Y%m%d").to_f - r.user.patron.date_of_birth.strftime("%Y%m%d").to_f) / 10000
+               user = r.user.agent.full_name
+               if SystemConfiguration.get("reserve_print.old") == true and  r.user.agent.date_of_birth
+                 age = (Time.now.strftime("%Y%m%d").to_f - r.user.agent.date_of_birth.strftime("%Y%m%d").to_f) / 10000
                  age = age.to_i
-                 user = user + '(' + age.to_s + I18n.t('activerecord.attributes.patron.old')  +')'
+                 user = user + '(' + age.to_s + I18n.t('activerecord.attributes.agent.old')  +')'
                end
                row.item(:user).value(user)
                information_type = I18n.t(i18n_information_type(r.information_type_id).strip_tags)
@@ -861,7 +861,7 @@ class Reserve < ActiveRecord::Base
            row.item(:call_number).value(r.try(:item).try(:call_number))
            row.item(:item_identifier).value(r.try(:item).try(:item_identifier))
            row.item(:title).value(r.try(:manifestation).try(:original_title))
-           user = r.user.patron.full_name
+           user = r.user.agent.full_name
            row.item(:user).value(user)
            information_type = I18n.t(i18n_information_type(r.information_type_id).strip_tags)
            information_type += ': ' + Reserve.get_information_type(r) if r.information_type_id != 0 and !Reserve.get_information_type(r).nil?
@@ -917,11 +917,11 @@ class Reserve < ActiveRecord::Base
           when :expired_at
             row << reserve.expired_at.strftime("%Y/%m/%d")
           when :user
-            user = reserve.user.patron.full_name
-            if SystemConfiguration.get("reserve_print.old") == true and  reserve.user.patron.date_of_birth
-              age = (Time.now.strftime("%Y%m%d").to_f - reserve.user.patron.date_of_birth.strftime("%Y%m%d").to_f) / 10000
+            user = reserve.user.agent.full_name
+            if SystemConfiguration.get("reserve_print.old") == true and  reserve.user.agent.date_of_birth
+              age = (Time.now.strftime("%Y%m%d").to_f - reserve.user.agent.date_of_birth.strftime("%Y%m%d").to_f) / 10000
               age = age.to_i
-              user = user + '(' + age.to_s + I18n.t('activerecord.attributes.patron.old')  +')'
+              user = user + '(' + age.to_s + I18n.t('activerecord.attributes.agent.old')  +')'
             end
             row << user
           when :information_type
@@ -972,11 +972,11 @@ class Reserve < ActiveRecord::Base
                row.item(:receipt_library).value(Library.find(r.receipt_library_id).display_name)
                row.item(:title).value(r.manifestation.original_title)
                row.item(:expired_at).value(r.expired_at.strftime("%Y/%m/%d"))
-               user = r.user.patron.full_name
-               if SystemConfiguration.get("reserve_print.old") == true and  r.user.patron.date_of_birth
-                 age = (Time.now.strftime("%Y%m%d").to_f - r.user.patron.date_of_birth.strftime("%Y%m%d").to_f) / 10000
+               user = r.user.agent.full_name
+               if SystemConfiguration.get("reserve_print.old") == true and  r.user.agent.date_of_birth
+                 age = (Time.now.strftime("%Y%m%d").to_f - r.user.agent.date_of_birth.strftime("%Y%m%d").to_f) / 10000
                  age = age.to_i
-                 user = user + '(' + age.to_s + I18n.t('activerecord.attributes.patron.old')  +')'
+                 user = user + '(' + age.to_s + I18n.t('activerecord.attributes.agent.old')  +')'
                end
                row.item(:user).value(user)
                information_type = I18n.t(i18n_information_type(r.information_type_id).strip_tags)
@@ -1017,11 +1017,11 @@ class Reserve < ActiveRecord::Base
         user_number = ""
         user_number = reserve.user.user_number unless reserve.user.user_number.blank?
         full_name = ""
-        full_name = reserve.user.patron.full_name unless reserve.user.patron.full_name.blank?
-        if SystemConfiguration.get("reserve_print.old") == true and  reserve.user.patron.date_of_birth
-          age = (Time.now.strftime("%Y%m%d").to_f - reserve.user.patron.date_of_birth.strftime("%Y%m%d").to_f) / 10000
+        full_name = reserve.user.agent.full_name unless reserve.user.agent.full_name.blank?
+        if SystemConfiguration.get("reserve_print.old") == true and  reserve.user.agent.date_of_birth
+          age = (Time.now.strftime("%Y%m%d").to_f - reserve.user.agent.date_of_birth.strftime("%Y%m%d").to_f) / 10000
           age = age.to_i
-          full_name = full_name + '(' + age.to_s + I18n.t('activerecord.attributes.patron.old')  +')'
+          full_name = full_name + '(' + age.to_s + I18n.t('activerecord.attributes.agent.old')  +')'
         end
         item_identifier = ""
         item_identifier = reserve.item.item_identifier if !reserve.item.blank? and !reserve.item.item_identifier.blank?
@@ -1066,11 +1066,11 @@ class Reserve < ActiveRecord::Base
             end
             row.item(:receipt_library).value(Library.find(r.receipt_library_id).display_name)
             row.item(:title).value(r.manifestation.original_title)
-            disp_name = r.user.patron.full_name
-            if SystemConfiguration.get("reserve_print.old") == true and  r.user.patron.date_of_birth
-              age = (Time.now.strftime("%Y%m%d").to_f - r.user.patron.date_of_birth.strftime("%Y%m%d").to_f) / 10000
+            disp_name = r.user.agent.full_name
+            if SystemConfiguration.get("reserve_print.old") == true and  r.user.agent.date_of_birth
+              age = (Time.now.strftime("%Y%m%d").to_f - r.user.agent.date_of_birth.strftime("%Y%m%d").to_f) / 10000
               age = age.to_i
-              disp_name = disp_name + '(' + age.to_s + I18n.t('activerecord.attributes.patron.old')  +')'
+              disp_name = disp_name + '(' + age.to_s + I18n.t('activerecord.attributes.agent.old')  +')'
             end
             row.item(:user).value(disp_name)
             information_type = I18n.t(i18n_information_type(r.information_type_id).strip_tags)
@@ -1107,11 +1107,11 @@ class Reserve < ActiveRecord::Base
       columns.each do |column|
         case column[0]
         when :user
-          disp_name = reserve.user.patron.full_name
-          if SystemConfiguration.get("reserve_print.old") == true and  reserve.user.patron.date_of_birth
-            age = (Time.now.strftime("%Y%m%d").to_f - reserve.user.patron.date_of_birth.strftime("%Y%m%d").to_f) / 10000
+          disp_name = reserve.user.agent.full_name
+          if SystemConfiguration.get("reserve_print.old") == true and  reserve.user.agent.date_of_birth
+            age = (Time.now.strftime("%Y%m%d").to_f - reserve.user.agent.date_of_birth.strftime("%Y%m%d").to_f) / 10000
             age = age.to_i
-            disp_name = disp_name + '(' + age.to_s + I18n.t('activerecord.attributes.patron.old')  +')'
+            disp_name = disp_name + '(' + age.to_s + I18n.t('activerecord.attributes.agent.old')  +')'
           end
           row << disp_name
         when :receipt_library
@@ -1154,7 +1154,7 @@ end
 #  expired_at                   :datetime
 #  deleted_at                   :datetime
 #  state                        :string(255)
-#  expiration_notice_to_patron  :boolean         default(FALSE)
+#  expiration_notice_to_agent  :boolean         default(FALSE)
 #  expiration_notice_to_library :boolean         default(FALSE)
 #
 

@@ -409,7 +409,7 @@ end
 #  expired_at                   :datetime
 #  deleted_at                   :datetime
 #  state                        :string(255)
-#  expiration_notice_to_patron  :boolean         default(FALSE)
+#  expiration_notice_to_agent  :boolean         default(FALSE)
 #  expiration_notice_to_library :boolean         default(FALSE)
 #
 

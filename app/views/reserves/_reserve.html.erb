@@ -1,7 +1,7 @@
   <tr class="line<%= cycle("0", "1") %>", id="reserve_<%= @reserve.id %>">
     <td>
       <%= link_to @reserve.try(:user).try(:username), @reserve.user if @reserve.try(:user) %><br />
-      <%= link_to @reserve.try(:user).try(:patron).try(:full_name), @reserve.user if @reserve.try(:user).try(:patron) %>
+      <%= link_to @reserve.try(:user).try(:agent).try(:full_name), @reserve.user if @reserve.try(:user).try(:agent) %>
     </td>
     <td><%= render 'reserves/title', :reserve => @reserve -%></td>
     <td>

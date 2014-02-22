@@ -3,7 +3,7 @@ class Library < ActiveRecord::Base
   attr_accessible :name, :display_name, :short_display_name, :zip_code, :street,
     :locality, :region, :telephone_number_1, :telephone_number_2, :fax_number,
     :note, :call_number_rows, :call_number_delimiter, :library_group_id,
-    :country_id, :opening_hour, :isil, :position, :patron_id
+    :country_id, :opening_hour, :isil, :position, :agent_id
 
   include MasterModel
   default_scope :order => 'libraries.position'
@@ -11,8 +11,8 @@ class Library < ActiveRecord::Base
   has_many :shelves, :order => 'shelves.position'
   belongs_to :library_group, :validate => true
   has_many :events, :include => :event_category
-  #belongs_to :holding_patron, :polymorphic => true, :validate => true
-  belongs_to :patron #, :validate => true
+  #belongs_to :holding_agent, :polymorphic => true, :validate => true
+  belongs_to :agent #, :validate => true
   has_many :inter_library_loans, :foreign_key => 'to_library_id'
   has_many :inter_library_loans, :foreign_key => 'from_library_id'
   has_many :users
@@ -35,13 +35,13 @@ class Library < ActiveRecord::Base
     integer :position
   end
 
-  #validates_associated :library_group, :holding_patron
-  validates_associated :library_group, :patron
-  validates_presence_of :short_display_name, :library_group, :patron
+  #validates_associated :library_group, :holding_agent
+  validates_associated :library_group, :agent
+  validates_presence_of :short_display_name, :library_group, :agent
   validates_uniqueness_of :short_display_name, :case_sensitive => false
   validates :display_name, :uniqueness => true
   validates :name, :format => {:with => /^[a-z][0-9a-z]{2,254}$/}
-  before_validation :set_patron, :on => :create
+  before_validation :set_agent, :on => :create
   #before_save :set_calil_neighborhood_library
   after_validation :geocode, :if => :address_changed?
 
@@ -75,8 +75,8 @@ class Library < ActiveRecord::Base
     Rails.cache.delete('library_all')
   end
 
-  def set_patron
-    self.patron = Patron.new(
+  def set_agent
+    self.agent = Agent.new(
       :full_name => self.name
     )
   end
@@ -136,8 +136,8 @@ end
 # Table name: libraries
 #
 #  id                          :integer         not null, primary key
-#  patron_id                   :integer
-#  patron_type                 :string(255)
+#  agent_id                   :integer
+#  agent_type                 :string(255)
 #  name                        :string(255)     not null
 #  display_name                :text
 #  short_display_name          :string(255)     not null

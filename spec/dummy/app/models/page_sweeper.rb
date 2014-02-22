@@ -1,6 +1,6 @@
 class PageSweeper < ActionController::Caching::Sweeper
   include ExpireEditableFragment
-  observe Create, Realize, Produce, Own, Patron, Language, Checkin,
+  observe Create, Realize, Produce, Own, Agent, Language, Checkin,
     SeriesStatement, SubjectHeadingType, PictureFile, Shelf, Answer,
     Subject, Classification, Library, SubjectHeadingTypeHasSubject,
     WorkHasSubject, SeriesHasManifestation, InterLibraryLoan
@@ -29,16 +29,16 @@ class PageSweeper < ActionController::Caching::Sweeper
         expire_editable_fragment(subject)
       end
     when record.is_a?(Create)
-      expire_editable_fragment(record.patron)
+      expire_editable_fragment(record.agent)
       expire_editable_fragment(record.work)
     when record.is_a?(Realize)
-      expire_editable_fragment(record.patron)
+      expire_editable_fragment(record.agent)
       expire_editable_fragment(record.expression)
     when record.is_a?(Produce)
-      expire_editable_fragment(record.patron)
+      expire_editable_fragment(record.agent)
       expire_editable_fragment(record.manifestation)
     when record.is_a?(Own)
-      expire_editable_fragment(record.patron)
+      expire_editable_fragment(record.agent)
       expire_editable_fragment(record.item)
       expire_editable_fragment(record.item.manifestation)
     when record.is_a?(Checkin)
@@ -54,7 +54,7 @@ class PageSweeper < ActionController::Caching::Sweeper
         case
         when record.picture_attachable.is_a?(Manifestation)
           expire_editable_fragment(record.picture_attachable, ['picture_file', 'book_jacket'])
-        when record.picture_attachable.is_a?(Patron)
+        when record.picture_attachable.is_a?(Agent)
           expire_editable_fragment(record.picture_attachable, ['picture_file'])
         end
       end

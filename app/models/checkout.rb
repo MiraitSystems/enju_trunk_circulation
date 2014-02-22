@@ -218,7 +218,7 @@ class Checkout < ActiveRecord::Base
     report.start_new_page do |page|
       page.item(:library).value(LibraryGroup.system_name(@locale))
       page.item(:user).value(user.user_number)
-      page.item(:full_name).value(user.patron.full_name) unless SystemConfiguration.get("checkout.set_rental_certificate_size")
+      page.item(:full_name).value(user.agent.full_name) unless SystemConfiguration.get("checkout.set_rental_certificate_size")
       page.item(:lend_user).value(current_user.user_number)
       page.item(:lend_library).value(library.display_name)
       page.item(:lend_library_telephone_number_1).value(library.telephone_number_1)
@@ -268,11 +268,11 @@ class Checkout < ActiveRecord::Base
         checkouts.each do |checkout|
           page.list(:list).add_row do |row|
             row.item(:not_found).hide
-            user = checkout.user.patron.full_name
-            if SystemConfiguration.get("checkout_print.old") == true and checkout.user.patron.date_of_birth
-              age = (Time.now.strftime("%Y%m%d").to_f - checkout.user.patron.date_of_birth.strftime("%Y%m%d").to_f) / 10000
+            user = checkout.user.agent.full_name
+            if SystemConfiguration.get("checkout_print.old") == true and checkout.user.agent.date_of_birth
+              age = (Time.now.strftime("%Y%m%d").to_f - checkout.user.agent.date_of_birth.strftime("%Y%m%d").to_f) / 10000
               age = age.to_i
-              user = user + '(' + age.to_s + I18n.t('activerecord.attributes.patron.old')  +')'
+              user = user + '(' + age.to_s + I18n.t('activerecord.attributes.agent.old')  +')'
             end
             row.item(:user).value(user)
             row.item(:title).value(checkout.item.manifestation.original_title)
@@ -317,11 +317,11 @@ class Checkout < ActiveRecord::Base
       columns.each do |column|
         case column[0]
         when :user
-          user = checkout.user.patron.full_name
-          if SystemConfiguration.get("reserve_print.old") == true and  checkout.user.patron.date_of_birth
-            age = (Time.now.strftime("%Y%m%d").to_f - checkout.user.patron.date_of_birth.strftime("%Y%m%d").to_f) / 10000
+          user = checkout.user.agent.full_name
+          if SystemConfiguration.get("reserve_print.old") == true and  checkout.user.agent.date_of_birth
+            age = (Time.now.strftime("%Y%m%d").to_f - checkout.user.agent.date_of_birth.strftime("%Y%m%d").to_f) / 10000
             age = age.to_i
-            user = user + '(' + age.to_s + I18n.t('activerecord.attributes.patron.old')  +')'
+            user = user + '(' + age.to_s + I18n.t('activerecord.attributes.agent.old')  +')'
           end
           row << user
         when :title

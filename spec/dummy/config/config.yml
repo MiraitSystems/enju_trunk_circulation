@@ -73,25 +73,25 @@ defaults: &defaults
 
   send_message:
     # refs 2506 予約受付時に予約者に受付完了メッセージを送信するか
-    reservation_accepted_for_patron: true
+    reservation_accepted_for_agent: true
 
     # refs 2506 予約受付時に管理者に受付完了メッセージを送信するか
     reservation_accepted_for_library: true
 
     # refs 2506 予約キャンセル時に予約者にキャンセル完了メッセージを送信するか
-    reservation_canceled_for_patron: true
+    reservation_canceled_for_agent: true
 
     # refs 2506 予約キャンセル時に管理者にキャンセル完了メッセージを送信するか
     reservation_canceled_for_library: true
 
     # refs 2506 予約資料確保時に予約者に資料確保完了メッセージを送信するか
-    item_received_for_patron: true
+    item_received_for_agent: true
 
     # refs 2506 予約資料確保時に管理者に資料確保完了メッセージを送信するか
     item_received_for_library: true
 
     # refs 2506 予約資料の有効期限が過ぎた時に利用者に有効期限切れメッセージを送信するか
-    reservation_expired_for_patron: true
+    reservation_expired_for_agent: true
 
     # refs 2506 予約資料の有効期限が過ぎた時に管理者に有効期限切れメッセージを送信するか
     reservation_expired_for_library: true
@@ -109,7 +109,7 @@ defaults: &defaults
     purchase_request_rejected: true
 
     # refs 3563 取置き済資料が貸出不可になったとき利用者に取置き取消メッセージを送信するか
-    reserve_reverted_for_patron: true
+    reserve_reverted_for_agent: true
 
     # refs 3563 取置き済資料が貸出不可になったとき管理者に取置き取消メッセージを送信するか
     reserve_reverted_for_library: true
@@ -264,8 +264,8 @@ defaults: &defaults
   event_import_results_print_tsv:
     filename: "event_import_results.tsv"
   # 人物・団体インポートの結果の一覧の出力(TSV)
-  patron_import_results_print_tsv:
-    filename: "patron_import_results.tsv"
+  agent_import_results_print_tsv:
+    filename: "agent_import_results.tsv"
   # テキストファイルからの資料インポートの結果の一覧の出力(XLSX)
   resource_import_textresults_print_xlsx:
     filename: "resource_import_textresults.xlsx"
@@ -383,7 +383,7 @@ defaults: &defaults
   libcheck_serial: ["serial"]
 
   # refs 2553 ユーザ情報重複チェック機能
-  patron:
+  agent:
     check_duplicate_user: false
 
   standaloneclient:

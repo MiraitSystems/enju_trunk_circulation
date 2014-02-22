@@ -50,8 +50,8 @@
     <ul>
       <li>
         <%= link_to @basket.user.username, @basket.user -%>
-        <%- if @basket.user.patron -%>
-          (<%= link_to @basket.user.patron.full_name, @basket.user -%>)
+        <%- if @basket.user.agent -%>
+          (<%= link_to @basket.user.agent.full_name, @basket.user -%>)
         <%- end -%>
       </li>
     </ul>
@@ -59,7 +59,7 @@
     <%- if current_user.has_role?('Librarian') -%>
     <ul>
       <li>
-        <%- if @basket.user.patron -%>
+        <%- if @basket.user.agent -%>
           <%= link_to t("page.userdetail"), @basket.user if current_user.has_role?('Librarian') -%>
         <%- end -%>
       </li>

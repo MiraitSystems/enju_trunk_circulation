@@ -13,7 +13,7 @@ class PictureFile < ActiveRecord::Base
   validates_attachment_presence :picture
   validates_attachment_content_type :picture, :content_type => ["image/jpeg", "image/pjpeg", "image/png", "image/gif", "image/svg+xml"], :on => :create
 
-  validates :picture_attachable_type, :presence => true, :inclusion => {:in => ['Event', 'Manifestation', 'Patron', 'Shelf']}
+  validates :picture_attachable_type, :presence => true, :inclusion => {:in => ['Event', 'Manifestation', 'Agent', 'Shelf']}
   validates_associated :picture_attachable
   default_scope :order => 'position'
   # http://railsforum.com/viewtopic.php?id=11615

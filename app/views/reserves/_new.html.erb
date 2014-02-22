@@ -31,12 +31,12 @@
         data: {"user_number": user_number, "manifestation_id": manifestation_id},
         success: function(obj) {
           if (obj.success) {
-            if (obj["user"] != null && obj["patron"] != null) {
+            if (obj["user"] != null && obj["agent"] != null) {
               //show username
               var s = "<div id='username'>"
                 + "<p>"
                 + "<strong><%= t('activerecord.models.user') -%>:</strong>"
-                + "<a href='<%= "#{root_path}" %>users/"+obj["user"]["user"]["username"]+"'>" + obj["patron"]["patron"]["full_name"] + "</a>"
+                + "<a href='<%= "#{root_path}" %>users/"+obj["user"]["user"]["username"]+"'>" + obj["agent"]["agent"]["full_name"] + "</a>"
                 + "(" + "<a href='<%= "#{root_path}" %>users/"+obj["user"]["user"]["username"]+"'>" + obj["user"] ["user"]["username"]+ "</a>" + ")"
                 + "</p>"
                 + "</div>";
@@ -51,18 +51,18 @@
               $('#reserve_submit').removeAttr('disabled');
               if (obj["user"]["user"]["email"].length > 0)
                 $('#reserve_information_type_id').append($('<option>').attr({ value: '1' }).text('<%= t('activerecord.attributes.user.email') -%> ' + obj["user"]["user"]["email"]));
-              if (obj["patron"]["patron"]["telephone_number_1"].length > 0)
-                $('#reserve_information_type_id').append($('<option>').attr({ value: '2' }).text('<%= t('activerecord.attributes.patron.telephone_number_1') -%> ' + obj["patron"]["patron"]["telephone_number_1"]));
-              if (obj["patron"]["patron"]["extelephone_number_1"].length > 0)
-                $('#reserve_information_type_id').append($('<option>').attr({ value: '3' }).text('<%= t('activerecord.attributes.patron.extelephone_number_1') -%> ' + obj["patron"]["patron"]["extelephone_number_1"]));
-              if (obj["patron"]["patron"]["fax_number_1"].length > 0)
-                $('#reserve_information_type_id').append($('<option>').attr({ value: '4' }).text('<%= t('activerecord.attributes.patron.fax_number_1') -%> ' + obj["patron"]["patron"]["fax_number_1"]));
-              if (obj["patron"]["patron"]["telephone_number_2"].length > 0)
-                $('#reserve_information_type_id').append($('<option>').attr({ value: '5' }).text('<%= t('activerecord.attributes.patron.telephone_number_2') -%> ' + obj["patron"]["patron"]["telephone_number_2"]));
-              if (obj["patron"]["patron"]["extelephone_number_2"].length > 0)
-                $('#reserve_information_type_id').append($('<option>').attr({ value: '6' }).text('<%= t('activerecord.attributes.patron.extelephone_number_2') -%> ' + obj["patron"]["patron"]["extelephone_number_2"]));
-              if (obj["patron"]["patron"]["fax_number_2"].length > 0)
-                $('#reserve_information_type_id').append($('<option>').attr({ value: '7' }).text('<%= t('activerecord.attributes.patron.fax_number_2') -%> ' + obj["patron"]["patron"]["fax_number_2"]));
+              if (obj["agent"]["agent"]["telephone_number_1"].length > 0)
+                $('#reserve_information_type_id').append($('<option>').attr({ value: '2' }).text('<%= t('activerecord.attributes.agent.telephone_number_1') -%> ' + obj["agent"]["agent"]["telephone_number_1"]));
+              if (obj["agent"]["agent"]["extelephone_number_1"].length > 0)
+                $('#reserve_information_type_id').append($('<option>').attr({ value: '3' }).text('<%= t('activerecord.attributes.agent.extelephone_number_1') -%> ' + obj["agent"]["agent"]["extelephone_number_1"]));
+              if (obj["agent"]["agent"]["fax_number_1"].length > 0)
+                $('#reserve_information_type_id').append($('<option>').attr({ value: '4' }).text('<%= t('activerecord.attributes.agent.fax_number_1') -%> ' + obj["agent"]["agent"]["fax_number_1"]));
+              if (obj["agent"]["agent"]["telephone_number_2"].length > 0)
+                $('#reserve_information_type_id').append($('<option>').attr({ value: '5' }).text('<%= t('activerecord.attributes.agent.telephone_number_2') -%> ' + obj["agent"]["agent"]["telephone_number_2"]));
+              if (obj["agent"]["agent"]["extelephone_number_2"].length > 0)
+                $('#reserve_information_type_id').append($('<option>').attr({ value: '6' }).text('<%= t('activerecord.attributes.agent.extelephone_number_2') -%> ' + obj["agent"]["agent"]["extelephone_number_2"]));
+              if (obj["agent"]["agent"]["fax_number_2"].length > 0)
+                $('#reserve_information_type_id').append($('<option>').attr({ value: '7' }).text('<%= t('activerecord.attributes.agent.fax_number_2') -%> ' + obj["agent"]["agent"]["fax_number_2"]));
               $('#reserve_information_type_id').append($('<option>').attr({ value: '0' }).text('<%= t('activerecord.attributes.reserve.unnecessary') -%>'));
             } 
           }

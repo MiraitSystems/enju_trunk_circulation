@@ -1,8 +1,8 @@
 require EnjuTrunkFrbr::Engine.root.join('app', 'models', 'create')
 class Create < ActiveRecord::Base
-  belongs_to :patron
+  belongs_to :agent
 
-  validates_associated :patron
+  validates_associated :agent
   after_save :reindex
   after_destroy :reindex
 
@@ -11,7 +11,7 @@ class Create < ActiveRecord::Base
   has_paper_trail
 
   def reindex
-    patron.try(:index)
+    agent.try(:index)
     work.try(:index)
   end
 end
@@ -21,7 +21,7 @@ end
 # Table name: creates
 #
 #  id         :integer         not null, primary key
-#  patron_id  :integer         not null
+#  agent_id  :integer         not null
 #  work_id    :integer         not null
 #  position   :integer
 #  type       :string(255)
