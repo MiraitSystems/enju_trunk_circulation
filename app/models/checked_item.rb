@@ -49,7 +49,7 @@ class CheckedItem < ActiveRecord::Base
     if self.item.reserved?
       errors[:base] << 'checked_item.reserved_item_included' unless self.available_for_reserve_checkout?
     end
-    errors[:base] << 'checked_item.checked_item.not_available_for_checkout' if self.item.not_for_loan?
+    errors[:base] << 'checked_item.not_available_for_checkout' if self.item.not_for_loan?
     errors[:base] << 'checked_item.in_transcation' if self.in_transaction?
     return false unless errors[:base]
   end
