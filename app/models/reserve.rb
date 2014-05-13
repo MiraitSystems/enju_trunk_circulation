@@ -473,6 +473,11 @@ class Reserve < ActiveRecord::Base
       if self.manifestation.is_reserved_by(self.user)
         errors[:base] << I18n.t('reserve.this_manifestation_is_already_reserved')
       end
+
+      if self.user.try(:user_group_has_checkout_type_exist?, self.manifestation)
+        errors[:base] << I18n.t('reserve.user_group_has_checkout_type_do_not_exist')
+      end
+
       if self.user.try(:reached_reservation_limit?, self.manifestation)
         errors[:base] << I18n.t('reserve.excessed_reservation_limit')
       end
