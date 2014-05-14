@@ -19,7 +19,6 @@ class Checkin < ActiveRecord::Base
   after_create :store_history
 
   def item_checkin(current_user, escape_flag = false)
-    logger.error "********* start to item checkin"
     message = []
     Checkin.transaction do
       checkouts = Checkout.not_returned.where(:item_id => self.item_id).select([:id, :item_id, :lock_version])

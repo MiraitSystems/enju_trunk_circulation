@@ -303,8 +303,8 @@ private
       return status
     end
     basket.user = user
-    basket.save
-
+    basket.save!
+    checked_item[:basket_id] = basket.id
     logger.debug "checked item create"
     checked_item = CheckedItem.new(checked_item)
     checked_item.basket = basket
