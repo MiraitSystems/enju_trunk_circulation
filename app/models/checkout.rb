@@ -200,9 +200,9 @@ class Checkout < ActiveRecord::Base
   # output
   def self.output_checkouts(checkouts, user, current_user)
     unless SystemConfiguration.get("checkout.set_rental_certificate_size") == true
-      report = ThinReports::Report.new :layout => File.join(Rails.root, 'report', 'checkouts_A4.tlf')
-    else 
-      report = ThinReports::Report.new :layout => File.join(Rails.root, 'report', 'checkouts.tlf')
+      report = EnjuTrunkCirculation.new_report('checkouts_A4.tlf')
+    else
+      report = EnjuTrunkCirculation.new_report('checkouts.tlf')
     end
 
     report.layout.config.list(:list) do
@@ -236,7 +236,7 @@ class Checkout < ActiveRecord::Base
   end
 
   def self.output_checkoutlist_pdf(checkouts, view)
-    report = ThinReports::Report.new :layout => File.join(Rails.root, 'report', 'checkoutlist.tlf')
+    report = EnjuTrunkCirculation.new_report('checkoutlist.tlf')
 
     # set page_num
     report.events.on :page_create do |e|
@@ -350,7 +350,7 @@ class Checkout < ActiveRecord::Base
   end
 
   def self.get_checkoutlists_pdf(displist)
-    report = ThinReports::Report.new :layout => File.join(Rails.root, 'report', 'circulation_status_list.tlf')
+    report = EnjuTrunkCirculation.new_report('circulation_status_list.tlf')
 
     # set page_num
     report.events.on :page_create do |e|

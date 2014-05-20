@@ -617,7 +617,7 @@ class Reserve < ActiveRecord::Base
   def self.get_reserve(reserve, current_user)
     receipt_library = Library.find(reserve.receipt_library_id)
 
-    report = ThinReports::Report.new :layout => File.join(Rails.root, 'report', 'reserve.tlf')
+    report = EnjuTrunkCirculation.new_report('reserve.tlf')
     report.start_new_page do |page|
       # library info
       user = reserve.user.user_number
@@ -658,7 +658,7 @@ class Reserve < ActiveRecord::Base
     else
       reserves = Reserve.user_show_reserves.where(:user_id => user.id).order('expired_at Desc')
     end
-    report = ThinReports::Report.new :layout => File.join(Rails.root, 'report', 'reservelist_user_reseat.tlf')
+    report = EnjuTrunkCirculation.new_report('reservelist_user_reseat.tlf')
     report.layout.config.list(:list) do
       events.on :footer_insert do |e|
         e.section.item(:total).value(reserves.length)
@@ -758,7 +758,7 @@ class Reserve < ActiveRecord::Base
   end
 
   def self.get_reserve_list_all_pdf(query, states, library, type)
-    report = ThinReports::Report.new :layout => File.join(Rails.root, 'report', 'reservelist.tlf')
+    report = EnjuTrunkCirculation.new_report('reservelist.tlf')
 
     # set page_num
     report.events.on :page_create do |e|
@@ -837,7 +837,7 @@ class Reserve < ActiveRecord::Base
   end
 
   def self.get_reserve_list_picking_pdf(reserves)
-    report = ThinReports::Report.new :layout => File.join(Rails.root, 'report', 'reserve_picking.tlf')
+    report = EnjuTrunkCirculation.new_report('reserve_picking.tlf')
 
     # set page_num
     report.events.on :page_create do |e|
@@ -938,7 +938,7 @@ class Reserve < ActiveRecord::Base
 
   
   def self.get_reservelist_pdf(displist)
-    report = ThinReports::Report.new :layout => File.join(Rails.root, 'report', 'reservelist.tlf')
+    report = EnjuTrunkCirculation.new_report('reservelist.tlf')
 
     # set page_number
     report.events.on :page_create do |e|
@@ -1037,7 +1037,7 @@ class Reserve < ActiveRecord::Base
   end
 
   def self.get_retained_manifestation_list_pdf(retained_manifestations)
-    report = ThinReports::Report.new :layout => File.join(Rails.root, 'report', 'retained_manifestations.tlf')
+    report = EnjuTrunkCirculation.new_report('retained_manifestations.tlf')
 
     # set page num
     report.events.on :page_create do |e|

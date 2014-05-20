@@ -59,7 +59,7 @@ class Shelf < ActiveRecord::Base
   def self.get_closing_report(item)
     logger.error "closing report"
     begin
-      report = ThinReports::Report.new :layout => "#{Rails.root.to_s}/app/views/shelves/close_shelf"
+      report = EnjuTrunk.new_report('close_shelf.tlf') 
       report.start_new_page
       report.page.item(:export_date).value(Time.now)
       report.page.item(:title).value(item.manifestation.original_title)
