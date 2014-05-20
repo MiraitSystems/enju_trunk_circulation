@@ -7,7 +7,6 @@ class BasketsController < ApplicationController
   before_filter :extend_checkout, :only => [:create]
   load_and_authorize_resource
   helper_method :get_user_if_nil
-  cache_sweeper :basket_sweeper, :only => [:create, :update, :destroy]
 
   # GET /baskets
   # GET /baskets.json
