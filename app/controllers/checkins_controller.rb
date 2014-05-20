@@ -11,7 +11,6 @@ class CheckinsController < ApplicationController
   before_filter :get_user, :except => [:batchexec]
   #before_filter :check_admin_network, :only => :batchexec
   helper_method :get_basket
-  cache_sweeper :page_sweeper, :only => [:create, :update, :destroy]
 
   # GET /checkins
   # GET /checkins.json

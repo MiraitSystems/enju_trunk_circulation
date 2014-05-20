@@ -1,6 +1,41 @@
 EnjuTrunkCirculation::Engine.routes.draw do
+end
 
+Rails.application.routes.draw do
   get "checkout_histories/index"
+
+  resources :baskets do
+    resources :checked_items
+  end
+
+  resources :checked_items
+
+  resources :checkins
+
+  resources :checkouts do
+    collection do
+      post 'output'
+      post 'extend'
+      get 'extend'
+      post 'extend_checkout'  
+    end
+  end
+
+  resources :items do
+    resources :checked_items
+  end
+
+  resources :manifestations do
+    resources :reserves
+  end
+
+  resources :reserves do
+    post :output, :on => :member
+    get :output_pdf, :on => :member
+    get :retain, :on => :collection
+    post :retain_item, :on => :collection
+    post :informed, :on => :member
+  end
 
   resources :users do
     resources :baskets do
@@ -11,29 +46,15 @@ EnjuTrunkCirculation::Engine.routes.draw do
     resources :reserves
   end
 
-  resources :baskets do
-    resources :checked_items
-  end
+  match '/batch_checkin' => 'checkins#batchexec' , :via => :post
+  match '/batch_checkout' => 'checkouts#batchexec' , :via => :post 
 
-  resources :checkins
-  resources :checked_items
-
-  resources :checkouts do
-    collection do
-      post 'output'
-      post 'extend'
+  # for opac begin
+  scope "opac", :path => "opac", :as => "opac" do
+    resources :users do
+      resources :reserves, :opac => true
+      resources :checkouts, :opac => true
     end
   end
-
-  resources :reserves do
-    post :output, :on => :member
-  end
-
-  resources :manifestation do
-    resources :reserves
-  end
-  resources :items do
-    resources :checked_items
-  end
- 
+  # for opac end
 end
