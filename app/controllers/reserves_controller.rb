@@ -189,13 +189,6 @@ class ReservesController < ApplicationController
       access_denied; return
     end
     unless current_user.has_role?('Librarian')
-=begin
-      if user.blank? or user != current_user
-        logger.warn "access_denied: user blank or user != current_user"
-        access_denied
-        return
-      end
-=end
       user = current_user unless user
       if user.try(:user_number).blank?
         logger.warn "access_denied: user_number blank."
