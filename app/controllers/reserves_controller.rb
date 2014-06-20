@@ -185,18 +185,24 @@ class ReservesController < ApplicationController
     user = @user if @user
 
     if current_user.blank?
+      logger.warn "access_denied: current_user blank."
       access_denied; return
     end
     unless current_user.has_role?('Librarian')
-      if user.try(:user_number).blank?
-        access_denied 
-        return
-      end
+=begin
       if user.blank? or user != current_user
+        logger.warn "access_denied: user blank or user != current_user"
         access_denied
         return
       end
-    end
+=end
+      user = current_user unless user
+      if user.try(:user_number).blank?
+        logger.warn "access_denied: user_number blank."
+        access_denied 
+        return
+      end
+   end
 
     if user
       @reserve = user.reserves.new
