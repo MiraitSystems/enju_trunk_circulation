@@ -13,9 +13,17 @@ class CheckoutsController < ApplicationController
   after_filter :convert_charset, :only => :index
   before_filter :authenticate_user!, :except => [:batchexec]
 
+  # GET /checkouts/output_excel
+  def output_excel
+
+  end
+
   # GET /checkouts
   # GET /checkouts.json
   def index
+    @ouput_columns = Checkout.ouput_columns
+    order_by_string = get_order_by_string(params)
+
     if params[:icalendar_token].present?
       icalendar_user = User.where(:checkout_icalendar_token => params[:icalendar_token]).first
       if icalendar_user.blank?
@@ -34,7 +42,8 @@ class CheckoutsController < ApplicationController
       unless current_user.try(:has_role?, 'Librarian')
         if current_user == @user
           # disp1. user checkouts
-          checkouts = current_user.checkouts.not_returned.order('due_date ASC')
+#          checkouts = current_user.checkouts.not_returned.order('due_date ASC')
+          checkouts = current_user.checkouts.not_returned.reorder(order_by_string).joins(:user, :item)
         else
           if @user
             access_denied
@@ -46,10 +55,12 @@ class CheckoutsController < ApplicationController
       # logged in as Librarian
       else
         if @user && @basket_id = params[:basket_id]
-          checkouts = @user.checkouts.not_returned.where(:basket_id => @basket_id).order('due_date ASC')
+#          checkouts = @user.checkouts.not_returned.where(:basket_id => @basket_id).order('due_date ASC')
+          checkouts = @user.checkouts.not_returned.where(:basket_id => @basket_id).reorder(order_by_string).joins(:user, :item)
         elsif @user
           # disp1. user checkouts
-          checkouts = @user.checkouts.not_returned.order('due_date ASC')
+#          checkouts = @user.checkouts.not_returned.order('due_date ASC')
+          checkouts = @user.checkouts.not_returned.reorder(order_by_string).joins(:user, :item)
         else
           @libraries = Library.find(:all).collect{|i| [ i.display_name, i.id ] }
           @selected_library = params[:library][:id] unless params[:library].blank?
@@ -59,15 +70,17 @@ class CheckoutsController < ApplicationController
           if params[:view] == 'overdue'
             date = 1.days.ago.end_of_day
             date = params[:days_overdue].to_i.days.ago.end_of_day if params[:days_overdue]
-            checkouts = Checkout.overdue(date).joins(:item => [{:shelf => :library}]).where('libraries.id' => library).order('due_date ASC')
+#            checkouts = Checkout.overdue(date).joins(:item => [{:shelf => :library}]).where('libraries.id' => library).order('due_date ASC')
+            checkouts = Checkout.overdue(date).joins(:item => [{:shelf => :library}]).where('libraries.id' => library).reorder(order_by_string).joins(:user)
           else
           # disp3. all checkouts
-           checkouts = Checkout.not_returned.joins(:item => [{:shelf => :library}]).where('libraries.id' => library).order('due_date ASC')
+#           checkouts = Checkout.not_returned.joins(:item => [{:shelf => :library}]).where('libraries.id' => library).order('due_date ASC')
+           checkouts = Checkout.not_returned.joins(:item => [{:shelf => :library}]).where('libraries.id' => library).reorder(order_by_string).joins(:user)
           end
         end
       end
     end
-
+    
     @days_overdue = params[:days_overdue] ||= 1
     @checkouts = checkouts.page(params[:page])
 
@@ -86,6 +99,7 @@ class CheckoutsController < ApplicationController
         end
       }
       format.tsv  { send_data Checkout.output_checkoutlist_csv(checkouts, params[:view]), :filename => Setting.checkout_list_print_tsv.filename }
+      format.xlsx { send_file Checkout.output_checkoutlist_excelx(checkouts), :filename => Setting.checkout_list_print_xlsx.filename }
       format.atom
     end
   end
@@ -392,4 +406,27 @@ private
       flash[:sound] = return_sound if return_sound
     end
   end
+
+  def get_order_by_string(params)
+    case params[:sort_by]
+      when 'username'
+        order_by = 'username'
+      when 'call_number'
+        order_by = 'call_number'
+      when 'location_category_id'
+        order_by = 'location_category_id'
+      when 'due_date'
+        order_by = 'due_date'
+      else
+        order_by = 'due_date'
+    end
+    case params[:order]
+      when 'desc'
+        order_by += ' DESC'
+      else
+        order_by += ' ASC'
+    end
+    return order_by
+  end
+
 end

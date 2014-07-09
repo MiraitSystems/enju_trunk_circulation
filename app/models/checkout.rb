@@ -443,6 +443,64 @@ class Checkout < ActiveRecord::Base
     end
   end
 
+  def self.ouput_columns
+    return [{name:"username", model: "user", column: "username"},
+            {name:"full_name", model: "agent", column: "full_name"},
+            {name:"grade", model: "keycode", column: "keyname"},
+            {name:"user_number", model: "user", column: "usernumber"},
+            {name:"original_title", model: "manifestation", column: "original_title"},
+            {name:"creator", model: "calculate", column: "calculate"},
+            {name:"call_number", model: "item", column: "call_number"},
+            {name:"item_identifier", model: "item", column: "item_identifier"},
+            {name:"location_category", model: "location_category", column: "display_name"},
+            {name:"due_date", model: "checkout", column: "due_date"},
+            {name:"reserve", model: "calculate", column: "calculate"},
+           ]
+  end
+
+  def self.output_checkoutlist_excelx(checkouts)
+    require 'axlsx'
+
+    # initialize
+    out_dir = "#{Rails.root}/private/system/checkouts_excelx"
+    excel_filepath = "#{out_dir}/list#{Time.now.strftime('%s')}#{rand(10)}.xlsx"
+    FileUtils.mkdir_p(out_dir) unless FileTest.exist?(out_dir)
+
+    logger.info "output_checkoutlist_excelx filepath=#{excel_filepath}"
+
+    # 出力データ
+    
+
+    Axlsx::Package.new do |p|
+      wb = p.workbook
+      wb.styles do |s|
+        sheet = wb.add_worksheet(:name => I18n.t('checkout_output_excel.checkout_list'))
+        # ヘッダー部分
+        columns = [
+          [:rank,'activerecord.attributes.keyword_count.rank'],
+          [:keyword, 'activerecord.attributes.keyword_count.keyword'],
+          [:count, 'activerecord.attributes.keyword_count.count'],
+        ]
+        row = columns.map {|column| I18n.t(column[1])}
+
+        default_style = s.add_style :font_name => Setting.checkout_list_print_xlsx.fontname
+        sheet.add_row row, :types => :string, :style => default_style
+=begin
+        # データ部分
+        all_results.each do |result|
+          data = []
+          data << result.rank
+          data << result.keyword
+          data << result.count
+          sheet.add_row data, :types => :string, :style => default_style
+        end 
+=end
+        p.serialize(excel_filepath)
+      end
+    end
+    return excel_filepath
+  end
+
 end
 
 # == Schema Information

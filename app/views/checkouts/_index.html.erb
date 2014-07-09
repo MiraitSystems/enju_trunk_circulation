@@ -9,6 +9,55 @@
       o.action = "<%= checkouts_path %>";
     o.submit();
   }
+
+  $(function(){
+    // function to open the dialog
+    $('#excelx_book_dialog_opener').click( function() {
+      $('#excelx_book_dialog').dialog('open');
+      return false;
+    });
+    $('#excelx_book_dialog').dialog({
+        autoOpen: false,
+        modal: true,
+        width: Math.floor($(window).width() * 0.60),
+    });
+    $('#excelx_book_trigger').click( function() {
+      $('#output-form [name="order_identifier"]').val($('#search-form [name="order_identifier"]').val());
+      $('#output-form [name="publication_year"]').val($('#search-form [name="publication_year"]').val());
+      $('#output-form [name="identifier"]').val($('#search-form [name="identifier"]').val());
+      $('#search-form [name="bookstore_code[]"]').each(function(index){
+        if($(this).prop('checked') == true){
+          $('#output-form [name="bookstore_code[]"]').eq(index).val($(this).val());
+        }
+        else{
+          $('#output-form [name="bookstore_code[]"]').eq(index).val('');
+        }
+      });
+      $('#search-form [name="order_organization_id[]"]').each(function(index){
+        if($(this).prop('checked') == true){
+          $('#output-form [name="order_organization_id[]"]').eq(index).val($(this).val());
+        }
+        else{
+          $('#output-form [name="order_organization_id[]"]').eq(index).val('');
+        }
+      });
+      $('#search-form [name="payment_form_code[]"]').each(function(index){
+        if($(this).prop('checked') == true){
+          $('#output-form [name="payment_form_code[]"]').eq(index).val($(this).val());
+        }
+        else{
+          $('#output-form [name="payment_form_code[]"]').eq(index).val('');
+        }
+      });
+      
+      $('#output-form').submit();
+      $('#excelx_book_dialog').dialog('close');
+      return false;
+    });
+    $('#check_all_ouput_columns').click(function() {
+      $('#output-form input:checkbox').prop('checked', $(this).is(':checked'));
+    });
+  });
 </script>
 
 <div id="content_detail" class="ui-corner-all">
@@ -21,6 +70,7 @@
     <%= submit_tag t('page.search'), :onclick => "push_submit(null);" -%><br />
     <%= submit_tag t('page.output_pdf', :model =>t('page.listing', :model => t('activerecord.models.checkout'))), :onclick => "push_submit('pdf');" -%>
     <%= submit_tag t('page.output_tsv', :model =>t('page.listing', :model => t('activerecord.models.checkout'))), :onclick => "push_submit('tsv');"-%>
+    <%= button_tag t('page.output_excelx', :model =>t('page.listing', :model => t('activerecord.models.checkout'))), :type => "button", :id => "excelx_book_dialog_opener" -%>
   </p>
 <%- end -%>
 
@@ -45,4 +95,32 @@
     <%- end -%>
     <li><%= link_to t('page.overdue'), checkouts_path(:view => 'overdue') -%></li>
   </ul>
+</div>
+
+<div id="excelx_book_dialog" title="<%= t('page.output', :model => t('page.search_result')) %>" style="display:none;">
+  <%= form_tag({:format => 'xlsx', :params => params},  {:method => "get", :id => "output-form"}) do %>
+    <div id='check_cols_book'>
+      <br />
+      <strong><%= t('page.output_excelx_dialog') %></strong>
+      <br />
+      <ul>
+        <li style="list-style: none; width: 30%; float: left;">
+        <%= check_box_tag "check_all_ouput_columns", true, true %><%= t('checkout_output_excel.check_all_ouput_column') %>
+        </li>
+      </ul>
+      <br style='clear: both' />
+      <ul>
+        <% @ouput_columns.each_with_index do |ouput_column, index| %>
+          <li style="list-style: none; width: 30%; float: left;">
+            <%= check_box_tag "ouput_column[]", ouput_column[:name], true %>
+            <%= t("checkout_output_excel.#{ouput_column[:name]}") -%>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+    <br style='clear: both' />
+    <div>
+      <br /><button id="excelx_book_trigger"><%= t('page.output_excelx_detail') %></button>
+    </div>
+  <% end %>
 </div>

@@ -162,3 +162,17 @@ ja:
     checkin: 返却
     reserve: 予約
     extend_checkout: 再貸出
+  checkout_output_excel:
+    username: "ユーザ名"
+    full_name: "フルネーム"
+    grade: "学年"
+    user_number: "利用者番号"
+    original_title: "タイトル"
+    creator: "著者"
+    call_number: "請求記号"
+    item_identifier: "所蔵情報ID"
+    location_category: "別置区分"
+    due_date: "貸出期限"
+    reserve: "予約有無"
+    check_all_ouput_column: "全ての出力対象カラム"
+    checkout_list: "貸出履歴"

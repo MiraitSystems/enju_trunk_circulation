@@ -1,8 +1,25 @@
 <table class="index">
   <tr>
-    <th><%= t('activerecord.models.user') %></th>
-    <th class="checked_item_title"><%= t('page.title') %></th>
-    <th><%= t('activerecord.attributes.checkout.due_date') %></th>
+    <th>
+      <%= t('activerecord.models.user') %>
+      <%= link_to image_tag('icons/arrow_up.png', :size => '16x16', :alt => t('page.asc'), :title => t('tooltip.asc')), url_for(params.merge(:sort_by => 'username', :order => 'asc')) -%>
+      <%= link_to image_tag('icons/arrow_down.png', :size => '16x16', :alt => t('page.desc'), :title => t('tooltip.desc')), url_for(params.merge(:sort_by => 'username', :order => 'desc')) -%>
+    </th>
+    <th class="checked_item_title">
+      <%= t('page.title') %>
+      <%= link_to image_tag('icons/arrow_up.png', :size => '16x16', :alt => t('page.asc'), :title => t('tooltip.asc')), url_for(params.merge(:sort_by => 'call_number', :order => 'asc')) -%>
+      <%= link_to image_tag('icons/arrow_down.png', :size => '16x16', :alt => t('page.desc'), :title => t('tooltip.desc')), url_for(params.merge(:sort_by => 'call_number', :order => 'desc')) -%>
+    </th>
+    <th>
+      <%= t('activerecord.attributes.item.location_category') %>
+      <%= link_to image_tag('icons/arrow_up.png', :size => '16x16', :alt => t('page.asc'), :title => t('tooltip.asc')), url_for(params.merge(:sort_by => 'location_category_id', :order => 'asc')) -%>
+      <%= link_to image_tag('icons/arrow_down.png', :size => '16x16', :alt => t('page.desc'), :title => t('tooltip.desc')), url_for(params.merge(:sort_by => 'location_category_id', :order => 'desc')) -%>
+    </th>
+    <th>
+      <%= t('activerecord.attributes.checkout.due_date') %>
+      <%= link_to image_tag('icons/arrow_up.png', :size => '16x16', :alt => t('page.asc'), :title => t('tooltip.asc')), url_for(params.merge(:sort_by => 'due_date', :order => 'asc')) -%>
+      <%= link_to image_tag('icons/arrow_down.png', :size => '16x16', :alt => t('page.desc'), :title => t('tooltip.desc')), url_for(params.merge(:sort_by => 'due_date', :order => 'desc')) -%>
+    </th>
     <th><%= t('activerecord.attributes.checkout.renewal_count') %></th>
     <th></th>
   </tr>
@@ -20,6 +37,7 @@
       <%= t('activerecord.attributes.item.call_number') -%>: <%= link_to call_numberformat(checkout.item), item_path(checkout.item) -%> /
       <%= t('activerecord.attributes.item.item_identifier') -%>: <%= link_to checkout.item.item_identifier, item_path(checkout.item) -%>
     </td>
+    <td><%= checkout.item.location_category.keyname if checkout.item.location_category -%></td>
     <td><%= l(checkout.due_date, :format => :only_date) -%></td>
     <td><%= checkout.checkout_renewal_count -%></td>
     <td>
