@@ -496,7 +496,7 @@ class Checkout < ActiveRecord::Base
               detail << (checkout.item.manifestation.present? ? checkout.item.manifestation.original_title : "")
             when "creator"
               if checkout.item.manifestation.creators.present?
-                creators = checkout.item.manifestation.creators.map(&:full_name).join(" ")
+                creators = checkout.item.manifestation.creators.map(&:full_name).join(";")
               else
                 creators = ""
               end
