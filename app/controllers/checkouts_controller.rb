@@ -99,7 +99,8 @@ class CheckoutsController < ApplicationController
         end
       }
       format.tsv  { send_data Checkout.output_checkoutlist_csv(checkouts, params[:view]), :filename => Setting.checkout_list_print_tsv.filename }
-      format.xlsx { send_file Checkout.output_checkoutlist_excelx(checkouts), :filename => Setting.checkout_list_print_xlsx.filename }
+#      format.xlsx { send_file Checkout.output_checkoutlist_excelx(checkouts), :filename => Setting.checkout_list_print_xlsx.filename }
+      format.xlsx { send_file Checkout.output_checkoutlist_excelx(checkouts, params), :filename => Setting.checkout_list_print_xlsx.filename }
       format.atom
     end
   end

@@ -458,7 +458,7 @@ class Checkout < ActiveRecord::Base
            ]
   end
 
-  def self.output_checkoutlist_excelx(checkouts)
+  def self.output_checkoutlist_excelx(checkouts, params)
     require 'axlsx'
 
     # initialize
@@ -469,32 +469,75 @@ class Checkout < ActiveRecord::Base
     logger.info "output_checkoutlist_excelx filepath=#{excel_filepath}"
 
     # 出力データ
-    
+    if params[:ouput_columns].present?
+      header = []
+      details = []
+      params[:ouput_columns].each do |name|
+        name_ja = I18n.t("checkout_output_excel.#{name}")
+        header << name_ja
+      end
+      
+      checkouts.each.with_index(1) do |checkout, index|
+        detail = []
+        params[:ouput_columns].each do |name|
+          ouput_column = self.ouput_columns.find{|ouput_column| ouput_column[:name] == name }
+          model = ouput_column[:model]
+          column = ouput_column[:column]
+          case name
+            when "username"
+              detail << (checkout.user.present? ? checkout.user.username : "")
+            when "full_name"
+              detail << (checkout.user.agent.present? ? checkout.user.agent.full_name : "")
+            when "grade"
+              detail << (checkout.user.agent.grade.present? ? checkout.user.agent.grade.keyname : "")
+            when "user_number"
+              detail << (checkout.user.present? ? checkout.user.user_number : "")
+            when "original_title"
+              detail << (checkout.item.manifestation.present? ? checkout.item.manifestation.original_title : "")
+            when "creator"
+              if checkout.item.manifestation.creators.present?
+                creators = checkout.item.manifestation.creators.map(&:full_name).join(" ")
+              else
+                creators = ""
+              end
+              detail << creators
+            when "call_number"
+              detail << (checkout.item.present? ? checkout.item.call_number : "")
+            when "item_identifier"
+              detail << (checkout.item.present? ? checkout.item.item_identifier : "")
+            when "location_category"
+              detail << (checkout.item.location_category.present? ? checkout.item.location_category.keyname : "")
+            when "due_date"
+              detail << (checkout.due_date.present? ? checkout.due_date.to_date : "")
+            when "reserve"
+              if checkout.item.manifestation.reserves.present?
+                reserve = I18n.t("checkout_output_excel.reserved")
+              else
+                reserve = I18n.t("checkout_output_excel.nonreserve")
+              end
+              detail << reserve
+          end
+        end
+        details << detail
+      end
+
+    end
 
     Axlsx::Package.new do |p|
       wb = p.workbook
       wb.styles do |s|
         sheet = wb.add_worksheet(:name => I18n.t('checkout_output_excel.checkout_list'))
-        # ヘッダー部分
-        columns = [
-          [:rank,'activerecord.attributes.keyword_count.rank'],
-          [:keyword, 'activerecord.attributes.keyword_count.keyword'],
-          [:count, 'activerecord.attributes.keyword_count.count'],
-        ]
-        row = columns.map {|column| I18n.t(column[1])}
-
         default_style = s.add_style :font_name => Setting.checkout_list_print_xlsx.fontname
-        sheet.add_row row, :types => :string, :style => default_style
-=begin
+        # ヘッダ部
+        if header.present?
+          sheet.add_row header, :types => :string, :style => default_style
+        end
         # データ部分
-        all_results.each do |result|
-          data = []
-          data << result.rank
-          data << result.keyword
-          data << result.count
-          sheet.add_row data, :types => :string, :style => default_style
-        end 
-=end
+        if details.present?
+          details.each do |detail|
+            sheet.add_row detail, :types => :string, :style => default_style
+          end
+        end
         p.serialize(excel_filepath)
       end
     end

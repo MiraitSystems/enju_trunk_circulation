@@ -156,3 +156,19 @@ en:
     checkin: Checkin
     reserve: Reservation
     extend_checkout: Extend checkout
+  checkout_output_excel:
+    username: Username
+    full_name: Full name
+    grade: Grade
+    user_number: User number
+    original_title: Original title
+    creator: Creator
+    call_number: Call number
+    item_identifier: Item identifier
+    location_category: Location Category
+    due_date: Due date
+    reserve: Reserve
+    check_all_ouput_column: All
+    checkout_list: Checkout list
+    reserved: Yes
+    nonreserve: No

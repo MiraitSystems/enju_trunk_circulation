@@ -16,6 +16,8 @@
 <div id="content_list">
 
   <%= form_for(:checkouts, :url => checkouts_path, :html => {:method => 'get', :id => 'form'}) do -%>
+    <%= hidden_field_tag "order", params[:order] %>
+    <%= hidden_field_tag "sort_by", params[:sort_by] %>
     <p>
       <%= t('advanced_search.library') -%>:<%= select("library", "id", @libraries, {:include_blank => t('advanced_search.all_libraries'), :selected=>@selected_library})%>
       &nbsp;
@@ -25,7 +27,9 @@
       <br />
       <%= submit_tag t('page.output_pdf', :model =>t('page.listing', :model => t('activerecord.models.checkout'))), :onclick => "push_submit('pdf');" -%>
       <%= submit_tag t('page.output_tsv', :model =>t('page.listing', :model => t('activerecord.models.checkout'))), :onclick => "push_submit('tsv');"  -%>
+      <%= button_tag t('page.output_excelx', :model =>t('page.listing', :model => t('activerecord.models.checkout'))), :type => "button", :id => "excelx_book_dialog_opener" -%>
     </p>
+    <div id="dialog_data" style="display:none;"></div>
   <%- end -%>
 
 <%= render 'list' -%>

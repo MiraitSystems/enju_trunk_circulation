@@ -176,3 +176,5 @@ ja:
     reserve: "予約有無"
     check_all_ouput_column: "全ての出力対象カラム"
     checkout_list: "貸出履歴"
+    reserved: "有"
+    nonreserve: "無"
