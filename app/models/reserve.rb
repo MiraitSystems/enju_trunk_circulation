@@ -2,11 +2,12 @@
 class Reserve < ActiveRecord::Base
   attr_accessible :manifestation_id, :item_identifier, :user_number, 
     :expired_at, :information_type_id, :receipt_library_id,
-    :request_status_type, :position, :checked_out_at
+    :request_status_type, :position, :checked_out_at, :canceled_at
   attr_accessible :manifestation_id, :item_identifier, :user_number,
     :expired_at, :request_status_type, :canceled_at, :checked_out_at,
     :expiration_notice_to_agent, :expiration_notice_to_library,
-    :information_type_id, :receipt_library_id, :position, :as => :admin
+    :information_type_id, :receipt_library_id, :position, :canceled_at,
+    :retained_at, :retain_due_date, :as => :admin
 
   self.extend ApplicationHelper
   self.extend ReservesHelper
@@ -21,7 +22,7 @@ class Reserve < ActiveRecord::Base
   scope :not_retained, where("position IS NOT NULL").order("position ASC")
   scope :not_waiting, where(:state => ['retained'])
   #scope :not_waiting, where(:state => ['retained','canceled','completed'])
-  scope :will_expire_retained, lambda {|datetime| {:conditions => ['checked_out_at IS NULL AND canceled_at IS NULL AND expired_at <= ? AND state = ?', datetime, 'retained'], :order => 'expired_at'}}
+  scope :will_expire_retained, lambda {|datetime| {:conditions => ['checked_out_at IS NULL AND canceled_at IS NULL AND (expired_at <= ? OR retain_due_date <= ?) AND state = ?', datetime, datetime, 'retained'], :order => 'expired_at, retain_due_date'}}
   scope :will_expire_requested, lambda {|datetime| {:conditions => ['checked_out_at IS NULL AND canceled_at IS NULL AND expired_at <= ? AND state = ?', datetime, 'requested'], :order => 'expired_at'}}
   scope :will_expire_pending, lambda {|datetime| {:conditions => ['checked_out_at IS NULL AND canceled_at IS NULL AND expired_at <= ? AND state = ?', datetime, 'pending'], :order => 'expired_at'}}
   scope :created, lambda {|start_date, end_date| {:conditions => ['created_at >= ? AND created_at < ?', start_date, end_date]}}
@@ -254,7 +255,10 @@ class Reserve < ActiveRecord::Base
   def retain
     # TODO: 「取り置き中」の状態を正しく表す
     self.item.retain_item!
-    self.assign_attributes({:request_status_type => RequestStatusType.where(:name => 'In Process').first}, :as => :admin)
+    self.assign_attributes({:request_status_type => RequestStatusType.where(:name => 'In Process').first,
+                            :retained_at => Time.now, 
+                            :retain_due_date => self.item.manifestation.reservation_expired_period(self.user).days.from_now.end_of_day},
+                            :as => :admin)
     self.remove_from_list
   end
 
@@ -273,6 +277,7 @@ class Reserve < ActiveRecord::Base
   def expire
     self.update_attributes!({:request_status_type => RequestStatusType.where(:name => 'Expired').first, :canceled_at => Time.zone.now})
     self.remove_from_list
+    self.try(:item).try(:update_attributes, {:circulation_status_id => CirculationStatus.where(:name => 'In Process').first.id})
     logger.info "#{Time.zone.now} reserve_id #{self.id} expired!"
   end
 
@@ -419,7 +424,7 @@ class Reserve < ActiveRecord::Base
     when 'expired'
       if SystemConfiguration.get("send_message.reservation_expired_for_library")
         message_template_to_library = MessageTemplate.localized_template('reservation_expired_for_library', system_user.locale)
-        request = MessageRequest.create!(:sender => system_user, :receiver => system_user, :message_template => message_template_to_library)
+        request = MessageRequest.create!({:sender => system_user, :receiver => system_user, :message_template => message_template_to_library}, :as => :admin)
         request.save_message_body(:manifestations => options[:manifestations])
         request.sm_send_message!
         self.not_sent_expiration_notice_to_library.each do |reserve|
