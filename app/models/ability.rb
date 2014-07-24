@@ -23,6 +23,7 @@ class Ability
         LendingPolicy,
       ]
     when 'User'
+      can :create, Basket
       can [:index, :create], Checkout
       can :update, Checkout do |checkout|
         checkout.available_for_extend && checkout.user.id == user.id
@@ -34,8 +35,6 @@ class Ability
       can [:show, :update, :destroy, :output], Reserve do |reserve|
         reserve.user == user && reserve.expired_at.end_of_day > Time.zone.now
       end
-    else
-      can :index, Checkout
     end
   end
 end
