@@ -12,6 +12,7 @@ class CheckoutsController < ApplicationController
   helper_method :get_item
   after_filter :convert_charset, :only => :index
   before_filter :authenticate_user!, :except => [:batchexec]
+  before_filter :prepare_options, :only => :index
 
   # GET /checkouts
   # GET /checkouts.json
@@ -51,23 +52,28 @@ class CheckoutsController < ApplicationController
           # disp1. user checkouts
           checkouts = @user.checkouts.not_returned.order('due_date ASC')
         else
-          @libraries = Library.find(:all).collect{|i| [ i.display_name, i.id ] }
-          @selected_library = params[:library][:id] unless params[:library].blank?
-          library = Library.find(:all).collect{|i| i.id} if params[:library].blank? or params[:library][:id].blank?
-          library = params[:library][:id] if params[:library] and !params[:library][:id].blank?
-          # disp2. over_due checkouts
-          if params[:view] == 'overdue'
+          @checkout_search = params[:checkout_search] 
+          checkouts = Checkout.joins(:item => [{:shelf => :library}]).joins(:user)
+          if @checkout_search
+            checkouts = checkouts.where('libraries.id' => @checkout_search[:library_id]) unless @checkout_search[:library_id].blank?
+            checkouts = checkouts.where("users.username like '%#{@checkout_search[:username]}%'") unless @checkout_search[:username].blank?
+            checkouts = checkouts.where('users.user_group_id' => @checkout_search[:user_group_id]) unless @checkout_search[:user_group_id].blank?
+            checkouts = checkouts.where(['checkouts.checked_at >= ?', @checkout_search[:start_date]]) unless @checkout_search[:start_date].blank?
+            checkouts = checkouts.where(['checkouts.checked_at <= ?', @checkout_search[:end_date]]) unless @checkout_search[:end_date].blank?
+            checkouts = checkouts.where("items.identifier like '#{@checkout_search[:item_identifier].gsub('*', '%')}'") unless @checkout_search[:item_identifier].blank?
+            checkouts = checkouts.where("items.manifestation_id in (select manifestation_id from manifestation_has_classifications where classification_id = #{@checkout_search[:classification_id]})") unless @checkout_search[:classification_id].blank?
+          end
+          checkouts = checkouts.not_returned unless params[:checkout_search][:with_returned]
+          if params[:checkout_search][:overdue] || params[:oberdue]
             date = 1.days.ago.end_of_day
             date = params[:days_overdue].to_i.days.ago.end_of_day if params[:days_overdue]
-            checkouts = Checkout.overdue(date).joins(:item => [{:shelf => :library}]).where('libraries.id' => library).order('due_date ASC')
-          else
-          # disp3. all checkouts
-           checkouts = Checkout.not_returned.joins(:item => [{:shelf => :library}]).where('libraries.id' => library).order('due_date ASC')
+            checkouts = checkouts.overdue(date)
           end
+     
+          checkouts = checkouts.order('checkouts.due_date ASC')
         end
       end
     end
-
     @days_overdue = params[:days_overdue] ||= 1
     @checkouts = checkouts.page(params[:page])
 
@@ -391,5 +397,11 @@ private
       flash[:message] << return_message + '<br />' if return_message
       flash[:sound] = return_sound if return_sound
     end
+  end
+
+  def prepare_options
+    @libraries = Library.all
+    @user_groups = UserGroup.all
+    @classification_types = ClassificationType.all
   end
 end

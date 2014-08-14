@@ -9,19 +9,48 @@
       o.action = "<%= checkouts_path %>";
     o.submit();
   }
+  $(function(){
+    $('#checkout_search_start_date').setCalendar({src:'/assets/calendar.png'});
+    $('#checkout_search_end_date').setCalendar({src:'/assets/calendar.png'});
+  });
 </script>
 
 <div id="content_detail" class="ui-corner-all">
 <h1 class="title"><%= t('page.listing', :model => t('activerecord.models.checkout')) -%></h1>
 <div id="content_list">
-<%= form_for :checkout, :url => checkouts_path, :html => {:method => 'get', :id => 'form'} do -%>
-  <p>
-    <%= t('advanced_search.library') -%>:
-    <%= select("library", "id", @libraries, {:include_blank => t('advanced_search.all_libraries'), :selected => @selected_library})%>
-    <%= submit_tag t('page.search'), :onclick => "push_submit(null);" -%><br />
+<%= form_for :checkout, :url => checkouts_path, :html => {:method => 'get', :id => 'form'} do |f| -%>
+  <table class='no_border'>
+   <tr>
+     <td><%= t('advanced_search.library') -%>:</td> 
+     <td colspan=3><%= select2_tag 'checkout_search_library_id', 'checkout_search[library_id]', @libraries, @checkout_search.try(:[], :library_id), :select_attribute => :name, :display_attribute => :display_name, :alt_display => :false, :include_blank => true %></td>
+   </tr>
+   <tr>
+     <td><%= t('activerecord.attributes.user.username') %>:</td><td><%= text_field_tag 'checkout_search[username]', @checkout_search.try(:[], :username) %></td>
+     <td><%= t('activerecord.attributes.user.user_group') %>:</td> 
+     <td><%= select2_tag 'checkout_search_user_group_id', 'checkout_search[:user_group_id]', @user_groups, @checkout_search.try(:[], :user_group_id), :select_attribute => :name, :display_attribute => :display_name, :include_blank => true %></td>
+   </tr>
+   <tr>
+     <td><%= t('advanced_search.from_date') -%>:</td><td><%= text_field_tag 'checkout_search[start_date]', @checkout_search.try(:[], :start_date), :size => 20, :placeholder => "#{t('page.example')}: 2011-04-01"-%></td>
+    <td><%= t('advanced_search.to_date') -%>:</td><td><%= text_field_tag 'checkout_search[end_date]', @checkout_search.try(:[], :end_date), :size => 20, :placeholder => "#{t('page.example')}: 2011-04-30" -%></td>
+  </tr>
+  <tr>
+    <td><%= t('activerecord.attributes.item.identifier') %>:</td>
+    <td colspan=3><%= text_field_tag 'checkout_search[item_identifier]', @checkout_search.try(:[], :item_identifier) %><td>
+  </tr>
+  <%= render 'form_classification_field' %>
+  <tr>
+    <td><%= t('checkout.search.with_returned') %>:</td>
+    <td><%= check_box_tag 'checkout_search[with_returned]', true, @checkout_search.try(:[], :with_returned) %></td>
+    <td><%= t('checkout.search.overdue') %>:</td>
+    <td><%= check_box_tag 'checkout_search[overdue]', true, @checkout_search.try(:[], :overdue) %></td>
+  </tr>
+  </table>
+    <%= submit_tag t('page.search'), :onclick => "push_submit(null);" -%>
     <%= submit_tag t('page.output_pdf', :model =>t('page.listing', :model => t('activerecord.models.checkout'))), :onclick => "push_submit('pdf');" -%>
     <%= submit_tag t('page.output_tsv', :model =>t('page.listing', :model => t('activerecord.models.checkout'))), :onclick => "push_submit('tsv');"-%>
-  </p>
+    <button id="excelx_book_dialog_opener" type="button">
+      <%= t('page.output', :model => t('page.search_result')) %>
+    </button>
 <%- end -%>
 
 <%= render 'list' -%>
@@ -33,6 +62,8 @@
 <%= paginate(@checkouts) -%>
 </div>
 </div>
+
+<%= render 'index_export_dialog' %>
 
 <div id="submenu" class="ui-corner-all">
   <ul>

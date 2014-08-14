@@ -106,6 +106,9 @@ en:
     extend: extend checkout period
     printout_in_progress: Started to export checkout list.
     renew_checkout: Renew checkout
+    search:
+      with_returned: With returned
+      overdue: Only overdued
   reserve:
     user_reserve: ! "%{login_name}'s reservation"
     library_group_reserve: ! "Reservation in %{library_group_name}"

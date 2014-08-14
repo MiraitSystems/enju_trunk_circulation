@@ -1,0 +1,90 @@
+<script>
+  /**
+   * 分類フィールド
+   * 
+   */
+  var ItemFieldClassificationSelect2 = {
+    // Classification select2 options
+    classificationSlect2options: {
+      multiple: false,
+      minimumInputLength: 1,
+      width: "260px",
+      allowClear: true,
+      placeholder: <%= raw t("classification.search_placeholder").to_json %>,
+      formatNoMatches: function(term) {
+        return "'" + term + "' " + <%= raw t("classification.search_nomatch").to_json %>;
+      },
+      formatSearching: function() {
+        return <%= raw t("classification.search_searching").to_json %>;
+      },
+      formatInputTooShort: function(term, minLength){
+        return <%= raw t("classification.search_placeholder").to_json %>;
+      },
+      ajax: {
+        url: "/classifications/search_name.json",
+        dataType: 'json',
+        data: function (term, page) {
+          var currentNumber = $(this).attr('id').match(/\d+/);
+          var classificationTypeId = $('#checkout_search_classification_type_id').val();
+          return {
+            classification_type_id: classificationTypeId,
+            search_phrase: term,
+          };
+        },
+        results: function (data, page) {
+            return {results: data};
+        },
+      },
+      initSelection: function(element, callback) {
+        var id = $(element).val();
+        if (id != "") {
+          $.ajax("/classifications/search_name.json?classification_id=" + id, {
+              dataType: "json"
+         }).done(function(data) { callback(data); });
+        }
+      },
+    },
+    // ClassificationType select2 options
+    classificationTypeSlect2options: {
+      width: "200px",
+      matcher: function(term, text, opt) {
+        return text.toUpperCase().indexOf(term.toUpperCase())==0
+            || opt.attr("alt").toUpperCase().indexOf(term.toUpperCase())==0;
+      },
+    },
+  };
+  
+  $(document).ready(function() {
+    $("select[id $= 'classification_type_id']").select2(ItemFieldClassificationSelect2.classificationTypeSlect2options);
+    $("input[id $= 'classification_id']").select2(ItemFieldClassificationSelect2.classificationSlect2options);
+  });
+
+  /**
+   * ClassificationType deselect
+   * 
+   */
+  $(document).on("select2-selecting", "select[id $= 'classification_type_id']", function(e){
+    var targetId = e.target.id
+    var targetNumber = targetId.match(/_(\d+)_/);
+    $("#classifications_" + targetNumber[1] + "_classification_id").select2('val', '');
+  });
+
+</script>
+
+<tr>
+  <td><%= t('activerecord.models.classification') -%>:</td>
+  <td>
+    <%= select2_tag("checkout_search_classification_type_id", 
+                    "checkout_search[classification_type_id]", 
+                    @classification_types,
+                    @checkout_search.try(:[], :classification_type_id),
+                    :width => 190, :select_attribute => :id, :display_attribute => :display_name
+                    ) %>
+  </td>
+  <td colspan=2>
+    <%= text_field_tag "checkout_search[classification_id]",
+          @checkout_search.try(:[], :classification_id), 
+          :id => "checkout_search_classification_id", 
+          :class => "classification_id" %>
+  </td>
+</tr>
