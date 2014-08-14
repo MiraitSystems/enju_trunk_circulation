@@ -52,9 +52,7 @@
     <%= submit_tag t('page.search'), :onclick => "push_submit(null);" -%>
     <%= submit_tag t('page.output_pdf', :model =>t('page.listing', :model => t('activerecord.models.checkout'))), :onclick => "push_submit('pdf');" -%>
     <%= submit_tag t('page.output_tsv', :model =>t('page.listing', :model => t('activerecord.models.checkout'))), :onclick => "push_submit('tsv');"-%>
-    <button id="excelx_book_dialog_opener" type="button">
-      <%= t('page.output', :model => t('page.search_result')) %>
-    </button>
+    <%= submit_tag t('page.output_excelx', :model => t('page.listing', :model => t('activerecord.models.checkout'))), :name => 'output_excel' %> 
 <%- end -%>
 
 <%= render 'list' -%>
@@ -66,8 +64,6 @@
 <%= paginate(@checkouts) -%>
 </div>
 </div>
-
-<%= render 'index_export_dialog' %>
 
 <div id="submenu" class="ui-corner-all">
   <ul>

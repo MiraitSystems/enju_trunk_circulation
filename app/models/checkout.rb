@@ -434,6 +434,42 @@ class Checkout < ActiveRecord::Base
     end
     return data
   end
+
+  def self.get_checkoutlists_excel(current_user, checkouts)
+    header = [I18n.t('activerecord.attributes.user.username'),
+              I18n.t('activerecord.attributes.user.full_name'),
+              I18n.t('activerecord.attributes.user.user_group'),
+              I18n.t('activerecord.attributes.user.department')]
+    header << I18n.t('activerecord.attributes.agent.grade') if SystemConfiguration.get('agent.manage_grade')
+    header << I18n.t('activerecord.attributes.item.identifier') if SystemConfiguration.get('item.use_different_identifier')
+    header << I18n.t('activerecord.attributes.item.item_identifier')
+    header << I18n.t('activerecord.attributes.item.call_number')
+    header << I18n.t('activerecord.attributes.manifestation.original_title')
+    header << I18n.t('activerecord.attributes.manifestation.creator')
+    header << I18n.t('activerecord.attributes.checkout.checked_at')
+
+    rows = []
+    checkouts.each do |checkout|
+      row = []
+      row << checkout.try(:user).try(:username) || ''
+      row << checkout.try(:user).try(:agent).try(:full_name) || ''
+      row << checkout.try(:user).try(:user_group).try(:display_name) || ''
+      row << checkout.try(:user).try(:department).try(:display_name) || ''
+      row << checkout.try(:user).try(:agent).try(:grade).try(:keyname) || '' if SystemConfiguration.get('agent.manage_grade')
+      row << checkout.try(:item).try(:identifier) || '' if SystemConfiguration.get('item.use_different_identifier')
+      row << checkout.try(:item).try(:item_identifier) || ''
+      row << checkout.try(:item).try(:call_number) || ''
+      row << checkout.try(:item).try(:manifestation).try(:original_title) || ''
+      creators = checkout.try(:item).try(:manifestation).try(:creators)
+      row << (creators.blank? ? '' : creators.map(&:full_name).join(','))
+      row << checkout.try(:checked_at).try(:strftime, '%Y-%m-%d') || ''
+       
+      rows << row
+    end
+    
+    filename = I18n.t('page.listing', :model => I18n.t('activerecord.models.checkout')) + '.xlsx'
+    return CreateExportFile.create_export_file(current_user, filename, header, rows)
+  end
  
   def store_history
     if checkout_renewal_count == 0

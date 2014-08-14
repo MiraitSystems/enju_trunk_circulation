@@ -69,13 +69,21 @@ class CheckoutsController < ApplicationController
             date = @checkout_search[:days_overdue].to_i.days.ago.end_of_day if @checkout_search[:overdue]
             checkouts = checkouts.overdue(date)
           end
-     
-          checkouts = checkouts.order('checkouts.due_date ASC')
+	  if params[:sort_by] =~ /\A(users.useraname|items.item_identifier|checkouts.due_date)\Z/ && 
+             params[:order] =~ /\A(desc|asc)\Z/
+	    checkouts = checkouts.try(:reorder, "#{params[:sort_by]} #{params[:order]}")
+          end
         end
       end
     end
     @checkouts = checkouts.page(params[:page])
     @checkout_search = {:days_overdue => 1} unless @checkout_search
+
+    if params[:output_excel]
+      path, opts = Checkout.get_checkoutlists_excel(current_user, checkouts)
+      send_file path, opts
+      return true
+    end
 
     respond_to do |format|
       format.html {render :template => 'opac/checkouts/index' , :layout => 'opac' } if params[:opac]

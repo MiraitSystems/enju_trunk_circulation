@@ -1,8 +1,20 @@
 <table class="index">
   <tr>
-    <th><%= t('activerecord.models.user') %></th>
-    <th class="checked_item_title"><%= t('page.title') %></th>
-    <th><%= t('activerecord.attributes.checkout.due_date') %></th>
+    <th>
+      <%= t('activerecord.models.user') %>
+      <%= link_to image_tag('icons/arrow_up.png', :size => '16x16', :alt => t('page.asc'), :title => t('tooltip.asc')), url_for(params.merge(:sort_by => 'users.username', :order => 'asc')) -%>
+      <%= link_to image_tag('icons/arrow_down.png', :size => '16x16', :alt => t('page.desc'), :title => t('tooltip.asc')), url_for(params.merge(:sort_by => 'users.username', :order => 'desc')) -%>
+    </th>
+    <th class="checked_item_title">
+      <%= t('page.title') %>
+      <%= link_to image_tag('icons/arrow_up.png', :size => '16x16', :alt => t('page.asc'), :title => t('tooltip.asc')), url_for(params.merge(:sort_by => 'items.item_identifier', :order => 'asc')) -%>
+      <%= link_to image_tag('icons/arrow_down.png', :size => '16x16', :alt => t('page.desc'), :title => t('tooltip.asc')), url_for(params.merge(:sort_by => 'items.item_identifier', :order => 'desc')) -%>
+    </th>
+    <th>
+      <%= t('activerecord.attributes.checkout.due_date') %>
+      <%= link_to image_tag('icons/arrow_up.png', :size => '16x16', :alt => t('page.asc'), :title => t('tooltip.asc')), url_for(params.merge(:sort_by => 'checkouts.due_date', :order => 'asc')) -%>
+      <%= link_to image_tag('icons/arrow_down.png', :size => '16x16', :alt => t('page.desc'), :title => t('tooltip.asc')), url_for(params.merge(:sort_by => 'checkouts.due_date', :order => 'desc')) -%>
+    </th>
     <th><%= t('activerecord.attributes.checkout.renewal_count') %></th>
     <th></th>
   </tr>
