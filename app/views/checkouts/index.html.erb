@@ -1,9 +1,5 @@
 <%- if @user -%>
   <%= render 'index_user', :user => @user, :basket_id => @basket_id -%>
 <%- else -%>
-  <%- if params[:view] == 'overdue' -%>
-    <%= render 'index_overdue' -%>
-  <%- else -%>
-    <%= render 'index' -%>
-  <%- end -%>
+  <%= render 'index' -%>
 <%- end -%>

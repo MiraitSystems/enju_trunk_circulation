@@ -42,7 +42,11 @@
     <td><%= t('checkout.search.with_returned') %>:</td>
     <td><%= check_box_tag 'checkout_search[with_returned]', true, @checkout_search.try(:[], :with_returned) %></td>
     <td><%= t('checkout.search.overdue') %>:</td>
-    <td><%= check_box_tag 'checkout_search[overdue]', true, @checkout_search.try(:[], :overdue) %></td>
+    <td>
+      <%= check_box_tag 'checkout_search[overdue]', true, @checkout_search.try(:[], :overdue) %> 
+      <%= t('checkout.number_of_day_overdue') -%>: <%= text_field_tag 'checkout_search[days_overdue]', @checkout_search.try(:[], :days_overdue), :class => 'resource_integer' -%>
+      <%= t('activerecord.attributes.checkout.over') %>
+    </td>
   </tr>
   </table>
     <%= submit_tag t('page.search'), :onclick => "push_submit(null);" -%>
@@ -74,6 +78,5 @@
     <%- if @user -%>
       <li><%= link_to t('page.listing', :model => 'activerecord.models.checkout'), user_checkouts_path(@user) -%></li>
     <%- end -%>
-    <li><%= link_to t('page.overdue'), checkouts_path(:view => 'overdue') -%></li>
   </ul>
 </div>

@@ -63,10 +63,10 @@ class CheckoutsController < ApplicationController
             checkouts = checkouts.where("items.identifier like '#{@checkout_search[:item_identifier].gsub('*', '%')}'") unless @checkout_search[:item_identifier].blank?
             checkouts = checkouts.where("items.manifestation_id in (select manifestation_id from manifestation_has_classifications where classification_id = #{@checkout_search[:classification_id]})") unless @checkout_search[:classification_id].blank?
           end
-          checkouts = checkouts.not_returned unless params[:checkout_search][:with_returned]
-          if params[:checkout_search][:overdue] || params[:oberdue]
+          checkouts = checkouts.not_returned unless @checkout_search.try(:[], :with_returned)
+          if @checkout_search.try(:[], :overdue)
             date = 1.days.ago.end_of_day
-            date = params[:days_overdue].to_i.days.ago.end_of_day if params[:days_overdue]
+            date = @checkout_search[:days_overdue].to_i.days.ago.end_of_day if @checkout_search[:overdue]
             checkouts = checkouts.overdue(date)
           end
      
@@ -74,8 +74,8 @@ class CheckoutsController < ApplicationController
         end
       end
     end
-    @days_overdue = params[:days_overdue] ||= 1
     @checkouts = checkouts.page(params[:page])
+    @checkout_search = {:days_overdue => 1} unless @checkout_search
 
     respond_to do |format|
       format.html {render :template => 'opac/checkouts/index' , :layout => 'opac' } if params[:opac]
