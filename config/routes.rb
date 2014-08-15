@@ -19,6 +19,7 @@ Rails.application.routes.draw do
       get 'extend'
       post 'extend_checkout'  
     end
+    post 'add_reminder_list', :on => :member
   end
 
   resources :items do

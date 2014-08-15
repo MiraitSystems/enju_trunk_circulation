@@ -40,6 +40,13 @@
       <%- if (can? :update, checkout) && (current_user.has_role?('Librarian') || checkout.checkout_renewable?(current_user)) -%> 
         <%- if current_user.has_role?('Librarian') -%>
           <%= link_to t('checkout.extend'), edit_user_checkout_path(checkout.user, checkout) -%>
+          <p id="add_reminder_<%= checkout.id %>">
+            <%- if checkout.overdue? && checkout.exist_reminder_list? %>
+              <%= link_to t('checkout.exist_reminder_list'), reminder_lists_path %>
+            <%- else -%>
+              <%= link_to t('checkout.add_reminder_list'), add_reminder_list_checkout_path(checkout, :formats => :js), :remote => true, :method => :post if checkout.overdue? -%>
+            <%- end -%>
+          </p>
         <%- else -%>
           <%= link_to t('checkout.extend'), user_checkout_path(checkout.user, checkout), :method => :put -%>
         <%- end -%>

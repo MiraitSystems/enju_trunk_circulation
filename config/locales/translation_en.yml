@@ -106,6 +106,8 @@ en:
     extend: extend checkout period
     printout_in_progress: Started to export checkout list.
     renew_checkout: Renew checkout
+    add_reminder_list: Add to ReminderList
+    exist_reminder_list: Raminder List
     search:
       with_returned: With returned
       overdue: Only overdued

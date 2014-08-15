@@ -301,6 +301,15 @@ class CheckoutsController < ApplicationController
     render :text => status.values.join("\t"), :status => 200
   end
 
+  def add_reminder_list
+    @checkout = Checkout.find(params[:id])
+    @checkout.add_to_reminder_list if @checkout
+    respond_to do |format|
+      format.js
+      format.html { render :layout => false }
+    end
+  end
+
 private
   def batchexec_checkout(params)
     status = {}

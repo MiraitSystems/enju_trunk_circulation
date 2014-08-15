@@ -77,6 +77,11 @@ class Checkout < ActiveRecord::Base
     end
   end
 
+  def exist_reminder_list?
+    return false if ReminderList.where(:checkout_id => self.id).blank?
+    return true
+  end
+
   def is_today_due_date?
     if Time.zone.now.beginning_of_day == self.due_date.beginning_of_day
       return true
@@ -180,21 +185,26 @@ class Checkout < ActiveRecord::Base
         unless checkouts.empty?
           checkouts.each do |checkout|
             #logger.info checkout
-            r = ReminderList.where(:checkout_id => checkout.id)
-            unless r.nil?
-              r = ReminderList.new
-              r.checkout_id = checkout.id
-              r.status = 0
-              r.save!
-              logger.info "create ReminderList checkout_id=#{checkout.id}"
-              queues_size += 1
-            end
+            queues_size += checkout.add_to_reminder_list
           end
         end
       end
     end
 
     queues_size
+  end
+
+  def add_to_reminder_list
+    r = ReminderList.where(:checkout_id => self.id)
+    if r.blank?
+      r = ReminderList.new
+      r.checkout_id = self.id
+      r.status = 0
+      r.save!
+      logger.info "create ReminderList checkout_id=#{self.id}"
+      return 1
+    end
+    return 0
   end
 
   # output

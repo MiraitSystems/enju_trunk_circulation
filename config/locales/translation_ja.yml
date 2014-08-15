@@ -94,6 +94,8 @@ ja:
     extend: "貸出期間の延長"
     printout_in_progress: "貸出票の印刷を開始しました"
     renew_checkout: "再貸出"
+    add_reminder_list: "督促に追加"
+    exist_reminder_list: "督促登録済み"
     search:
       with_returned: "返却済みも含む"
       overdue: "延滞のみ検索"
