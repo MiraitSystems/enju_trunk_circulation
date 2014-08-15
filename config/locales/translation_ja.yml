@@ -134,6 +134,8 @@ ja:
     no_reserve: 予約中の資料はありません
     picking_list: ピッキング用リスト
     printout_in_progress: "予約確認票の印刷を開始しました"
+    search:
+      only_from_opac: "利用者による予約のみ検索"
   checked_item:
     not_available_for_checkout: "この資料の貸出はできません。(状態不正)"
     new_serial: "この資料の貸出はできません。(雑誌の最新号)"

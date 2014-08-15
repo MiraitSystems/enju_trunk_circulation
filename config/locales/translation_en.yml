@@ -146,6 +146,8 @@ en:
     no_reserve: No reservation is found.
     picking_list: List for pickup
     printout_in_progress: Started to export reserves list
+    search:
+      only_from_opac: Only from opac
   checkin:
     item_not_found: No item is found.
     enter_item_identifier: Input item identifier.

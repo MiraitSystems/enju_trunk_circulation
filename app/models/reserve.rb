@@ -145,6 +145,9 @@ class Reserve < ActiveRecord::Base
     time :created_at
     time :updated_at
     time :expired_at
+    boolean :from_opac do
+      self.librarian_id == self.user_id
+    end
   end
 
   paginates_per 10

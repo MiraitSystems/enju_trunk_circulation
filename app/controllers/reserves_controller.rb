@@ -81,6 +81,7 @@ class ReservesController < ApplicationController
         selected_library = @selected_library
         selected_information_type = @selected_information_type.flatten
         @picking = true if selected_state.size == 1 && selected_state.include?('retained')
+        @only_from_opac = only_from_opac = params[:only_from_opac]
 
         flash[:reserve_notice] = "" 
         # check conditions
@@ -107,9 +108,12 @@ class ReservesController < ApplicationController
         query = "#{query} address_text:#{@address}" unless @address.blank?
 
         # search
-        if (query.blank? and @address.blank? and @date_of_birth.blank?) or error_condition
-          @reserves = Reserve.joins(:manifestation).where(:state => selected_state, :receipt_library_id => selected_library, :information_type_id => selected_information_type).order('expired_at ASC').includes(:manifestation).page(page) unless params[:picking]
-          @reserves = Reserve.joins(:manifestation).where(:state => selected_state, :receipt_library_id => selected_library, :information_type_id => selected_information_type).order('expired_at ASC').includes(:manifestation) if params[:picking]
+        if !params[:picking] && ((query.blank? and @address.blank? and @date_of_birth.blank?) or error_condition)
+          if only_from_opac 
+            @reserves = Reserve.joins(:manifestation).where('librarian_id = user_id').where(:state => selected_state, :receipt_library_id => selected_library, :information_type_id => selected_information_type).order('expired_at ASC').includes(:manifestation).page(page)
+          else
+            @reserves = Reserve.joins(:manifestation).where(:state => selected_state, :receipt_library_id => selected_library, :information_type_id => selected_information_type).order('expired_at ASC').includes(:manifestation).page(page)
+          end
         elsif params[:picking]
           @reserves = Reserve.search do
             fulltext query
@@ -123,6 +127,7 @@ class ReservesController < ApplicationController
             with(:state, selected_state) 
             with(:receipt_library_id, selected_library) 
             with(:information_type_id, selected_information_type)
+            with(:from_opac, true) if only_from_opac
             order_by(:expired_at, :asc)
             paginate :page => page.to_i, :per_page => Reserve.default_per_page
           end.results
