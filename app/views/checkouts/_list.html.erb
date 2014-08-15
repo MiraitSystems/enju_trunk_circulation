@@ -44,7 +44,7 @@
             <%- if checkout.overdue? && checkout.exist_reminder_list? %>
               <%= link_to t('checkout.exist_reminder_list'), reminder_lists_path %>
             <%- else -%>
-              <%= link_to t('checkout.add_reminder_list'), add_reminder_list_checkout_path(checkout, :formats => :js), :remote => true, :method => :post if checkout.overdue? -%>
+              <%= link_to t('checkout.add_reminder_list'), add_reminder_list_checkout_path(checkout, :formats => :js), :remote => true, :method => :post, :style => 'color:red;' if checkout.overdue? -%>
             <%- end -%>
           </p>
         <%- else -%>
