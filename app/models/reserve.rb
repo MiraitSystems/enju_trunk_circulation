@@ -142,9 +142,13 @@ class Reserve < ActiveRecord::Base
     integer :receipt_library_id
     integer :information_type_id
     boolean :retained
-    time :created_at
+    time :reserve_created_at do 
+      created_at
+    end
     time :updated_at
-    time :expired_at
+    time :reserve_expired_at do 
+      expired_at
+    end
     boolean :from_opac do
       self.librarian_id == self.user_id
     end

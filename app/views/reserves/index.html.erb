@@ -18,11 +18,23 @@
       <th><%= t('activerecord.attributes.reserve.position') -%></th>
       <th id="position"></th>
     <%- end -%>
-    <th style="width: 30px"><%= 'Id' -%></th>
     <th><%= t('activerecord.models.user') -%></th>
-    <th><%= t('activerecord.attributes.manifestation.original_title')-%></th>
+    <th>
+      <%= t('activerecord.attributes.manifestation.original_title')-%>
+      <%= link_to image_tag('icons/arrow_up.png', :size => '16x16', :alt => t('page.asc'), :title => t('tooltip.asc')), url_for(params.merge(:sort_by => :manifestation_id, :order => :asc)) -%> 
+      <%= link_to image_tag('icons/arrow_down.png', :size => '16x16', :alt => t('page.desc'), :title => t('tooltip.asc')), url_for(params.merge(:sort_by => :manifestation_id, :order => :desc)) -%> 
+    </th>
     <th><%= t('activerecord.attributes.reserve.state') -%></th>
-    <th><%= t('activerecord.attributes.reserve.expired_at') -%></th>
+    <th><nobr>
+      <%= t('activerecord.attributes.reserve.created_at') -%>
+      <%= link_to image_tag('icons/arrow_up.png', :size => '16x16', :alt => t('page.asc'), :title => t('tooltip.asc')), url_for(params.merge(:sort_by => :reserve_created_at, :order => :asc)) -%> 
+      <%= link_to image_tag('icons/arrow_down.png', :size => '16x16', :alt => t('page.desc'), :title => t('tooltip.asc')), url_for(params.merge(:sort_by => :reserve_created_at, :order => :desc)) -%>
+    </nobr></th>
+    <th>
+      <%= t('activerecord.attributes.reserve.expired_at') -%>
+      <%= link_to image_tag('icons/arrow_up.png', :size => '16x16', :alt => t('page.asc'), :title => t('tooltip.asc')), url_for(params.merge(:sort_by => :reserve_expired_at, :order => :asc)) -%> 
+      <%= link_to image_tag('icons/arrow_down.png', :size => '16x16', :alt => t('page.desc'), :title => t('tooltip.asc')), url_for(params.merge(:sort_by => :reserve_expired_at, :order => :desc)) -%> 
+   </th>
     <th id="edit_icons"></th>
   </tr>
 
@@ -46,17 +58,26 @@
           <%- end -%>
         </td>
       <%- end -%>
-      <td><%= link_to reserve.id, reserve -%></td>
-      <td><%= link_to reserve.user.username, reserve.user if reserve.user -%></td>
-      <td><%= render 'title', :reserve => reserve -%></td>
       <td>
-        <%= i18n_state(reserve.state) -%>
+        <nobr><%= reserve.user.agent.full_name if reserve.user.agent %></nobr><br />
+        <nobr><%= link_to reserve.user.username, reserve.user if reserve.user -%></nobr><br />
+        <%- if reserve.try(:user).try(:user_number) %>
+          <nobr>(<%= link_to reserve.user.user_number, reserve.user %>)</nobr>
+        <%- end -%>
+      </td>
+      <td>
+        <%= render 'manifestations/show_index', :manifestation => reserve.manifestation -%>
+      </td>
+      <td>
+        <nobr><%= i18n_state(reserve.state) -%></nobr>
         <%- if reserve.retained -%>
           (<%= t('reserve.called')-%>)
         <%- end -%>
       </td>
+      <td><%= l(reserve.created_at, :format => :only_date) -%></td>
       <td><%= l(reserve.expired_at, :format => :only_date) -%></td>
       <td>
+        <%= link_to t('page.show'), reserve %><br />
         <%- if can? :destroy, reserve -%>
           <% if reserve.can_edit? %>
             <%= link_to image_tag('icons/page_white_edit.png', :size => '16x16', :alt => t('page.edit'), :title => t('tooltip.edit')), edit_reserve_path(reserve) if reserve.can_checkout? -%>

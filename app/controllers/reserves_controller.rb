@@ -106,7 +106,11 @@ class ReservesController < ApplicationController
         date_of_birth_end = Time.zone.parse(birth_date).end_of_day.utc.iso8601 rescue nil
         query = "#{query} date_of_birth_d:[#{date_of_birth} TO #{date_of_birth_end}]" unless date_of_birth.blank?
         query = "#{query} address_text:#{@address}" unless @address.blank?
-
+        if params[:sort_by] =~ /\A(manifestation_id|reserve_created_at|reserve_expired_at)\Z/ &&  
+             params[:order] =~ /\A(desc|asc)\Z/
+           order_by = [params[:sort_by],params[:order]]
+        end
+ 
         # search
         if !params[:picking] && ((query.blank? and @address.blank? and @date_of_birth.blank?) or error_condition)
           if only_from_opac 
@@ -114,6 +118,7 @@ class ReservesController < ApplicationController
           else
             @reserves = Reserve.joins(:manifestation).where(:state => selected_state, :receipt_library_id => selected_library, :information_type_id => selected_information_type).order('expired_at ASC').includes(:manifestation).page(page)
           end
+          @reserves = @reserves.reorder("#{order_by[0].gsub(/\Areserve_/, 'reserves.')} #{order_by[1]}") if order_by
         elsif params[:picking]
           @reserves = Reserve.search do
             fulltext query
@@ -128,7 +133,11 @@ class ReservesController < ApplicationController
             with(:receipt_library_id, selected_library) 
             with(:information_type_id, selected_information_type)
             with(:from_opac, true) if only_from_opac
-            order_by(:expired_at, :asc)
+            if order_by
+              order_by(order_by[0], order_by[1])
+            else
+              order_by(:reserve_expired_at, :asc)
+            end 
             paginate :page => page.to_i, :per_page => Reserve.default_per_page
           end.results
         end
