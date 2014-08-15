@@ -109,6 +109,7 @@ en:
     search:
       with_returned: With returned
       overdue: Only overdued
+      no_classification: No classification
   reserve:
     user_reserve: ! "%{login_name}'s reservation"
     library_group_reserve: ! "Reservation in %{library_group_name}"

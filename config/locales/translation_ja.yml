@@ -97,6 +97,7 @@ ja:
     search:
       with_returned: "返却済みも含む"
       overdue: "延滞のみ検索"
+      no_classification: "分類記号未設定のみ"
   reserve:
     user_reserve: "%{login_name} さんの予約資料"
     library_group_reserve: "%{library_group_name} での予約資料"

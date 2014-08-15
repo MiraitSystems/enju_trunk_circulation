@@ -62,6 +62,7 @@ class CheckoutsController < ApplicationController
             checkouts = checkouts.where(['checkouts.checked_at <= ?', @checkout_search[:end_date]]) unless @checkout_search[:end_date].blank?
             checkouts = checkouts.where("items.identifier like '#{@checkout_search[:item_identifier].gsub('*', '%')}'") unless @checkout_search[:item_identifier].blank?
             checkouts = checkouts.where("items.manifestation_id in (select manifestation_id from manifestation_has_classifications where classification_id = #{@checkout_search[:classification_id]})") unless @checkout_search[:classification_id].blank?
+            checkouts = checkouts.where("items.manifestation_id not in (select manifestation_id from manifestation_has_classifications)") if @checkout_search[:no_classification]
           end
           checkouts = checkouts.not_returned unless @checkout_search.try(:[], :with_returned)
           if @checkout_search.try(:[], :overdue)

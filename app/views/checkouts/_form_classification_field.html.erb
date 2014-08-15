@@ -86,5 +86,7 @@
           @checkout_search.try(:[], :classification_id), 
           :id => "checkout_search_classification_id", 
           :class => "classification_id" %>
+    <%= t('checkout.search.no_classification') %>: 
+    <%= check_box_tag 'checkout_search[no_classification]', true, @checkout_search.try(:[], :no_classification) %>
   </td>
 </tr>
