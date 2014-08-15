@@ -150,6 +150,12 @@ class ReservesController < ApplicationController
       return
     end
 
+    if params[:output_excel]
+      path, opts = Reserve.get_reserve_list_excel(current_user, @reserves)
+      send_file path, opts
+      return true
+    end 
+
     respond_to do |format|
       format.html { render :template => 'opac/reserves/index', :layout => 'opac' }if params[:opac]
       format.html # index.html.erb

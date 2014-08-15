@@ -1144,6 +1144,45 @@ class Reserve < ActiveRecord::Base
     return data
   end
 
+  def self.get_reserve_list_excel(current_user, reserves)
+    header = [I18n.t('activerecord.attributes.manifestation.identifier'),
+              I18n.t('activerecord.attributes.item.call_number'), 
+              I18n.t('activerecord.attributes.manifestation.original_title'),
+              I18n.t('activerecord.attributes.user.username'),
+              I18n.t('activerecord.attributes.agent.full_name'),
+              I18n.t('activerecord.attributes.reserve.created_at'), 
+              I18n.t('reserve.retained'),
+              I18n.t('activerecord.attributes.reserve.retained_at'),
+              I18n.t('activerecord.attributes.reserve.retain_due_date'),
+              I18n.t('activerecord.attributes.reserve.information_type'),
+              I18n.t('activerecord.attributes.checkout.user'),
+              I18n.t('activerecord.attributes.checkout.checked_at'),
+              I18n.t('activerecord.attributes.checkout.due_date')]
+
+    rows = []
+    reserves.each do |reserve|
+      row = []
+      row << reserve.try(:manifestation).try(:identifier) || ''
+      row << reserve.try(:item).try(:call_number) || ''
+      row << reserve.try(:manifestation).try(:original_title) || ''
+      row << reserve.try(:user).try(:username) || ''
+      row << reserve.try(:user).try(:agent).try(:full_name) || ''
+      row << reserve.try(:created_at).try(:strftime, '%Y-%m-%d')
+      row << (reserve.try(:retained_at).blank? ? '' : I18n.t('reserve.retained'))
+      row << reserve.try(:retained_at).try(:strftime, '%Y-%m-%d') || ''
+      row << reserve.try(:retain_due_date).try(:strftime, '%Y-%m-%d') || ''
+      row << i18n_information_type(reserve.information_type_id) || ''
+      checkout = reserve.try(:item).try(:checkouts).try(:not_returned).try(:first)
+      row << checkout.try(:checked_at).try(:strftime, '%Y-%m-%d') || ''
+      row << checkout.try(:due_date).try(:strftime, '%Y-%m-%d') || ''
+     
+      rows << row
+    end   
+   
+    filename = I18n.t('page.listing', :model => I18n.t('activerecord.models.reserve')) + '.xlsx'
+    return CreateExportFile.create_export_file(current_user, filename, header, rows)
+  end
+
   def store_history
     CheckoutHistory.store_history("reserve", self)
   end

@@ -78,6 +78,7 @@
     <%= submit_tag t('page.output_pdf', :model => (t('page.listing', :model => t('activerecord.models.reserve')))), :onclick => "push_submit('pdf');" %>
     <%= submit_tag t('page.output_tsv', :model => (t('page.listing', :model => t('activerecord.models.reserve')))), :onclick => "push_submit('tsv');" %>
     <%- if @picking %><%= submit_tag t('page.output_pdf', :model => t('reserve.picking_list')), :name => 'picking' %><%- end -%>
+    <%= submit_tag t('page.output_excelx', :model => t('page.listing', :model => t('activerecord.models.reserve'))), :name => 'output_excel' %>
   </div>
 <%- end -%>
 

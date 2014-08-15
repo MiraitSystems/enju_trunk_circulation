@@ -21,6 +21,7 @@ en:
         output_checkoutlist: Export checkout list
         over: over
         checked_at: date of checkout
+        user: Checkout User
       reserve:
         user: User
         checked_out_at: checked out at
@@ -44,6 +45,8 @@ en:
         done: Noticed
         failed_update: failed to update
         item_identifier: Retained item item identifier
+        retain_due_date: Retain Due Date
+        retained_at: Retained At
       retained_manifestation:
         done: Noticed
         failed_update: Failed to update.

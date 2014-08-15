@@ -28,6 +28,7 @@ ja:
         output_checkoutlist: 貸出票の出力
         over: 以上
         checked_at: 貸出日
+        user: 貸出利用者
       reserve:
         user: 利用者
         checked_out_at: 貸出時刻
@@ -51,6 +52,8 @@ ja:
         done: 連絡完了
         failed_update: 更新に失敗しました。
         item_identifier: "取り置き資料 所蔵情報ID"
+        retain_due_date: 取置期限
+        retained_at: 取置日
       retained_manifestation:
         done: 連絡完了
         failed_update: 更新に失敗しました。

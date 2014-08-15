@@ -21,19 +21,25 @@
     <th><%= t('activerecord.models.user') -%></th>
     <th>
       <%= t('activerecord.attributes.manifestation.original_title')-%>
-      <%= link_to image_tag('icons/arrow_up.png', :size => '16x16', :alt => t('page.asc'), :title => t('tooltip.asc')), url_for(params.merge(:sort_by => :manifestation_id, :order => :asc)) -%> 
-      <%= link_to image_tag('icons/arrow_down.png', :size => '16x16', :alt => t('page.desc'), :title => t('tooltip.asc')), url_for(params.merge(:sort_by => :manifestation_id, :order => :desc)) -%> 
+      <%- unless @manifestation %>
+        <%= link_to image_tag('icons/arrow_up.png', :size => '16x16', :alt => t('page.asc'), :title => t('tooltip.asc')), url_for(params.merge(:sort_by => :manifestation_id, :order => :asc)) -%> 
+        <%= link_to image_tag('icons/arrow_down.png', :size => '16x16', :alt => t('page.desc'), :title => t('tooltip.asc')), url_for(params.merge(:sort_by => :manifestation_id, :order => :desc)) -%> 
+      <%- end -%>
     </th>
     <th><%= t('activerecord.attributes.reserve.state') -%></th>
     <th><nobr>
       <%= t('activerecord.attributes.reserve.created_at') -%>
-      <%= link_to image_tag('icons/arrow_up.png', :size => '16x16', :alt => t('page.asc'), :title => t('tooltip.asc')), url_for(params.merge(:sort_by => :reserve_created_at, :order => :asc)) -%> 
-      <%= link_to image_tag('icons/arrow_down.png', :size => '16x16', :alt => t('page.desc'), :title => t('tooltip.asc')), url_for(params.merge(:sort_by => :reserve_created_at, :order => :desc)) -%>
+      <%- unless @manifestation %>
+        <%= link_to image_tag('icons/arrow_up.png', :size => '16x16', :alt => t('page.asc'), :title => t('tooltip.asc')), url_for(params.merge(:sort_by => :reserve_created_at, :order => :asc)) -%> 
+        <%= link_to image_tag('icons/arrow_down.png', :size => '16x16', :alt => t('page.desc'), :title => t('tooltip.asc')), url_for(params.merge(:sort_by => :reserve_created_at, :order => :desc)) -%>
+      <%- end -%>
     </nobr></th>
     <th>
       <%= t('activerecord.attributes.reserve.expired_at') -%>
-      <%= link_to image_tag('icons/arrow_up.png', :size => '16x16', :alt => t('page.asc'), :title => t('tooltip.asc')), url_for(params.merge(:sort_by => :reserve_expired_at, :order => :asc)) -%> 
-      <%= link_to image_tag('icons/arrow_down.png', :size => '16x16', :alt => t('page.desc'), :title => t('tooltip.asc')), url_for(params.merge(:sort_by => :reserve_expired_at, :order => :desc)) -%> 
+      <%- unless @manifestation %>
+        <%= link_to image_tag('icons/arrow_up.png', :size => '16x16', :alt => t('page.asc'), :title => t('tooltip.asc')), url_for(params.merge(:sort_by => :reserve_expired_at, :order => :asc)) -%> 
+        <%= link_to image_tag('icons/arrow_down.png', :size => '16x16', :alt => t('page.desc'), :title => t('tooltip.asc')), url_for(params.merge(:sort_by => :reserve_expired_at, :order => :desc)) -%> 
+     <%- end -%>
    </th>
     <th id="edit_icons"></th>
   </tr>
