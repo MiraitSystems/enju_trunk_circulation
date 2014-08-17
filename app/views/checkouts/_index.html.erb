@@ -22,7 +22,7 @@
   <table class='no_border'>
    <tr>
      <td><%= t('advanced_search.library') -%>:</td> 
-     <td colspan=3><%= select2_tag 'checkout_search_library_id', 'checkout_search[library_id]', @libraries, @checkout_search.try(:[], :library_id), :select_attribute => :name, :display_attribute => :display_name, :alt_display => false, :include_blank => true %></td>
+     <td colspan=3><%= select2_tag 'checkout_search_library_id', 'checkout_search[library_id]', @libraries, @checkout_search.try(:[], :library_id), :select_attribute => :name, :display_attribute => :display_name, :alt_display => false, :include_blank => true, :autofocus => true %></td>
    </tr>
    <tr>
      <td><%= t('activerecord.attributes.user.username') %>:</td><td><%= text_field_tag 'checkout_search[username]', @checkout_search.try(:[], :username) %></td>
