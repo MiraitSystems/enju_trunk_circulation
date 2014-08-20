@@ -174,7 +174,7 @@ class CheckoutsController < ApplicationController
       end
     end
   rescue Exception => e
-    flash[:notice] = e.message
+    # flash[:notice] = e.message
     @checkout.reload
     respond_to do |format|
       if current_user.has_role?('Librarian')
