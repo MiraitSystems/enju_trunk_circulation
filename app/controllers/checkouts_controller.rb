@@ -236,7 +236,8 @@ class CheckoutsController < ApplicationController
     rescue Exception => e
       logger.error e
       @checkout = Checkout.new
-      flash[:message] = e
+      flash[:message] = t('checkin.item_not_found')
+      # flash[:message] = e
       render :extend
   end
 
