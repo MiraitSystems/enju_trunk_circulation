@@ -16,7 +16,7 @@
 <%- if @checkout.checkout_renewable?(current_user) || @renewed -%>
   <%= t('checkout.extended') if @renewed %>
   <%= form_for(@checkout, :url => user_checkout_path(@checkout.user, @checkout)) do |f| -%>
-    <%= t('checkout.new_due_date') -%>: <%= l(@checkout.due_date, :format => :only_date) rescue @checkout.due_date -%>
+    <%= f.label t('checkout.new_due_date') -%>: <%= l(@checkout.due_date, :format => :only_date) rescue @checkout.due_date -%>
     <%= f.hidden_field :due_date, :id => "hidden_due_date", :value => @renew_due_date -%>
     <br />
     <%= f.submit :disable_with => t('page.wait') unless @renewed %>
@@ -25,6 +25,7 @@
   <div class="field"><%= t('checkout.this_item_cant_be_renewed') -%></div>
 <%- end -%>
 
+<br />
 <% if current_user.has_role?('Librarian') %>
   <h3><%= t('checkout.editing_due_date') -%></h3>
 
@@ -39,13 +40,13 @@ $(function(){
   }
 });
 </script>
-      <%= f.label :due_date -%>
+      <%= f.label :due_date -%>:
       <%= f.hidden_field :user_id -%>
       <%= f.hidden_field :item_id -%>
       <%= f.text_field :due_date, :value => @checkout.due_date.try(:strftime, "%Y-%m-%d"), :class => 'date_field', :placeholder => "#{t('page.example')}: 2011-04-12"-%>
     </div>
     <div class="field">
-      <%= t('checkout.renewal_count') -%>: <%= f.text_field :checkout_renewal_count, :value => @checkout.checkout_renewal_count+1, :class => 'resource_integer' -%>
+      <%= f.label :checkout_renewal_count -%>: <%= f.text_field :checkout_renewal_count, :value => @checkout.checkout_renewal_count+1, :class => 'resource_integer' -%>
     </div>
 
     <div class="actions">
