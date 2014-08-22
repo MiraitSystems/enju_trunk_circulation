@@ -103,6 +103,9 @@ ja:
       with_returned: "返却済みも含む"
       overdue: "延滞のみ検索"
       no_classification: "分類記号未設定のみ"
+      error:
+        invalid_start_date: "検索開始日が不正です。"
+        invalid_end_date: "検索終了日が不正です。"
   reserve:
     user_reserve: "%{login_name} さんの予約資料"
     library_group_reserve: "%{library_group_name} での予約資料"

@@ -53,13 +53,15 @@ class CheckoutsController < ApplicationController
           checkouts = @user.checkouts.not_returned.order('due_date ASC')
         else
           @checkout_search = params[:checkout_search] 
+          check_search_params if @checkout_search
           checkouts = Checkout.joins(:item => [{:shelf => :library}]).joins(:user)
+          
           if @checkout_search
             checkouts = checkouts.where('libraries.id' => @checkout_search[:library_id]) unless @checkout_search[:library_id].blank?
             checkouts = checkouts.where("users.username like '%#{@checkout_search[:username]}%'") unless @checkout_search[:username].blank?
             checkouts = checkouts.where('users.user_group_id' => @checkout_search[:user_group_id]) unless @checkout_search[:user_group_id].blank?
-            checkouts = checkouts.where(['checkouts.checked_at >= ?', @checkout_search[:start_date]]) unless @checkout_search[:start_date].blank?
-            checkouts = checkouts.where(['checkouts.checked_at <= ?', @checkout_search[:end_date]]) unless @checkout_search[:end_date].blank?
+            checkouts = checkouts.where(['checkouts.checked_at >= ?', @checkout_search[:start_date]]) if valid_date_param?(@checkout_search[:start_date])
+            checkouts = checkouts.where(['checkouts.checked_at <= ?', @checkout_search[:end_date]]) if valid_date_param?(@checkout_search[:end_date])
             checkouts = checkouts.where("items.identifier like '#{@checkout_search[:item_identifier].gsub('*', '%')}'") unless @checkout_search[:item_identifier].blank?
             checkouts = checkouts.where("items.manifestation_id in (select manifestation_id from manifestation_has_classifications where classification_id = #{@checkout_search[:classification_id]})") unless @checkout_search[:classification_id].blank?
             checkouts = checkouts.where("items.manifestation_id not in (select manifestation_id from manifestation_has_classifications)") if @checkout_search[:no_classification]
@@ -422,5 +424,16 @@ private
     @libraries = Library.all
     @user_groups = UserGroup.all
     @classification_types = ClassificationType.all
+  end
+
+  def check_search_params
+    @checkout_search[:errors] = ''
+    @checkout_search[:errors] << I18n.t('checkout.search.error.invalid_start_date') unless @checkout_search[:start_date].blank? || valid_date_param?(@checkout_search[:start_date])
+    @checkout_search[:errors] << I18n.t('checkout.search.error.invalid_end_date') unless @checkout_search[:end_date].blank? || valid_date_param?(@checkout_search[:end_date])
+  end
+
+  def valid_date_param?(value)
+    return true if value =~ /\d{4}-\d{2}-\d{2}/
+    return false
   end
 end

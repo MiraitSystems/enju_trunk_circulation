@@ -19,6 +19,7 @@
 <h1 class="title"><%= t('page.listing', :model => t('activerecord.models.checkout')) -%></h1>
 <div id="content_list">
 <%= form_for :checkout, :url => checkouts_path, :html => {:method => 'get', :id => 'form'} do |f| -%>
+  <div style="color: red"><%= @checkout_search.try(:[], :errors) %></div>
   <table class='no_border'>
    <tr>
      <td><%= t('advanced_search.library') -%>:</td> 

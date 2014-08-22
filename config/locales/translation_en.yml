@@ -115,6 +115,9 @@ en:
       with_returned: With returned
       overdue: Only overdued
       no_classification: No classification
+      error:
+        invalid_state_date: invalid start date
+        invalid_end_date: invalid end date
   reserve:
     user_reserve: ! "%{login_name}'s reservation"
     library_group_reserve: ! "Reservation in %{library_group_name}"
