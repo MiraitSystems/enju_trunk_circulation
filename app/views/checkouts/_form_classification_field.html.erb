@@ -59,16 +59,6 @@
     $("input[id $= 'classification_id']").select2(ItemFieldClassificationSelect2.classificationSlect2options);
   });
 
-  /**
-   * ClassificationType deselect
-   * 
-   */
-  $(document).on("select2-selecting", "select[id $= 'classification_type_id']", function(e){
-    var targetId = e.target.id
-    var targetNumber = targetId.match(/_(\d+)_/);
-    $("#classifications_" + targetNumber[1] + "_classification_id").select2('val', '');
-  });
-
 </script>
 
 <tr>
