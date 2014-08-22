@@ -53,10 +53,10 @@ class CheckoutsController < ApplicationController
           checkouts = @user.checkouts.not_returned.order('due_date ASC')
         else
           @checkout_search = params[:checkout_search] 
-          @checkout_search[:errors] = ''
           checkouts = Checkout.joins(:item => [{:shelf => :library}]).joins(:user)
           
           if @checkout_search
+            @checkout_search[:errors] = ''
             start_date = Date.expand_date(@checkout_search[:start_date]) if @checkout_search[:start_date]
             end_date = Date.expand_date(@checkout_search[:end_date], mode: 'to') if @checkout_search[:end_date]
             @checkout_search[:errors] << I18n.t('checkout.search.error.invalid_start_date') if @checkout_search[:start_date].present? && start_date.nil?
