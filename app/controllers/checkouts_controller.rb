@@ -64,8 +64,8 @@ class CheckoutsController < ApplicationController
             checkouts = checkouts.where('libraries.id' => @checkout_search[:library_id]) unless @checkout_search[:library_id].blank?
             checkouts = checkouts.where("users.username like '%#{@checkout_search[:username]}%'") unless @checkout_search[:username].blank?
             checkouts = checkouts.where('users.user_group_id' => @checkout_search[:user_group_id]) unless @checkout_search[:user_group_id].blank?
-            checkouts = checkouts.where(['checkouts.checked_at >= ?', start_date]) if start_date
-            checkouts = checkouts.where(['checkouts.checked_at <= ?', end_date]) if end_date
+            checkouts = checkouts.where(['checkouts.due_date >= ?', start_date]) if start_date
+            checkouts = checkouts.where(['checkouts.due_date <= ?', end_date]) if end_date
             checkouts = checkouts.where("items.identifier like '#{@checkout_search[:item_identifier].gsub('*', '%')}'") unless @checkout_search[:item_identifier].blank?
             checkouts = checkouts.where("items.manifestation_id in (select manifestation_id from manifestation_has_classifications where classification_id = #{@checkout_search[:classification_id]})") unless @checkout_search[:classification_id].blank?
             checkouts = checkouts.where("items.manifestation_id not in (select manifestation_id from manifestation_has_classifications)") if @checkout_search[:no_classification]
