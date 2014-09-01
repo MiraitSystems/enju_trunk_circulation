@@ -1,6 +1,3 @@
-EnjuTrunkCirculation::Engine.routes.draw do
-end
-
 Rails.application.routes.draw do
   get "checkout_histories/index"
 

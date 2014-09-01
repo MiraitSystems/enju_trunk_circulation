@@ -7,8 +7,8 @@ class Ability
         CheckedItem,
         Checkin,
         Checkout,
-        LendingPolicy,
-        Reserve
+        Reserve,
+        UserGroupHasCheckoutType
       ]
     when 'Librarian'
       can [:index, :create, :update, :destroy, :show], Reserve
@@ -19,9 +19,7 @@ class Ability
         Checkout,
         Reserve
       ]
-      can :read, [
-        LendingPolicy,
-      ]
+      can :read, UserGroupHasCheckoutType
     when 'User'
       can :create, Basket
       can [:index, :create], Checkout
