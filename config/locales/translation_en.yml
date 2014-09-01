@@ -81,6 +81,7 @@ en:
     checkout: Checkout
     ignore_restriction: ignore limitation
     library_closed_today: The library of the item is closed today.
+    in_library_use_only: This ietm is in-libray use only.
   basket:
     my_status: Current status
     books: items
