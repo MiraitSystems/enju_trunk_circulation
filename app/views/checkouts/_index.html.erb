@@ -53,7 +53,9 @@
     <%= submit_tag t('page.search'), :onclick => "push_submit(null);" -%>
     <%= submit_tag t('page.output_pdf', :model =>t('page.listing', :model => t('activerecord.models.checkout'))), :onclick => "push_submit('pdf');" -%>
     <%= submit_tag t('page.output_tsv', :model =>t('page.listing', :model => t('activerecord.models.checkout'))), :onclick => "push_submit('tsv');"-%>
-    <%= submit_tag t('page.output_excelx', :model => t('page.listing', :model => t('activerecord.models.checkout'))), :name => 'output_excel' %> 
+    <%= submit_tag t('page.output_excelx', :model =>t('page.listing', :model => t('activerecord.models.checkout'))), :id => "excelx_book_dialog_opener" -%>
+  </p>
+  <div id="dialog_data" style="display:none;"></div>
 <%- end -%>
 
 <%= render 'list' -%>

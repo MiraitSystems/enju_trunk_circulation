@@ -14,9 +14,17 @@ class CheckoutsController < ApplicationController
   before_filter :authenticate_user!, :except => [:batchexec]
   before_filter :prepare_options, :only => :index
 
+  # GET /checkouts/output_excel
+  def output_excel
+
+  end
+
   # GET /checkouts
   # GET /checkouts.json
   def index
+    @ouput_columns = Checkout.ouput_columns
+    order_by_string = get_order_by_string(params)
+
     if params[:icalendar_token].present?
       icalendar_user = User.where(:checkout_icalendar_token => params[:icalendar_token]).first
       if icalendar_user.blank?
@@ -35,7 +43,7 @@ class CheckoutsController < ApplicationController
       unless current_user.try(:has_role?, 'Librarian')
         if current_user == @user
           # disp1. user checkouts
-          checkouts = current_user.checkouts.not_returned.order('due_date ASC')
+          checkouts = current_user.checkouts.not_returned.reorder(order_by_string).joins(:user, :item)
         else
           if @user
             access_denied
@@ -47,10 +55,10 @@ class CheckoutsController < ApplicationController
       # logged in as Librarian
       else
         if @user && @basket_id = params[:basket_id]
-          checkouts = @user.checkouts.not_returned.where(:basket_id => @basket_id).order('due_date ASC')
+          checkouts = @user.checkouts.not_returned.where(:basket_id => @basket_id).reorder(order_by_string).joins(:user, :item)
         elsif @user
           # disp1. user checkouts
-          checkouts = @user.checkouts.not_returned.order('due_date ASC')
+          checkouts = @user.checkouts.not_returned.reorder(order_by_string).joins(:user, :item)
         else
           @checkout_search = params[:checkout_search] 
           checkouts = Checkout.joins(:item => [{:shelf => :library}]).joins(:user)
@@ -76,10 +84,7 @@ class CheckoutsController < ApplicationController
             date = @checkout_search[:days_overdue].to_i.days.ago.end_of_day if @checkout_search[:overdue]
             checkouts = checkouts.overdue(date)
           end
-	  if params[:sort_by] =~ /\A(users.useraname|items.item_identifier|checkouts.due_date)\Z/ && 
-             params[:order] =~ /\A(desc|asc)\Z/
-	    checkouts = checkouts.try(:reorder, "#{params[:sort_by]} #{params[:order]}")
-          end
+          checkouts = checkouts.try(:reorder, order_by_string)
         end
       end
     end
@@ -107,6 +112,7 @@ class CheckoutsController < ApplicationController
         end
       }
       format.tsv  { send_data Checkout.output_checkoutlist_csv(checkouts, params[:view]), :filename => Setting.checkout_list_print_tsv.filename }
+      format.xlsx { send_file Checkout.output_checkoutlist_excelx(checkouts, params), :filename => Setting.checkout_list_print_xlsx.filename }
       format.atom
     end
   end
@@ -428,6 +434,30 @@ private
     @libraries = Library.all
     @user_groups = UserGroup.all
     @classification_types = ClassificationType.all
+  end
+
+  def get_order_by_string(params)
+    case params[:sort_by]
+      when 'username'
+        order_by = 'users.username'
+      when 'call_number'
+        order_by = 'items.call_number'
+      when 'location_category_id'
+        order_by = 'items.location_category_id'
+      when 'due_date'
+        order_by = 'checkouts.due_date'
+      when 'identifier'
+        order_by = 'items.identifier'
+      else
+        order_by = 'due_date'
+    end
+    case params[:order]
+      when 'desc'
+        order_by += ' DESC'
+      else
+        order_by += ' ASC'
+    end
+    return order_by
   end
 
 end

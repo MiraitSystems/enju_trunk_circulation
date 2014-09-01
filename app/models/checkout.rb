@@ -489,6 +489,116 @@ class Checkout < ActiveRecord::Base
     end
   end
 
+  def self.ouput_columns
+    return [{name:"username", model: "user", column: "username"},
+            {name:"full_name", model: "agent", column: "full_name"},
+            {name:"grade", model: "keycode", column: "keyname"},
+            {name:"user_number", model: "user", column: "usernumber"},
+            {name:"user_group", model: "user_group", column: "display_name"},
+            {name:"department", model: "department", column: "display_name"},
+            {name:"original_title", model: "manifestation", column: "original_title"},
+            {name:"creator", model: "calculate", column: "calculate"},
+            {name:"call_number", model: "item", column: "call_number"},
+            {name:"identifier", model: "item", column: "identifier"},
+            {name:"item_identifier", model: "item", column: "item_identifier"},
+            {name:"location_category", model: "location_category", column: "display_name"},
+            {name:"due_date", model: "checkout", column: "due_date"},
+            {name:"reserve", model: "calculate", column: "calculate"},
+           ]
+  end
+
+  def self.output_checkoutlist_excelx(checkouts, params)
+    require 'axlsx'
+
+    # initialize
+    out_dir = "#{Rails.root}/private/system/checkouts_excelx"
+    excel_filepath = "#{out_dir}/list#{Time.now.strftime('%s')}#{rand(10)}.xlsx"
+    FileUtils.mkdir_p(out_dir) unless FileTest.exist?(out_dir)
+
+    logger.info "output_checkoutlist_excelx filepath=#{excel_filepath}"
+
+    # 出力データ
+    if params[:ouput_columns].present?
+      header = []
+      details = []
+      params[:ouput_columns].each do |name|
+        name_ja = I18n.t("checkout_output_excel.#{name}")
+        header << name_ja
+      end
+      
+      checkouts.each.with_index(1) do |checkout, index|
+        detail = []
+        params[:ouput_columns].each do |name|
+          ouput_column = self.ouput_columns.find{|ouput_column| ouput_column[:name] == name }
+          model = ouput_column[:model]
+          column = ouput_column[:column]
+          case name
+            when "username"
+              detail << (checkout.user.present? ? checkout.user.username : "")
+            when "full_name"
+              detail << (checkout.user.agent.present? ? checkout.user.agent.full_name : "")
+            when "grade"
+              detail << (checkout.user.agent.grade.present? ? checkout.user.agent.grade.keyname : "")
+            when "user_number"
+              detail << (checkout.user.present? ? checkout.user.user_number : "")
+            when "user_group"
+              detail << (checkout.user.user_group.present? ? checkout.user.user_group.display_name : "")
+            when "department"
+              detail << (checkout.user.department.present? ? checkout.user.department.display_name : "")
+            when "original_title"
+              detail << (checkout.item.manifestation.present? ? checkout.item.manifestation.original_title : "")
+            when "creator"
+              if checkout.item.manifestation.creators.present?
+                creators = checkout.item.manifestation.creators.map(&:full_name).join(";")
+              else
+                creators = ""
+              end
+              detail << creators
+            when "call_number"
+              detail << (checkout.item.present? ? checkout.item.call_number : "")
+            when "identifier"
+              detail << (checkout.item.present? ? checkout.item.identifier : "")
+            when "item_identifier"
+              detail << (checkout.item.present? ? checkout.item.item_identifier : "")
+            when "location_category"
+              detail << (checkout.item.location_category.present? ? checkout.item.location_category.keyname : "")
+            when "due_date"
+              detail << (checkout.due_date.present? ? checkout.due_date.to_date : "")
+            when "reserve"
+              if checkout.item.manifestation.reserves.present?
+                reserve = I18n.t("checkout_output_excel.reserved")
+              else
+                reserve = I18n.t("checkout_output_excel.nonreserve")
+              end
+              detail << reserve
+          end
+        end
+        details << detail
+      end
+
+    end
+
+    Axlsx::Package.new do |p|
+      wb = p.workbook
+      wb.styles do |s|
+        sheet = wb.add_worksheet(:name => I18n.t('checkout_output_excel.checkout_list'))
+        default_style = s.add_style :font_name => Setting.checkout_list_print_xlsx.fontname
+        # ヘッダ部
+        if header.present?
+          sheet.add_row header, :types => :string, :style => default_style
+        end
+        # データ部分
+        if details.present?
+          details.each do |detail|
+            sheet.add_row detail, :types => :string, :style => default_style
+          end
+        end
+        p.serialize(excel_filepath)
+      end
+    end
+    return excel_filepath
+  end
+
 end
 
 # == Schema Information

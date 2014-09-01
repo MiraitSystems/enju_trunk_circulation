@@ -2,4 +2,60 @@
   <%= render 'index_user', :user => @user, :basket_id => @basket_id -%>
 <%- else -%>
   <%= render 'index' -%>
+
+  <script>
+    $(function(){
+      // function to open the dialog
+      $('#excelx_book_dialog_opener').click( function() {
+        $('#excelx_book_dialog').dialog('open');
+        return false;
+      });
+      $('#excelx_book_dialog').dialog({
+          autoOpen: false,
+          modal: true,
+          width: Math.floor($(window).width() * 0.60),
+      });
+      $('#excelx_book_trigger').click( function() {
+        var submitFrom = $('#form');
+        $('#dialog_data').html($('#check_cols_book').clone());
+        submitFrom.attr('action', "<%= checkouts_path(:format => 'xlsx') %>");
+        $('#excelx_book_dialog').dialog('close');
+        submitFrom.submit();
+        return false;
+      });
+      $('#check_all_ouput_columns').click(function() {
+        $('#output-form input:checkbox').prop('checked', $(this).is(':checked'));
+      });
+      $("input[name^='ouput_columns']").click(function() {
+        $('#check_all_ouput_columns').prop('checked', false);
+      });
+    });
+  </script>
+
+  <div id="excelx_book_dialog" title="<%= t('page.output', :model => t('page.search_result')) %>" style="display:none;">
+    <div id='check_cols_book'>
+      <br />
+      <strong><%= t('page.output_excelx_dialog') %></strong>
+      <br />
+      <ul>
+        <li style="list-style: none; width: 30%; float: left;">
+        <%= check_box_tag "check_all_ouput_columns", true, true %><%= t('checkout_output_excel.check_all_ouput_column') %>
+        </li>
+      </ul>
+      <br style='clear: both' />
+      <ul>
+        <% @ouput_columns.each_with_index do |ouput_column, index| %>
+          <li style="list-style: none; width: 30%; float: left;">
+            <%= check_box_tag "ouput_columns[]", ouput_column[:name], true %>
+            <%= t("checkout_output_excel.#{ouput_column[:name]}") -%>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+    <br style='clear: both' />
+    <div>
+      <br /><button id="excelx_book_trigger"><%= t('page.output_excelx_detail') %></button>
+    </div>
+  </div>
+
 <%- end -%>
