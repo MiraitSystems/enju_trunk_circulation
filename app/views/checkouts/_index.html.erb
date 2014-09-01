@@ -28,11 +28,11 @@
    <tr>
      <td><%= t('activerecord.attributes.user.username') %>:</td><td><%= text_field_tag 'checkout_search[username]', @checkout_search.try(:[], :username) %></td>
      <td><%= t('activerecord.attributes.user.user_group') %>:</td> 
-     <td><%= select2_tag 'checkout_search_user_group_id', 'checkout_search[:user_group_id]', @user_groups, @checkout_search.try(:[], :user_group_id), :select_attribute => :name, :display_attribute => :display_name, :include_blank => true %></td>
+     <td><%= select2_tag 'checkout_search_user_group_id', 'checkout_search[:user_group_id]', @user_groups, @checkout_search.try(:[], :user_group_id), :select_attribute => :name, :display_attribute => :display_name, :include_blank => true, :width => 250 %></td>
    </tr>
    <tr>
-     <td><%= t('advanced_search.from_date') -%>:</td><td><%= text_field_tag 'checkout_search[start_date]', @checkout_search.try(:[], :start_date), :size => 20, :placeholder => "#{t('page.example')}: 2011-04-01"-%></td>
-    <td><%= t('advanced_search.to_date') -%>:</td><td><%= text_field_tag 'checkout_search[end_date]', @checkout_search.try(:[], :end_date), :size => 20, :placeholder => "#{t('page.example')}: 2011-04-30" -%></td>
+     <td><%= t('advanced_search.from_date') -%>(<%= t('activerecord.attributes.checkout.due_date') %>):</td><td><%= text_field_tag 'checkout_search[start_date]', @checkout_search.try(:[], :start_date), :size => 20, :placeholder => "#{t('page.example')}: 2011-04-01"-%></td>
+    <td><%= t('advanced_search.to_date') -%>(<%= t('activerecord.attributes.checkout.due_date') %>):</td><td><%= text_field_tag 'checkout_search[end_date]', @checkout_search.try(:[], :end_date), :size => 20, :placeholder => "#{t('page.example')}: 2011-04-30" -%></td>
   </tr>
   <tr>
     <td><%= t('activerecord.attributes.item.identifier') %>:</td>
@@ -59,10 +59,6 @@
 <%- end -%>
 
 <%= render 'list' -%>
-
-<%- if @checkouts.size == 0 -%>
-  <p><%= t('checkout.no_checkout') -%></p>
-<%- end -%>
 
 <%= paginate(@checkouts) -%>
 </div>

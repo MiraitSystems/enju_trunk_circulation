@@ -28,10 +28,6 @@ $(function(){
 <%- end -%>
 <%= render 'list' -%>
 
-<%- if @checkouts.size == 0 -%>
-  <p><%= t('checkout.no_checkout') -%></p>
-<%- end -%>
-
 <%= paginate(@checkouts) -%>
 </div>
 </div>
