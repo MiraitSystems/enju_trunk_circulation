@@ -1,5 +1,6 @@
 class Checkout < ActiveRecord::Base
   self.extend ItemsHelper
+  attr_accessible :librarian_id, :item_id, :basket_id, :due_date, :created_at
   default_scope :order => 'due_date ASC, id DESC'#:order => 'id DESC'
   scope :not_returned, where(:checkin_id => nil)
   scope :overdue, lambda {|date| {:conditions => ['checkin_id IS NULL AND due_date < ?', date]}}

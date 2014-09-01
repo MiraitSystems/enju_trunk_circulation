@@ -15,15 +15,15 @@
     <br />
     <%- if reserve.manifestation.creators.readable_by(current_user).exists? -%>
       <%= t('agent.creator') -%>:
-      <%= agents_list(reserve.manifestation.creators.readable_by(current_user), {:itemprop => 'author'}, reserve.manifestation.id, 'create') -%>
+      <%= agents_list(reserve.manifestation.creates.readable_by(current_user), {:itemprop => 'author'}, reserve.manifestation.id, 'create') -%>
     <%- end -%>
-    <%- if reserve.manifestation.contributors.readable_by(current_user).exists? -%>
+    <%- if reserve.manifestation.realizes.readable_by(current_user).exists? -%>
       <%= t('agent.contributor') -%>: 
-      <%= agents_list(reserve.manifestation.contributors.readable_by(current_user), {:itemprop => 'editor'}, reserve.manifestation.id, 'realize') -%>
+      <%= agents_list(reserve.manifestation.realizes.readable_by(current_user), {:itemprop => 'editor'}, reserve.manifestation.id, 'realize') -%>
     <%- end -%>
-    <%- if reserve.manifestation.publishers.readable_by(current_user).exists? -%>
+    <%- if reserve.manifestation.produces.readable_by(current_user).exists? -%>
       <%= t('agent.publisher') -%>: 
-      <%= agents_list(reserve.manifestation.publishers.readable_by(current_user), {:itemprop => 'publisher'}, reserve.manifestation.id, 'produce') -%>
+      <%= agents_list(reserve.manifestation.produces.readable_by(current_user), {:itemprop => 'publisher'}, reserve.manifestation.id, 'produce') -%>
       <%- if reserve.manifestation.pub_date.present? -%>
         (<%= reserve.manifestation.pub_date -%>)
       <%- end -%>
