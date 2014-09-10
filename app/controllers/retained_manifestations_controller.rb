@@ -39,7 +39,7 @@ class RetainedManifestationsController < ApplicationController
         with(:receipt_library_id).equal_to params[:library][:id] if params[:library].present? and params[:library][:id].present?
         with(:information_type_id, selected_information_type) if params[:information_type].present?
         order_by(:user_id, :desc)
-        order_by(:expired_at, :asc)
+        order_by(:reserve_expired_at, :asc)
         paginate :page => page.to_i, :per_page => Reserve.default_per_page if params[:format] == 'html' || params[:format].nil?
       end.results
     end
