@@ -55,13 +55,16 @@ class BasketsController < ApplicationController
   def create
     @basket = Basket.new
     @user = User.where(:user_number => params[:basket][:user_number].strip).first rescue nil
+    unless @user
+      @user = User.where(:username => params[:basket][:user_number].strip).first rescue nil
+    end
     old_basket = Basket.where(:user_id => @user.id, :basket_type => 0).first rescue nil
     if old_basket
       old_basket.checked_items.destroy_all rescue nil
       old_basket.destroy
     end
     if @user
-      if @user.user_number?
+      if @user.user_number? || @user.username?
         @basket.user = @user
       end
     end
