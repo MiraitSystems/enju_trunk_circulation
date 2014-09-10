@@ -17,7 +17,7 @@ class CheckedItemsController < ApplicationController
         access_denied; return
       end
     end
-
+    
     unless @basket.user.agent
       redirect_to new_user_agent_url(@user); return
     end
@@ -26,6 +26,7 @@ class CheckedItemsController < ApplicationController
     @family_users = Family.find(family_id).users.select{ |user| user != @basket.user } if family_id
 
     @selected_loan_period = session[:set_loan_period] if /[01]/ =~ session[:set_loan_period]
+    @location_symbol_size = Keycode.where(:name => 'item.location_symbol').size
 
     respond_to do |format|
       format.html # index.html.erb
