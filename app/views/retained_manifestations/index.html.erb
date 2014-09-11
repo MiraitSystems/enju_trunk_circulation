@@ -37,7 +37,7 @@
 
 <table class="index">
   <tr>
-    <th><%= t('activerecord.models.user') %></th>
+    <th><nobr><%= t('activerecord.models.user') %></nobr></th>
     <th><%= t('activerecord.attributes.manifestation.original_title') %></th>
     <th><%= t('activerecord.attributes.reserve.information_type') %></th>
     <th></th>
@@ -52,8 +52,8 @@
     <td>
       <%= i18n_information_type(reserve.information_type_id) %>&nbsp;
       <% if reserve.information_type_id == 1 %>
-        <%= mail_to Reserve.get_information_type(reserve), 
-          Reserve.get_information_type(reserve), :subject => reserve.retained_mail_title, :body => reserve.retained_mail_message %>
+        <nobr><%= mail_to Reserve.get_information_type(reserve), 
+          Reserve.get_information_type(reserve), :subject => reserve.retained_mail_title, :body => reserve.retained_mail_message %></nobr>
       <% else %>
         <%= Reserve.get_information_type(reserve)%>
       <% end %>

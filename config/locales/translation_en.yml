@@ -166,6 +166,8 @@ en:
     successfully_checked_in: This item is successfully checked in.
     not_available_for_checkin: This item cannot be checked in. (Circulation status is invalid.)
     overdue_item: Checkout of the item is overdue.
+    item_reserved: The item is reserved
+    item_retained: The item is reserved and retained.
   checkout_history:
     checkout: Checkout
     checkin: Checkin

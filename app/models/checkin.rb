@@ -54,8 +54,12 @@ class Checkin < ActiveRecord::Base
         if self.item.manifestation.next_reservation
           # TODO: もっと目立たせるために別画面を表示するべき？
           #message << I18n.t('item.this_item_is_reserved') + '<br />'
-          message << 'item.this_item_is_reserved'
-          # self.item.retain(current_user)
+          if SystemConfiguration.get('reserve.auto_retain')
+            self.item.retain(current_user)
+            message << 'checkin.item_retained'
+          else
+            message << 'checkin.item_reserved'
+          end
         end
       end
 
