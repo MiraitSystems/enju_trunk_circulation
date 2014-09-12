@@ -267,6 +267,9 @@ class ReservesController < ApplicationController
   def create
     user_number = params[:reserve][:user_number].strip if params[:reserve][:user_number]
     user = User.where(:user_number => user_number).first if user_number
+    if user.blank? && user_number
+      user = User.where(:username => user_number).first
+    end
  
     # 図書館員以外は自分の予約しか作成できない
     if current_user.blank?
