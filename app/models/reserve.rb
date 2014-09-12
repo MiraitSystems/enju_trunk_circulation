@@ -651,10 +651,10 @@ class Reserve < ActiveRecord::Base
       # book info
       page.item(:title).value(reserve.manifestation.original_title)
       page.item(:creater).value(agents_list(
-        reserve.manifestation.creators.readable_by(current_user),
+        reserve.manifestation.creates.readable_by(current_user),
         { :itemprop => 'author', :nolink => true }, reserve.manifestation.id, 'create', 'output'))
       page.item(:publisher).value(
-        agents_list(reserve.manifestation.publishers.readable_by(current_user),
+        agents_list(reserve.manifestation.produces.readable_by(current_user),
         { :itemprop => 'publisher', :nolink => true}, reserve.manifestation.id, 'produce', 'output'))
       page.item(:price).value(reserve.manifestation.price)
       page.item(:page).value(reserve.manifestation.number_of_pages.to_s + 'p') if reserve.manifestation.number_of_pages
