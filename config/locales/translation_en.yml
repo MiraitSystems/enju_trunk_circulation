@@ -94,6 +94,7 @@ en:
   checkout:
     user_checkout: ! "%{login_name} 's checkout"
     library_group_checkout: ! "checkout in %{library_group_name}"
+    days_overdue: "over %{days} days"
     renewal: Renewal
     renewal_count: Renewal count
     new_due_date: New due date

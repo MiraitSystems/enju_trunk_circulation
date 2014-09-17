@@ -81,6 +81,7 @@ ja:
   checkout:
     user_checkout: "%{login_name} さんの貸出資料"
     library_group_checkout: "%{library_group_name} での貸出"
+    days_overdue: "延滞%{days}日"
     renewal: "貸出の更新"
     renewal_count: "更新回数"
     new_due_date: "新しい貸出期限日"

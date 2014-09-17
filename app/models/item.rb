@@ -32,6 +32,10 @@ class Item < ActiveRecord::Base
     false
   end
 
+  def checkout
+    return self.checkouts.not_returned.first
+  end
+
   def reserved_by_user?(user)
     if self.reserve
       return true if self.reserve.user == user
