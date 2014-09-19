@@ -149,8 +149,12 @@ class CheckoutsController < ApplicationController
       end
     end
 
-    unless current_user.checkouts.overdue(Time.zone.now).blank?
+    unless @checkout.user.checkouts.overdue(Time.zone.now).blank?
       flash[:message] = t('checkout.you_have_overdue_item')
+      @checkout.available_for_extend = false
+    end
+    if @checkout.user.in_penalty
+      flash[:message] = t('checkout.you_are_in_penalty')
       @checkout.available_for_extend = false
     end
 

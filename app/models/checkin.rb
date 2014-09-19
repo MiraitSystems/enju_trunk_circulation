@@ -61,6 +61,27 @@ class Checkin < ActiveRecord::Base
             message << 'checkin.item_reserved'
           end
         end
+
+        # 罰則管理
+        if SystemConfiguration.get('penalty.user_penalty')
+          penalty_update = 0
+          user = self.checkout.user
+          if user.in_penalty
+            if user.checkouts.not_returned.count == 0
+              user.in_penalty = false
+              if user.user_group.restrict_checkout_after_penalty > 0
+                user.days_after_penalty += 1 # TODO 観察回数
+                penalty_update = 1
+              end
+            end
+          end
+          if user.days_after_penalty > 0 && penalty_update == 0
+            if self.checkout.due_date >= Date.today
+              user.days_after_penalty = user.days_after_penalty - 1
+            end
+          end
+          user.save!
+        end
       end
 
       # メールとメッセージの送信

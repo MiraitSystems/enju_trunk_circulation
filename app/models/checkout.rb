@@ -68,7 +68,7 @@ class Checkout < ActiveRecord::Base
       unless current_user.has_role?('Librarian')
         return false if self.over_checkout_renewal_limit? 
       end
-      return false if !available_for_extend && !current_user.has_role?('Librarian')
+      return false if !available_for_extend  # && !current_user.has_role?('Librarian')
       return false if self.reserved?
     end
     true

@@ -91,7 +91,10 @@ ja:
     current_user: "現在の貸出利用者"
     this_item_is_reserved: "この資料は予約されています。"
     you_have_overdue_item: "貸出期限を過ぎている資料があります。"
+    you_are_in_penalty: "罰則中のため貸出に制限があります。"
     excessed_renewal_limit: "貸出更新回数の上限を超えています。"
+    cannot_exceed_after_overdue: "貸出期限を過ぎているため延長できません。"
+    cannot_exceed_in_penalty: "貸出期間の延長は罰則により出来ません。"
     all_checkout: "全ての貸出"
     my_checkout: "自分の貸出"
     number_of_day_overdue: "延滞日数"
@@ -162,6 +165,7 @@ ja:
     library_closed_today: "この資料の図書館は本日休館日です。"
     not_set_long_loan_period: "長期期間貸出期日を設定してください。"
     in_library_use_only: "この資料は禁帯出です。"
+    user_has_penalty: "罰則対象の延滞中資料があります。貸出しますか？"
   checkin:
     item_not_found: "資料が見つかりません。"
     enter_item_identifier: "所蔵情報番号を入力してください。"
@@ -199,3 +203,7 @@ ja:
     user_group: "利用者グループ"
     department: "所属部署"
     identifier: "ID"
+  user:
+      in_penalty: 現在延滞返却待ち
+      checkout_probation: "現在延滞ペナルティ %{num} 冊貸出"
+      has_penalty: "罰則対象です。"

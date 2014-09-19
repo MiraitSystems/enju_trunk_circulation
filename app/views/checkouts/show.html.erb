@@ -11,11 +11,15 @@
   <p>
     <strong><%= t('activerecord.attributes.checkout.due_date') -%></strong><br />
     <%= l(@checkout.due_date, :format => :only_date) if @checkout.due_date -%>
+    <%- if @checkout.overdue? %>
+      <div style="color: red"><%= t('activerecord.attributes.checkout.past_due') -%><%= t('checkout.days_overdue', :days => @checkout.day_of_overdue) %></div>
+    <%- end -%>
   </p>
   <%- if can? :destroy, @checkout -%>
     <p>
       <strong><%= t('checkout.current_user') -%></strong><br />
       <%= link_to @checkout.user_username, @checkout.user -%>
+      <div style="color: red"><%= user_notice(@checkout.user) %></div>
     </p>
   <%- end -%>
   <p>
@@ -28,7 +32,7 @@
 <div id="submenu" class="ui-corner-all">
   <%= render 'manifestations/book_jacket', :manifestation => @checkout.item.manifestation -%>
   <ul>
-    <%- if current_user.has_role?('Librarian') %><li><%= link_to t('page.edit'), edit_user_checkout_path(@checkout.user, @checkout) -%></li><%- end -%>
+    <%- if current_user.has_role?('Librarian') && @checkout.checkin_id.blank? %><li><%= link_to t('page.edit'), edit_user_checkout_path(@checkout.user, @checkout) -%></li><%- end -%>
     <li><%= link_to t('page.back'), user_checkouts_path(@checkout.user) -%></li>
     <%- if current_user.has_role?('Librarian') -%>
       <li><%= link_to t('page.back_to', :model => t('activerecord.models.checkout')), checkouts_path -%></li>

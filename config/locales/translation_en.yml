@@ -82,6 +82,7 @@ en:
     ignore_restriction: ignore limitation
     library_closed_today: The library of the item is closed today.
     in_library_use_only: This ietm is in-libray use only.
+    user_has_penalty: This user has overdued checkout for penalty.
   basket:
     my_status: Current status
     books: items
@@ -104,7 +105,10 @@ en:
     current_user: Current checkout user
     this_item_is_reserved: This item is reserved.
     you_have_overdue_item: You have overdue item.
+    you_are_in_penalty: You are in penalty.
     excessed_renewal_limit: You have already max number of checkout.
+    cannot_exceed_after_overdue: You cannot exceed due date because this checkout is already overdued.
+    cannot_exceed_in_penalty: You cannot exceed due date because you are in penalty.
     all_checkout: All checkout
     my_checkout: My checkout
     number_of_day_overdue: Number of overdue
@@ -193,3 +197,7 @@ en:
     user_group: User group
     department: Department
     identifier: ID
+  user:
+    in_penalty: The user is in penalty.
+    checkout_probation: Checkout number is limited after penalty.
+    has_penalty: The user has overdued checkout for penalty.

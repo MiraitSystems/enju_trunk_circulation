@@ -51,9 +51,15 @@
     <td>
       <nobr><%= link_to t('page.show'), user_checkout_path(checkout.user, checkout) -%></nobr>
       <br />
-      <%- if (can? :update, checkout) && (current_user.has_role?('Librarian') || checkout.checkout_renewable?(current_user)) -%> 
+      <%- if checkout.checkin_id.blank? && (can? :update, checkout) && (current_user.has_role?('Librarian') || checkout.checkout_renewable?(current_user)) -%> 
         <%- if current_user.has_role?('Librarian') -%>
-          <%= link_to t('checkout.extend'), edit_user_checkout_path(checkout.user, checkout) -%>
+          <%- if checkout.overdue? %>
+            <div style="color: red"><%= t('checkout.cannot_exceed_after_overdue') %></div>
+          <%- elsif checkout.user.in_penalty -%>
+            <div style="color: red"><%= t('checkout.cannot_exceed_in_penalty') %></div>
+          <%- else -%>
+            <%= link_to t('checkout.extend'), edit_user_checkout_path(checkout.user, checkout) -%>
+          <%- end %>
           <p id="add_reminder_<%= checkout.id %>">
             <%- if checkout.overdue? && checkout.exist_reminder_list? %>
               <%= link_to t('checkout.exist_reminder_list'), reminder_lists_path %>
@@ -62,7 +68,13 @@
             <%- end -%>
           </p>
         <%- else -%>
-          <%= link_to t('checkout.extend'), user_checkout_path(checkout.user, checkout), :method => :put -%>
+          <%- if checkout.overdue? -%>
+            <div style="color: red"><%= t('checkout.cannot_exceed_after_overdue') %></div>
+          <%- elsif checkout.user.in_penalty -%>
+            <div style="color: red"><%= t('checkout.cannot_exceed_in_penalty') %></div>
+          <%- else -%>
+            <%= link_to t('checkout.extend'), user_checkout_path(checkout.user, checkout), :method => :put -%>
+          <%- end -%>
         <%- end -%>
       <%- end -%>
     </td>

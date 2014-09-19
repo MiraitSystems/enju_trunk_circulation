@@ -41,6 +41,18 @@ class CheckedItem < ActiveRecord::Base
     if self.item.manifestation.new_serial? and SystemConfiguration.get("checkouts.cannot_for_new_serial")
       errors[:base] << 'checked_item.new_serial'; return false      
     end
+
+    if SystemConfiguration.get('penalty.user_penalty') && [1,2].include?(self.basket.user.user_group.restrict_checkout_in_penalty)
+      if self.basket.user.days_after_penalty > 0
+        checked_count = self.basket.user.checkouts.not_returned.size + self.basket.checked_items.size
+        if checked_count >= self.basket.user.user_group.checkout_limit_after_penalty_in_probation
+          errors[:base] << 'checked_item.excessed_checkout_limit'
+        end
+      elsif self.basket.user.has_penalty?
+        errors[:base] << 'checked_item.user_has_penalty'
+      end
+    end
+
     checkout_count = self.basket.user.checked_item_count
     CheckoutType.all.each do |checkout_type|
       if checkout_count[:"#{checkout_type.name}"] + self.basket.checked_items.count(:id) >= self.item_checkout_type.checkout_limit
