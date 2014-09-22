@@ -70,6 +70,7 @@ ja:
 
 
   basket:
+    checkout_user_number: "利用者番号"
     my_status: "現在の利用状況"
     books: "冊"
     number_of_checkout : "貸出冊数"
