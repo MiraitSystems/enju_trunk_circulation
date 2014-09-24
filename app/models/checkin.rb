@@ -75,7 +75,7 @@ class Checkin < ActiveRecord::Base
               end
             end
           end
-          if user.days_after_penalty > 0 && penalty_update == 0
+          if user.days_after_penalty > 0 && penalty_update == 0 && user.checkouts.not_returned.count == 0
             if self.checkout.due_date >= Date.today
               user.days_after_penalty = user.days_after_penalty - 1
             end
