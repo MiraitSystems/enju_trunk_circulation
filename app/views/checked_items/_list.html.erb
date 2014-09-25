@@ -19,6 +19,10 @@
 <%= javascript_tag("$('#checked_item_item_identifier').focus()") -%>
 <%= form_for(:basket, :url => {:controller => 'baskets', :action => 'update', :id => @basket.id}, :html => { :method => :put }) do |f| -%>
 
+  <div>
+    <%= f.submit t('checked_item.checkout'), :disable_with => t('page.wait') -%>
+  </div>
+
   <table class="index">
     <tr>
       <%- if SystemConfiguration.get("checked_items.disp_title") -%>

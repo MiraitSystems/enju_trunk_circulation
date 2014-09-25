@@ -161,7 +161,7 @@ ja:
     previous_checkout_family: "現在家族に貸出中の資料"
     previous_reserve: "現在予約中の資料"
     previous_reserve_family: "現在家族が予約中の資料"
-    checkout: "上記の資料を貸し出す"
+    checkout: "読み込んだ資料を貸し出す"
     ignore_restriction: "制限を無視する"
     library_closed_today: "この資料の図書館は本日休館日です。"
     not_set_long_loan_period: "長期期間貸出期日を設定してください。"
