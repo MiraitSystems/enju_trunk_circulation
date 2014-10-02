@@ -1,0 +1,33 @@
+
+<ol data-role="listview">
+  <%- if @checkouts -%>
+    <%- @checkouts.each_with_index do |checkout, i| %>
+      <li>
+        <%= link_to checkout do %>
+          <%= checkout.item.manifestation.original_title %>
+          <br />
+          <%- if checkout.item.call_number %>
+            <%= t('activerecord.attributes.item.call_number') -%>: <%= link_to call_numberformat(checkout.item), item_path(checkout.item) -%>
+          <%- end -%>
+          <%- if SystemConfiguration.get('item.use_different_identifier') %>
+            / <%= t('activerecord.attributes.item.identifier') %>: <%= link_to checkout.item.identifier, checkout.item %>
+          <%- end -%>
+          / <%= t('activerecord.attributes.item.item_identifier') -%>: <%= link_to checkout.item.item_identifier, item_path(checkout.item) -%>
+          <br />
+          <%= t('activerecord.attributes.item.location_category') %>: <%= checkout.item.location_category.keyname if checkout.item.location_category -%>
+          <br />
+          <%= t('activerecord.attributes.checkout.due_date') %>: <%= l(checkout.due_date, :format => :only_date) -%>
+        <% end %>
+        <%- if checkout.checkin_id.blank? && (can? :update, checkout) && checkout.checkout_renewable?(current_user) -%> 
+          <%- if checkout.overdue? -%>
+            <div style="color: red"><%= t('checkout.cannot_exceed_after_overdue') %></div>
+          <%- elsif checkout.user.in_penalty -%>
+            <div style="color: red"><%= t('checkout.cannot_exceed_in_penalty') %></div>
+          <%- else -%>
+            <%= link_to t('checkout.extend'), user_checkout_path(checkout.user, checkout), :method => :put -%>
+          <%- end -%>
+        <%- end -%>
+      </li>
+    <% end %>
+  <% end %>
+</ol>

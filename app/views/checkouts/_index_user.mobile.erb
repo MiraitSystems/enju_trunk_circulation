@@ -1,0 +1,10 @@
+<h1 class="title"><%= t('page.listing', :model => t('activerecord.models.checkout')) -%></h1>
+<p id="notice"><%= notice %></p>
+<hr>
+
+<%= paginate(@checkouts) %>
+
+<br>
+<%= render 'list' -%>
+
+<%= paginate(@checkouts) -%>
