@@ -4,8 +4,11 @@ $(function(){
 });
 </script>
 
-<div id="content_detail" class="ui-corner-all">
-<h1 class="title"><%= t('page.new', :model => t('activerecord.models.reserve')) -%></h1>
+<div data-role="header">
+  <a href="javascript:history.back()" data-icon="back" data-iconpos="notext" class="ui-btn-left"><%= t('page.back') %></a>
+  <h1 class="title"><%= t('page.new', :model => t('activerecord.models.reserve')) -%></h1>
+</div>
+
 <div id="content_list">
 
 <%= form_for(@reserve, :url => user_reserves_path(@user)) do |f| -%>
@@ -16,7 +19,7 @@ $(function(){
   </div>
   
   <div class="field">
-    <%= render 'manifestations/show_series_number', :manifestation => @reserve.manifestation -%>
+    <%#= render 'manifestations/show_series_number', :manifestation => @reserve.manifestation -%>
   </div>
 
   <div class="field">
@@ -24,37 +27,29 @@ $(function(){
     <%= link_to @reserve.user.username, @reserve.user -%>
     (<%= @reserve.user.user_number %>)
   </div>
+  <br />
   <div class="field">
-    <%= f.label t('activerecord.attributes.reserve.information_type') -%><br />
+    <%= f.label t('activerecord.attributes.reserve.information_type') -%>
     <%= f.select(:information_type_id, @informations.collect{|i| [i.display_name + " " + i.information, i.id]}) -%>
   </div>
+  <br />
   <div class="field">
-    <%= f.label t('activerecord.attributes.reserve.receipt_library') -%><br />
+    <%= f.label t('activerecord.attributes.reserve.receipt_library') -%>
     <%= f.select(:receipt_library_id, @libraries.collect{|l| [l.display_name.localize, l.id]}) -%>
   </div>
+  <br />
   <div class="field">
 <script>
     if (typeof $('#expired_at').setCalendar == "function") {
       $('#expired_at').setCalendar({src:'/assets/calendar.png'});
     }
 </script>
-    <%= f.label :expired_at -%><br />
-    <%= f.text_field :expired_at, :value => @reserve.expired_at.try(:strftime, "%Y-%m-%d"), :class => 'date_field', :placeholder => "#{t('page.example')}: 2011-04-12"-%>
+    <%= f.label :expired_at -%>
+    <%= f.text_field :expired_at, :value => @reserve.expired_at.try(:strftime, "%Y-%m-%d"), :class => 'date_field', :placeholder => "#{t('page.example')}: 2011-04-12" -%>
   </div>
   <div class="field">
     <%= f.hidden_field :user_number, :value => @user.user_number -%>
     <%= f.submit t('reserve.add'), :disable_with => t('page.wait') -%>
   </div>
 <%- end -%>
-</div>
-</div>
-
-<div id="submenu" class="ui-corner-all">
-  <%= render 'manifestations/book_jacket', :manifestation => @reserve.manifestation -%>
-  <ul>
-    <li><%= link_to t('page.listing', :model => t('activerecord.models.reserve')), user_reserves_path(@reserve.user) -%></li>
-    <%- if @manifestation -%>
-      <li><%= link_to t('page.showing', :model => t('activerecord.models.manifestation')), @manifestation -%></li>
-    <%- end -%>
-  </ul>
 </div>
