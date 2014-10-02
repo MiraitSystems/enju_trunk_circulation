@@ -61,7 +61,7 @@ class CheckoutsController < ApplicationController
           checkouts = @user.checkouts.not_returned.reorder(order_by_string).joins(:user, :item)
         else
           @checkout_search = params[:checkout_search] 
-          checkouts = Checkout.joins(:item => [{:shelf => :library}]).joins(:user)
+          checkouts = Checkout.joins(:item => [{:shelf => :library}]).joins(:user => :agent)
           
           if @checkout_search
             @checkout_search[:errors] = ''
@@ -70,7 +70,7 @@ class CheckoutsController < ApplicationController
             @checkout_search[:errors] << I18n.t('checkout.search.error.invalid_start_date') if @checkout_search[:start_date].present? && start_date.nil?
             @checkout_search[:errors] << I18n.t('checkout.search.error.invalid_end_date') if @checkout_search[:end_date].present? && end_date.nil?
             checkouts = checkouts.where('libraries.id' => @checkout_search[:library_id]) unless @checkout_search[:library_id].blank?
-            checkouts = checkouts.where("users.username like '%#{@checkout_search[:username]}%'") unless @checkout_search[:username].blank?
+            checkouts = checkouts.where("users.username like '%#{@checkout_search[:username]}%' OR users.user_number like '%#{@checkout_search[:username]}' OR agents.agent_identifier like '%#{@checkout_search[:username]}%'") unless @checkout_search[:username].blank?
             checkouts = checkouts.where('users.user_group_id' => @checkout_search[:user_group_id]) unless @checkout_search[:user_group_id].blank?
             checkouts = checkouts.where(['checkouts.due_date >= ?', start_date]) if start_date
             checkouts = checkouts.where(['checkouts.due_date <= ?', end_date]) if end_date

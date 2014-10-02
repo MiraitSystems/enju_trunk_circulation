@@ -26,6 +26,14 @@
     <strong><%= t('activerecord.attributes.checkout.checked_at') -%></strong><br />
     <%= l(@checkout.checked_at, :format => :only_date) if @checkout.checked_at -%>
   </p>
+
+  <%- if @checkout.checkin %>
+    <p>
+      <strong><%= t('activerecord.attributes.checkin.checked_at') -%></strong><br />
+      <%= l(@checkout.checkin.checked_at) if @checkout.checkin.checked_at -%>
+      (<%= t('checkin.checkin_executor') -%>: <%= link_to @checkout.checkin.librarian.username, @checkout.checkin.librarian -%>)
+    </p>
+  <%- end -%>
 </div>
 </div>
 

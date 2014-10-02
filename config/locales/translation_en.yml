@@ -117,6 +117,7 @@ en:
     renew_checkout: Renew checkout
     add_reminder_list: Add to ReminderList
     exist_reminder_list: Raminder List
+    returned: Returned
     search:
       with_returned: With returned
       overdue: Only overdued

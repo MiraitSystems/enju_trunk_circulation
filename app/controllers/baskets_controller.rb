@@ -54,10 +54,7 @@ class BasketsController < ApplicationController
   # POST /baskets.json
   def create
     @basket = Basket.new
-    @user = User.where(:user_number => params[:basket][:user_number].strip).first rescue nil
-    unless @user
-      @user = User.where(:username => params[:basket][:user_number].strip).first rescue nil
-    end
+    @user = User.get_user(params[:basket][:user_number].strip)
     old_basket = Basket.where(:user_id => @user.id, :basket_type => 0).first rescue nil
     if old_basket
       old_basket.checked_items.destroy_all rescue nil

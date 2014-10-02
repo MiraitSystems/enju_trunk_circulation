@@ -104,6 +104,7 @@ ja:
     renew_checkout: "再貸出"
     add_reminder_list: "督促に追加"
     exist_reminder_list: "督促登録済み"
+    returned: 返却済み
     search:
       with_returned: "返却済みも含む"
       overdue: "延滞のみ検索"
