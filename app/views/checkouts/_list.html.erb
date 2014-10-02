@@ -46,7 +46,13 @@
       <%= t('activerecord.attributes.item.item_identifier') -%>: <%= link_to checkout.item.item_identifier, item_path(checkout.item) -%>
     </td>
     <td><%= checkout.item.location_category.keyname if checkout.item.location_category -%></td>
-    <td><%= l(checkout.due_date, :format => :only_date) -%></td>
+    <td><nobr><%= l(checkout.due_date, :format => :only_date) -%></nobr>
+      <%- if checkout.checkin_id %>
+        <br /><%= t('checkout.returned') %>
+        <br /><nobr><%= l(checkout.checkin.checked_at) %></nobr>
+        <br />(<%= t('checkin.checkin_executor') -%>: <%= link_to checkout.checkin.librarian.username, checkout.checkin.librarian -%>)
+      <%- end -%>
+    </td>
     <td><%= checkout.checkout_renewal_count -%></td>
     <td>
       <nobr><%= link_to t('page.show'), user_checkout_path(checkout.user, checkout) -%></nobr>
