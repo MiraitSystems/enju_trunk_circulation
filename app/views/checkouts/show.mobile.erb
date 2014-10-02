@@ -1,0 +1,28 @@
+<div data-role="header">
+  <h1 class="title"><%= t('page.showing', :model => t('activerecord.models.checkout')) -%></h1>
+</div>
+<p id="notice"><%= notice %></p>
+
+  <%= render 'manifestations/title', :manifestation => @checkout.item.manifestation -%>
+  <p>
+    <strong><%= t('activerecord.attributes.item.item_identifier') -%></strong><br />
+    <%= @checkout.item.item_identifier -%>
+  </p>
+  <p>
+    <strong><%= t('activerecord.attributes.checkout.due_date') -%></strong><br />
+    <%= l(@checkout.due_date, :format => :only_date) if @checkout.due_date -%>
+    <%- if @checkout.overdue? %>
+      <div style="color: red"><%= t('activerecord.attributes.checkout.past_due') -%><%= t('checkout.days_overdue', :days => @checkout.day_of_overdue) %></div>
+    <%- end -%>
+  </p>
+  <%- if can? :destroy, @checkout -%>
+    <p>
+      <strong><%= t('checkout.current_user') -%></strong><br />
+      <%= link_to @checkout.user_username, @checkout.user -%>
+      <div style="color: red"><%= user_notice(@checkout.user) %></div>
+    </p>
+  <%- end -%>
+  <p>
+    <strong><%= t('activerecord.attributes.checkout.checked_at') -%></strong><br />
+    <%= l(@checkout.checked_at, :format => :only_date) if @checkout.checked_at -%>
+  </p>

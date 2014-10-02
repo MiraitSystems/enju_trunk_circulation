@@ -1,9 +1,6 @@
-<%= render 'page/header' %>
-
 <div data-role="header">
   <h1 class="title"><%= t('page.listing', :model => t('activerecord.models.reserve')) -%></h1>
 </div>
-<hr>
 
 <%= paginate(@reserves) %>
 
@@ -12,25 +9,20 @@
 <ol data-role="listview">
   <%- @reserves.each_with_index do |reserve, i| -%>
     <li>
-      <%= reserve.manifestation.original_title %>
-      <br />
-      <%= t('activerecord.attributes.reserve.state') -%>:
-      <nobr><%= i18n_state(reserve.state) -%></nobr>
-      <%- if reserve.retained -%>
-        (<%= t('reserve.called')-%>)
-      <%- end -%>
-      <br />
-      <%= t('activerecord.attributes.reserve.created_at') -%>:
-      <%= l(reserve.created_at, :format => :only_date) -%>
-      <br />
-      <%= t('activerecord.attributes.reserve.expired_at') -%>:
-      <%= l(reserve.expired_at, :format => :only_date) -%>
-      <%- if reserve.user && reserve.user.reserves.waiting.include?(reserve) -%>
-        <%- if reserve.can_cancel? -%>
-          <%= link_to image_tag('icons/cancel.png', :size => '16x16', :alt => t('page.cancel'), :title => t('tooltip.cancel')), reserve_path(reserve, :mode => 'cancel'), :confirm => t('page.cancel_confirm'), :method => :put -%>
+      <%= link_to reserve do %>
+        <%= reserve.manifestation.original_title %>
+        <br />
+        <%= t('activerecord.attributes.reserve.state') -%>:
+        <nobr><%= i18n_state(reserve.state) -%></nobr>
+        <%- if reserve.retained -%>
+          (<%= t('reserve.called')-%>)
         <%- end -%>
-      <%- else -%>
-        <%= link_to image_tag('icons/delete.png', :size => '16x16', :alt => t('page.destroy'), :title => t('tooltip.destroy')), reserve_path(reserve), :confirm => t('page.are_you_sure'), :method => :delete -%>
+        <br />
+        <%= t('activerecord.attributes.reserve.created_at') -%>:
+        <%= l(reserve.created_at, :format => :only_date) -%>
+        <br />
+        <%= t('activerecord.attributes.reserve.expired_at') -%>:
+        <%= l(reserve.expired_at, :format => :only_date) -%>
       <%- end -%>
     </li>
   <% end %>

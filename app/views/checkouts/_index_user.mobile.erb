@@ -1,6 +1,8 @@
-<h1 class="title"><%= t('page.listing', :model => t('activerecord.models.checkout')) -%></h1>
+<div data-role="header">
+  <h1 class="title"><%= t('page.listing', :model => t('activerecord.models.checkout')) -%></h1>
+</div>
+
 <p id="notice"><%= notice %></p>
-<hr>
 
 <%= paginate(@checkouts) %>
 

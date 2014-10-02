@@ -19,7 +19,7 @@ $(function(){
   </div>
   
   <div class="field">
-    <%= render 'manifestations/show_series_number', :manifestation => @reserve.manifestation -%>
+    <%#= render 'manifestations/show_series_number', :manifestation => @reserve.manifestation -%>
   </div>
 
   <div class="field">
@@ -27,22 +27,25 @@ $(function(){
     <%= link_to @reserve.user.username, @reserve.user -%>
     (<%= @reserve.user.user_number %>)
   </div>
+  <br />
   <div class="field">
-    <%= f.label t('activerecord.attributes.reserve.information_type') -%><br />
+    <%= f.label t('activerecord.attributes.reserve.information_type') -%>
     <%= f.select(:information_type_id, @informations.collect{|i| [i.display_name + " " + i.information, i.id]}) -%>
   </div>
+  <br />
   <div class="field">
-    <%= f.label t('activerecord.attributes.reserve.receipt_library') -%><br />
+    <%= f.label t('activerecord.attributes.reserve.receipt_library') -%>
     <%= f.select(:receipt_library_id, @libraries.collect{|l| [l.display_name.localize, l.id]}) -%>
   </div>
+  <br />
   <div class="field">
 <script>
     if (typeof $('#expired_at').setCalendar == "function") {
       $('#expired_at').setCalendar({src:'/assets/calendar.png'});
     }
 </script>
-    <%= f.label :expired_at -%><br />
-    <%= f.text_field :expired_at, :value => @reserve.expired_at.try(:strftime, "%Y-%m-%d"), :class => 'date_field', :placeholder => "#{t('page.example')}: 2011-04-12"-%>
+    <%= f.label :expired_at -%>
+    <%= f.text_field :expired_at, :value => @reserve.expired_at.try(:strftime, "%Y-%m-%d"), :class => 'date_field', :placeholder => "#{t('page.example')}: 2011-04-12" -%>
   </div>
   <div class="field">
     <%= f.hidden_field :user_number, :value => @user.user_number -%>
