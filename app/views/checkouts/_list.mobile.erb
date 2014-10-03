@@ -18,7 +18,8 @@
           <%= t('activerecord.attributes.checkout.due_date') %>: <%= l(checkout.due_date, :format => :only_date) -%>
           
           <%# TODO エラー文が出力されない %>
-          <%- if checkout.checkin_id.blank? && (can? :update, checkout) && checkout.checkout_renewable?(current_user) -%> 
+          <br />
+          <%- if checkout.checkin_id.blank? && (can? :update, checkout) -%> 
             <%- if checkout.overdue? -%>
               <div style="color: red"><%= t('checkout.cannot_exceed_after_overdue') %></div>
             <%- elsif checkout.user.in_penalty -%>
