@@ -17,7 +17,6 @@
           <br />
           <%= t('activerecord.attributes.checkout.due_date') %>: <%= l(checkout.due_date, :format => :only_date) -%>
           
-          <%# TODO エラー文が出力されない %>
           <br />
           <%- if checkout.checkin_id.blank? && (can? :update, checkout) -%> 
             <%- if checkout.overdue? -%>
