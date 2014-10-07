@@ -75,14 +75,13 @@ class CheckinsController < ApplicationController
       @basket.save(:validate => false)
     end
     @checkin = @basket.checkins.new(params[:checkin])
+    item = Item.find(params[:item_id]) if params[:item_id]
     authorize! :create, @checkin
 
     messages = []
     flash[:message] = ''
     flash[:sound] = ''
-    if @checkin.item_identifier.blank?
-      messages << 'checkin.enter_item_identifier'
-    else
+    if item.blank? && @checkin.item_identifier
       identifier = @checkin.item_identifier.to_s.strip
       item = Item.where(:item_identifier => identifier).first
       item = Item.where(:identifier => identifier).first unless item
@@ -92,6 +91,8 @@ class CheckinsController < ApplicationController
       messages << 'checkin.not_checkin' unless item.checkout
       messages << 'checkin.already_checked_in' if @basket.checkins.collect(&:item).include?(item)
       messages << 'checkin.not_available_for_checkin' if item.available_checkin? == false
+    else
+      messages << 'checkin.enter_item_identifier'
     end
 
     #logger.info flash.inspect
@@ -127,7 +128,7 @@ class CheckinsController < ApplicationController
             flash[:message] << t('checkin.other_library', :model => @checkin.item.shelf.library.display_name) + '<br />' if message == 'checkin.other_library_item'
             flash[:sound] = return_sound if return_sound
           end
-          format.html { redirect_to user_basket_checkins_url(@checkin.basket.user, @checkin.basket) }
+          format.html { redirect_to checkout_path(@checkin.checkout) } # user_basket_checkins_url(@checkin.basket.user, @checkin.basket) }
           format.json { render :json => @checkin, :status => :created, :location => user_basket_checkin_url(@checkin.basket.user, @checkin.basket, @checkin) }
           format.js   { redirect_to user_basket_checkins_url(@checkin.basket.user, @checkin.basket, :mode => 'list', :format => :js) }
         else

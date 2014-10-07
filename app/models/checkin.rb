@@ -49,6 +49,11 @@ class Checkin < ActiveRecord::Base
         end
       end
 
+      # set default librarian and checked_at
+      self.librarian = current_user unless self.librarian_id
+      self.checked_at = Time.now unless self.checked_at
+      self.save! if self.changed?
+
       # checkout.user = nil unless checkout.user.save_checkout_history
       unless escape_flag
         if self.item.manifestation.next_reservation

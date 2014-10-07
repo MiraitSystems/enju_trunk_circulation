@@ -1,13 +1,25 @@
 <div id="content_detail" class="ui-corner-all">
 <h1 class="title"><%= t('page.showing', :model => t('activerecord.models.checkout')) -%></h1>
 <div id="content_list">
-<p id="notice"><%= notice %></p>
+<p id="notice"><%= notice %><div style="color: red"><%= raw flash[:message] -%></div></p>
 
   <%= render 'manifestations/title', :manifestation => @checkout.item.manifestation -%>
   <p>
     <strong><%= t('activerecord.attributes.item.item_identifier') -%></strong><br />
-    <%= link_to @checkout.item.item_identifier, @checkout.item -%>
+    <%- if @checkout.item.item_identifier %>
+      <%= link_to @checkout.item.item_identifier, @checkout.item -%>
+    <%- else -%>
+      <%= link_to t('item.no_number'), @checkout.item %>
+    <%- end -%>
   </p>
+
+  <%- if SystemConfiguration.get('item.use_different_identifier') %>
+    <p>
+      <strong><%= t('activerecord.attributes.item.identifier') -%></strong><br />
+      <%= link_to @checkout.item.identifier, @checkout.item %>
+    </p>
+  <%- end -%> 
+
   <p>
     <strong><%= t('activerecord.attributes.checkout.due_date') -%></strong><br />
     <%= l(@checkout.due_date, :format => :only_date) if @checkout.due_date -%>
@@ -40,7 +52,10 @@
 <div id="submenu" class="ui-corner-all">
   <%= render 'manifestations/book_jacket', :manifestation => @checkout.item.manifestation -%>
   <ul>
-    <%- if current_user.has_role?('Librarian') && @checkout.checkin_id.blank? %><li><%= link_to t('page.edit'), edit_user_checkout_path(@checkout.user, @checkout) -%></li><%- end -%>
+    <%- if current_user.has_role?('Librarian') && @checkout.checkin_id.blank? %>
+      <li><%= link_to t('page.edit'), edit_user_checkout_path(@checkout.user, @checkout) -%></li>
+      <li><%= link_to t('activerecord.models.checkin'), checkins_path(:item_id => @checkout.item.id), :method => :post, :confirm =>  t('page.are_you_sure') %></li>
+    <%- end -%>
     <li><%= link_to t('page.back'), user_checkouts_path(@checkout.user) -%></li>
     <%- if current_user.has_role?('Librarian') -%>
       <li><%= link_to t('page.back_to', :model => t('activerecord.models.checkout')), checkouts_path -%></li>
