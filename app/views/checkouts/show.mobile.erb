@@ -27,8 +27,13 @@
     <%= l(@checkout.checked_at, :format => :only_date) if @checkout.checked_at -%>
   </p>
 
-  <%- if @checkout.checkin_id.blank? && (can? :update, @checkout) && @checkout.checkout_renewable?(current_user) -%>
-    <%- unless @checkout.user.in_penalty -%>
+  <%- if @checkout.overdue? -%>
+    <div style="color: red"><%= t('checkout.cannot_exceed_after_overdue') %></div>
+  <%- end -%>
+  <%- if @checkout.checkin_id.blank? && (can? :update, @checkout) && @checkout.checkout_renewable?(current_user) -%> 
+    <%- if @checkout.user.in_penalty -%>
+      <div style="color: red"><%= t('checkout.cannot_exceed_in_penalty') %></div>
+    <%- else -%>
       <%= link_to t('checkout.extend'), user_checkout_path(@checkout.user, @checkout), :method => :put -%>
     <%- end -%>
   <%- end -%>

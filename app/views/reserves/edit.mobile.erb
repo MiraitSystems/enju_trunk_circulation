@@ -3,8 +3,7 @@
 </div>
 <p id="notice"><%= notice %></p>
 
-    <li><%= link_to t('page.show'), user_reserve_path(@reserve.user, @reserve) -%></li>
-    <li><%= link_to t('page.back'), user_reserves_path(@reserve.user) -%></li>
+<%= link_to t('page.back'), user_reserves_path(@reserve.user) -%>
 
 <%= form_for(@reserve, :url => user_reserve_path(@reserve.user, @reserve)) do |f| -%>
   <%= f.error_messages -%>

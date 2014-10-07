@@ -4,26 +4,28 @@
       <li>
         <%= link_to checkout do %>
           <%= checkout.item.manifestation.original_title %>
-          <br />
           <%- if checkout.item.call_number %>
-            <%= t('activerecord.attributes.item.call_number') -%>: <%= call_numberformat(checkout.item) -%>
+            <div>
+              <%= t('activerecord.attributes.item.call_number') -%>: <%= call_numberformat(checkout.item) -%>
+            </div>
           <%- end -%>
           <%- if SystemConfiguration.get('item.use_different_identifier') %>
-            / <%= t('activerecord.attributes.item.identifier') %>: <%= checkout.item.identifier %>
+            <div>
+              <%= t('activerecord.attributes.item.identifier') %>: <%= checkout.item.identifier %>
+            </div>
           <%- end -%>
-          / <%= t('activerecord.attributes.item.item_identifier') -%>: <%= checkout.item.item_identifier -%>
-          <br />
-          <%= t('activerecord.attributes.item.location_category') %>: <%= checkout.item.location_category.keyname if checkout.item.location_category -%>
-          <br />
-          <%= t('activerecord.attributes.checkout.due_date') %>: <%= l(checkout.due_date, :format => :only_date) -%>
+          <div>
+            <%= t('activerecord.attributes.item.item_identifier') -%>: <%= checkout.item.item_identifier -%>
+          </div>
+          <div>
+            <%= t('activerecord.attributes.item.location_category') %>: <%= checkout.item.location_category.keyname if checkout.item.location_category -%>
+          </div>
+          <div>
+            <%= t('activerecord.attributes.checkout.due_date') %>: <%= l(checkout.due_date, :format => :only_date) -%>
+          </div>
           
-          <br />
-          <%- if checkout.checkin_id.blank? && (can? :update, checkout) -%> 
-            <%- if checkout.overdue? -%>
-              <div style="color: red"><%= t('checkout.cannot_exceed_after_overdue') %></div>
-            <%- elsif checkout.user.in_penalty -%>
-              <div style="color: red"><%= t('checkout.cannot_exceed_in_penalty') %></div>
-            <%- end -%>
+          <%- if checkout.checkin_id.blank? && checkout.overdue? -%> 
+            <div style="color: red"><%= t('checkin.overdue_item') %></div>
           <%- end -%>
         <% end %>
       </li>
