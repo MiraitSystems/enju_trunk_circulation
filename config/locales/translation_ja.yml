@@ -182,6 +182,7 @@ ja:
     overdue_item: "この資料は貸出期限が過ぎています。"
     item_reserved: "この資料は予約されています。取置処理をしてください。"
     item_retained: "この資料は予約されています。取置処理をしました。"
+    no_item_identifier: "この資料は所蔵情報IDが未登録です。"
   checkout_history:
     checkout: 貸出
     checkin: 返却

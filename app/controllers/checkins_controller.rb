@@ -18,7 +18,6 @@ class CheckinsController < ApplicationController
     # かごがない場合、自動的に作成する
     get_basket
     unless @basket
-      logger.error "current_user: #{current_user}"
       @basket = Basket.create!(:user => current_user)
       redirect_to user_basket_checkins_url(@basket.user, @basket)
       return
@@ -81,19 +80,16 @@ class CheckinsController < ApplicationController
     messages = []
     flash[:message] = ''
     flash[:sound] = ''
-    messages << 'checkin.enter_item_identifier' if @checkin.item_identifier.blank?
-    item = Item.where(:item_identifier => @checkin.item_identifier.to_s.strip).first unless @checkin.item_identifier.blank?
-    messages << 'checkin.item_not_found' if !@checkin.item_identifier.blank? and item.blank?
+    if @checkin.item_identifier.blank?
+      messages << 'checkin.enter_item_identifier'
+    else
+      identifier = @checkin.item_identifier.to_s.strip
+      item = Item.where(:item_identifier => identifier).first
+      item = Item.where(:identifier => identifier).first unless item
+      messages << 'checkin.item_not_found' if item.blank?
+    end
     unless item.blank?
-      checkouts = Checkout.where(:item_id => item.id, :checkin_id => nil).order('created_at DESC')
-      checked = false
-      overdue = false
-      checkouts.each do |checkout|
-        checked = true if checkout.item.item_identifier == item.item_identifier
-        overdue = true if checkout.item.item_identifier == item.item_identifier and checkout.overdue?
-      end
-      # TODO refactoring
-      messages << 'checkin.not_checkin' unless checked
+      messages << 'checkin.not_checkin' unless item.checkout
       messages << 'checkin.already_checked_in' if @basket.checkins.collect(&:item).include?(item)
       messages << 'checkin.not_available_for_checkin' if item.available_checkin? == false
     end
@@ -123,7 +119,8 @@ class CheckinsController < ApplicationController
               messages << message if message
             end
           end
-          messages << 'checkin.overdue_item' if overdue == true
+          messages << 'checkin.overdue_item' if @checkin.checkout.overdue?
+          messages << 'checkin.no_item_identifier' if item.item_identifier.blank?
           messages.each do |message|
             return_message, return_sound = error_message_and_sound(message)
             flash[:message] << return_message + '<br />' unless message == 'checkin.other_library_item'
