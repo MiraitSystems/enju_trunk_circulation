@@ -21,7 +21,7 @@ class Checkin < ActiveRecord::Base
   def item_checkin(current_user, escape_flag = false)
     message = []
     Checkin.transaction do
-      checkouts = Checkout.not_returned.where(:item_id => self.item_id).select([:id, :item_id, :lock_version])
+      checkouts = Checkout.not_returned.where(:item_id => self.item_id).select([:id, :item_id, :lock_version, :checkin_id])
       self.item.checkin! rescue nil # unless escape_flag
 
       #message << I18n.t('item.this_item_include_supplement') + '<br />' if self.item.include_supplements?
@@ -32,7 +32,7 @@ class Checkin < ActiveRecord::Base
    
       checkouts.each do |checkout|
         # TODO: ILL時の処理
-        checkout.checkin = self
+        checkout.checkin_id = self.id
         checkout.save(:validate => false)
         # delete from reminder list
         ReminderList.delete_all(:checkout_id => checkout.id)
@@ -48,6 +48,11 @@ class Checkin < ActiveRecord::Base
           end
         end
       end
+
+      # set default librarian and checked_at
+      self.librarian = current_user unless self.librarian_id
+      self.checked_at = Time.now unless self.checked_at
+      self.save! if self.changed?
 
       # checkout.user = nil unless checkout.user.save_checkout_history
       unless escape_flag

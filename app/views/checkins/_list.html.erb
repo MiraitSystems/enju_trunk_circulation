@@ -70,7 +70,11 @@ playSound('<%= root_path -%><%= flash[:sound] -%>');
       </td>
     <%- end -%>
     <td>
-      <%= link_to checkin.item.item_identifier, checkin.item -%>
+      <%- if checkin.item.item_identifier %>
+        <%= link_to checkin.item.item_identifier, checkin.item -%>
+      <%- else -%>
+        <%= link_to t('item.no_number'), checkin.item %>
+      <%- end -%> 
       <br />
       <%- unless checkin.item.shelf.library.id == current_user.library.id -%>
         <span style="color: red"><%= link_to t('activerecord.models.inter_library_loan'), item_inter_library_loans_path(checkin.item) -%></span>

@@ -43,7 +43,11 @@
       <%- if SystemConfiguration.get('item.use_different_identifier') %>
         <%= t('activerecord.attributes.item.identifier') %>: <%= link_to checkout.item.identifier, checkout.item %> /
       <%- end -%>
-      <%= t('activerecord.attributes.item.item_identifier') -%>: <%= link_to checkout.item.item_identifier, item_path(checkout.item) -%>
+      <%- if checkout.item.item_identifier %>
+        <%= t('activerecord.attributes.item.item_identifier') -%>: <%= link_to checkout.item.item_identifier, item_path(checkout.item) -%>
+      <%- else -%>
+        <%= link_to t('item.no_number'), checkout.item %>
+      <%- end -%>
     </td>
     <td><%= checkout.item.location_category.keyname if checkout.item.location_category -%></td>
     <td><nobr><%= l(checkout.due_date, :format => :only_date) -%></nobr>
@@ -51,6 +55,8 @@
         <br /><%= t('checkout.returned') %>
         <br /><nobr><%= l(checkout.checkin.checked_at) %></nobr>
         <br />(<%= t('checkin.checkin_executor') -%>: <%= link_to checkout.checkin.librarian.username, checkout.checkin.librarian -%>)
+      <%- else -%>
+        <br /><%= link_to t('activerecord.models.checkin'), checkins_path(:item_id => checkout.item.id), :method => :post, :confirm =>  t('page.are_you_sure') %>
       <%- end -%>
     </td>
     <td><%= checkout.checkout_renewal_count -%></td>
