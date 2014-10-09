@@ -81,7 +81,11 @@ playSound('<%= root_path -%><%= flash[:sound] -%>');
       <%- end -%>
     </td>
     <td><%= simple_format(checkin.item.note) -%></td>
-    <td><%= l(checkin.checked_at, :format => :only_date) -%></td>
+    <td><%= l(checkin.checked_at, :format => :only_date) -%>
+      <%- if checkin.checkout.overdue? %>
+        <p style="color: red"><%= t('checkout.days_overdue', :days => checkin.checkout.days_overdue) %></p>
+      <%- end -%>
+    </td>
     <td>
       <%- if checkin.checkout -%>
         <%= l(checkin.checkout.due_date, :format => :only_date) -%>
