@@ -1,9 +1,4 @@
-<div data-role="header">
-  <h1 class="title"><%= t('page.editing', :model => t('activerecord.models.reserve')) -%></h1>
-</div>
 <p id="notice"><%= notice %></p>
-
-<%= link_to t('page.back'), user_reserves_path(@reserve.user) -%>
 
 <%= form_for(@reserve, :url => user_reserve_path(@reserve.user, @reserve)) do |f| -%>
   <%= f.error_messages -%>
