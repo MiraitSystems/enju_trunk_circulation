@@ -1,5 +1,5 @@
 <ol data-role="listview">
-  <%- if @checkouts -%>
+  <%- if @checkouts.present? -%>
     <%- @checkouts.each_with_index do |checkout, i| %>
       <li>
         <%= link_to checkout do %>
@@ -30,5 +30,7 @@
         <% end %>
       </li>
     <% end %>
+  <% else %>
+    <%= t('activerecord.errors.messages.item_not_exist', :status => t('checkout_history.checkout')) %>
   <% end %>
 </ol>

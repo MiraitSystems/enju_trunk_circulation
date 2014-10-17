@@ -3,6 +3,7 @@
 <br>
 
 <ol data-role="listview">
+  <% if @reserves.present? %>
   <%- @reserves.each_with_index do |reserve, i| -%>
     <li>
       <%= link_to reserve do %>
@@ -21,6 +22,9 @@
         <%= l(reserve.expired_at, :format => :only_date) -%>
       <%- end -%>
     </li>
+  <% end %>
+  <% else %>
+    <%= t('activerecord.errors.messages.item_not_exist', :status => t('checkout_history.reserve')) %>
   <% end %>
 </ol>
 

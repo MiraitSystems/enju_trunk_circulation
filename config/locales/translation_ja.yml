@@ -64,9 +64,9 @@ ja:
 
     errors:
       messages:
+        item_not_exist: "%{status}資料はありません。"
         checkout:
           invalid_date: "貸出期日の指定が不正です。"
-
 
 
   basket:
