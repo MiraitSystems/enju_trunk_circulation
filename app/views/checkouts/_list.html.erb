@@ -56,7 +56,7 @@
         <br /><nobr><%= l(checkout.checkin.checked_at) %></nobr>
         <br />(<%= t('checkin.checkin_executor') -%>: <%= link_to checkout.checkin.librarian.username, checkout.checkin.librarian -%>)
       <%- else -%>
-        <br /><%= link_to t('activerecord.models.checkin'), checkins_path(:item_id => checkout.item.id), :method => :post, :confirm =>  t('page.are_you_sure') %>
+        <br /><%= link_to t('activerecord.models.checkin'), checkins_path(:item_id => checkout.item.id), :method => :post, :confirm =>  t('checkin.confirm') %>
       <%- end -%>
     </td>
     <td><%= checkout.checkout_renewal_count -%></td>

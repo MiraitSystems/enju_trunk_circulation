@@ -183,6 +183,7 @@ ja:
     item_reserved: "この資料は予約されています。取置処理をしてください。"
     item_retained: "この資料は予約されています。取置処理をしました。"
     no_item_identifier: "この資料は所蔵情報IDが未登録です。"
+    confirm: "返却しますか。(取り消しはできません)"
   checkout_history:
     checkout: 貸出
     checkin: 返却
